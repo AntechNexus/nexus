@@ -17,9 +17,19 @@ This repository contains the integrated architecture for Nexus AI, featuring a R
    ```
 
 2. **Environment Variables:**
-   Ensure you have the `.env` files created based on your specific credentials:
-   - `backend/backend-nexus/.env` (Requires `MONGO_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, etc.)
-   - `backend/backend-gemini/.env` (Requires `GEMINI_API_KEY`)
+   You must create your own `.env` files before running the application, as they are not committed to Git. We have provided `.env.example` templates for you to copy.
+
+   - **Backend Nexus:**
+     ```bash
+     cp backend/backend-nexus/.env.example backend/backend-nexus/.env
+     ```
+     *(Then open it and fill in your `MONGO_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `EMAIL_PASS`, etc.)*
+
+   - **Backend Gemini:**
+     ```bash
+     cp backend/backend-gemini/.env.example backend/backend-gemini/.env
+     ```
+     *(Then open it and fill in your `GEMINI_API_KEY`)*
 
 3. **Run with Docker Compose:**
    ```bash
