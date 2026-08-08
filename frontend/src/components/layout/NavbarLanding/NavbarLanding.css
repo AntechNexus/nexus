@@ -1,0 +1,67 @@
+.navbar-landing {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 42px;
+  border-bottom: 1px solid #c4c5d8;
+}
+.navbar-landing-left {
+  display: flex;
+}
+.navbar-landing-left-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 48px;
+  cursor: pointer;
+}
+
+.navbar-landing-left-logo img {
+  width: 32px;
+  height: auto;
+}
+
+.navbar-landing-left-logo h1 {
+  color: #0032c4;
+  font-size: 24px;
+  font-family: "Inter", sans-serif;
+  letter-spacing: -1.2px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.navbar-landing-left-links {
+  padding: 6px 0;
+  display: flex;
+  gap: 24px;
+}
+.navbar-landing-left-links a {
+  color: #444655;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+}
+
+.navbar-landing-right {
+  display: flex;
+  gap: 16px;
+}
+.navbar-landing-right-signin {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  color: #444655;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+}
+.navbar-landing-right-signup {
+  background: #294de3;
+  border: none;
+  padding: 10px 24px;
+  cursor: pointer;
+  border-radius: 12px;
+
+  color: #f7f7f7;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+}

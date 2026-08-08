@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: nexus_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - nexus_mongo_data:/data/db
+    restart: unless-stopped
+
+  backend-gemini:
+    build: ./backend/backend-gemini
+    container_name: nexus_backend_gemini
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./backend/backend-gemini/.env
+    restart: unless-stopped
+
+  backend-nexus:
+    build: ./backend/backend-nexus
+    container_name: nexus_backend_nexus
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/backend-nexus/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/nexus
+      - GEMINI_SERVICE_URL=http://backend-gemini:5001
+    volumes:
+      - ./backend/backend-nexus/uploads:/app/uploads
+    depends_on:
+      - mongodb
+      - backend-gemini
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: nexus_frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - backend-nexus
+    restart: unless-stopped
+
+volumes:
+  nexus_mongo_data:

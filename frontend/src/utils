@@ -1,0 +1,21 @@
+export const openGoogleAuthPopup = ({ onSuccess }) => {
+  const width = 520;
+  const height = 640;
+  const left = window.screenX + (window.outerWidth - width) / 2;
+  const top = window.screenY + (window.outerHeight - height) / 2;
+
+  const popup = window.open(
+    "/auth/google?popup=true",
+    "nexus-google-auth",
+    `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`,
+  );
+
+  const handleMessage = (event) => {
+    if (event.origin !== window.location.origin || event.data?.type !== "nexus-google-auth-success") return;
+    window.removeEventListener("message", handleMessage);
+    onSuccess(event.data.account);
+  };
+
+  window.addEventListener("message", handleMessage);
+  popup?.focus();
+};

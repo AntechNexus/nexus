@@ -1,0 +1,141 @@
+.hero-landing {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 64px 48px 96px 48px;
+  border-bottom: 1px solid #c4c5d8;
+}
+
+.hero-landing-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 24px;
+  background-color: #dee0ff;
+  border: 1px solid #d1d8ff;
+  border-radius: 9999px;
+  width: fit-content;
+  margin-bottom: 32px;
+}
+
+.hero-landing-ai p {
+  margin: 0;
+  color: #2f3f92;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+}
+
+.hero-landing-heading1 {
+  text-align: center;
+}
+
+.hero-landing-heading1 h1 {
+  color: #1a1c1d;
+  font-size: 64px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+
+.hero-landing-heading1 .text-blue {
+  color: #0032c4;
+}
+
+.hero-landing-heading2 {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  color: #444655;
+  font-size: 18px;
+  letter-spacing: 1.2px;
+}
+
+.hero-landing-heading3 {
+  text-align: center;
+  font-family: "Inter", sans-serif;
+  color: #64748b;
+  font-size: 16px;
+  margin-top: 40px;
+}
+
+.hero-landing-button {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+.hero-landing-button button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: #2d5bff;
+  color: #ffffff;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #1f45d1;
+}
+
+.btn-secondary {
+  background-color: #f8f9fa;
+  color: #444655;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.hero-landing-image {
+  margin: 65px 0px;
+  text-align: center;
+}
+
+.hero-landing-features {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 64px;
+  flex-wrap: wrap;
+  margin-top: 48px;
+}
+
+.hero-landing-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  width: fit-content;
+}
+
+.feature-icon-circle {
+  width: 48px;
+  height: 48px;
+  background-color: #f1f3f5;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-landing-feature-item p {
+  margin: 0;
+  color: #4a4d5e;
+  font-size: 16px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  text-align: center;
+}

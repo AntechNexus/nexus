@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-background: #f9f9fa;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f3f4;
+  --color-surface-soft: #eeeeef;
+  --color-text-main: #1a1c1d;
+  --color-text-muted: #64748b;
+  --color-text-variant: #444655;
+  --color-primary: #0032c4;
+  --color-primary-action: #294de3;
+  --color-primary-soft: #dee1ff;
+  --color-secondary-soft: #dee0ff;
+  --color-ai-accent: #ea4c89;
+  --color-outline-soft: #e2e4e9;
+  --color-outline-strong: #c4c5d8;
+  --color-nexus-primary: #0032c4;
+  --color-nexus-action: #294de3;
+  --color-nexus-ai: #ea4c89;
+  --color-nexus-bg: #f3f3f4;
+  --color-nexus-surface: #ffffff;
+  --color-nexus-text: #1a1c1d;
+  --color-nexus-muted: #64748b;
+  --color-nexus-border: #e2e4e9;
+}
+
+.reserved-route-placeholder {
+  min-height: 100vh;
+  padding: 32px;
+  background: #f3f3f4;
+  color: #1a1c1d;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    background: #f9f9fa;
+    color: #1a1c1d;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  button,
+  a {
+    font: inherit;
+  }
+}
