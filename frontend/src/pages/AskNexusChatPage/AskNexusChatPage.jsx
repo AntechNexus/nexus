@@ -125,7 +125,7 @@ const AskNexusChatPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="grid h-[calc(100vh-64px)] bg-white lg:grid-cols-[300px_minmax(0,1fr)]">
+        <main className="grid h-[calc(100vh-64px)] overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="hidden border-r border-nexus-border bg-slate-50/80 lg:flex lg:flex-col">
             <div className="border-b border-nexus-border p-4">
               <button
@@ -228,6 +228,7 @@ const AskNexusChatPage = () => {
                   const messageText = message.messageText || message.content;
                   const citations = message.citations || (message.sources || []).map((source) => ({
                     fileName: typeof source === "string" ? source : source.fileName,
+                    fileId: typeof source === "string" ? null : source.fileId,
                     snippet: source.textSnippet || "",
                     timestamp: "",
                   }));
@@ -262,8 +263,9 @@ const AskNexusChatPage = () => {
                               {citations.map((citation) => (
                                 <button
                                   className="inline-flex items-center gap-2 rounded-lg border border-nexus-border bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm transition hover:border-nexus-primary hover:text-nexus-primary"
-                                  key={`${citation.sourceFileId || citation.fileName}-${citation.timestamp}`}
+                                  key={`${citation.fileId || citation.fileName}-${citation.timestamp}`}
                                   title={citation.snippet}
+                                  onClick={() => citation.fileId ? navigate(`/projects/${conversation.projectId}/files/${citation.fileId}`) : null}
                                   type="button"
                                 >
                                   <FileText size={15} /> {citation.fileName}{citation.timestamp ? ` - ${citation.timestamp}` : ""}
