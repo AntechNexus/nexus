@@ -17,8 +17,9 @@ const authMiddleware = async (req, res, next) => {
       return res.status(401).json({ message: 'Token tidak valid dari auth service' });
     }
     
-    const userData = await response.json();
-    // getMe returns the user object directly, with _id
+    const data = await response.json();
+    // getMe returns { user: { id, email, ... } }
+    const userData = data.user || data;
     req.user = { id: userData._id || userData.id, ...userData };
     next();
   } catch (err) {
