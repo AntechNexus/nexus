@@ -14,6 +14,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
+import GithubSlugger from "github-slugger";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
@@ -84,9 +85,10 @@ const AiPrdReviewPage = () => {
       const headingRegex = /^(#{1,3})\s+(.*)$/gm;
       let match;
       const newOutline = [];
+      const slugger = new GithubSlugger();
       while ((match = headingRegex.exec(processedMarkdown)) !== null) {
         newOutline.push({
-          id: match[2].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          id: slugger.slug(match[2]),
           label: match[2].replace(/\*\*/g, '').trim(),
           level: match[1].length,
         });
