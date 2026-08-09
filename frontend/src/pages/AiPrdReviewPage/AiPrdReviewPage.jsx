@@ -210,13 +210,13 @@ const AiPrdReviewPage = () => {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-              <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
+              <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:overflow-x-hidden custom-scrollbar">
                 <section>
                   <h2 className="mb-4 px-2 text-xs font-extrabold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
                   <nav className="space-y-1">
                     {outline.map((item, index) => (
                       <button
-                        className={`block w-full text-left rounded-lg px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 ${
+                        className={`block w-full text-left truncate rounded-lg px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 ${
                           index === 0 ? "border-l-2 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-nexus-muted"
                         } ${item.level === 3 ? "ml-4 text-xs" : ""}`}
                         onClick={(e) => scrollToSection(e, item.id)}
