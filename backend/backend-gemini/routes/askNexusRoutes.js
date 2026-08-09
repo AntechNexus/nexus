@@ -6,7 +6,7 @@ const router = express.Router();
 const authMiddleware = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
-    return next();
+    return res.status(401).json({ message: 'Akses ditolak, token tidak ditemukan' });
   }
   try {
     const response = await fetch("http://localhost:5000/api/auth/me", {
