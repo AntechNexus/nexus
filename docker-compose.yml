@@ -19,6 +19,7 @@ services:
       - ./backend/backend-gemini/.env
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/nexus
+      - AUTH_SERVICE_URL=http://backend-nexus:5000
     depends_on:
       - mongodb
     restart: unless-stopped

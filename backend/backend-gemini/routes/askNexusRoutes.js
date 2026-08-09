@@ -9,7 +9,8 @@ const authMiddleware = async (req, res, next) => {
     return res.status(401).json({ message: 'Akses ditolak, token tidak ditemukan' });
   }
   try {
-    const response = await fetch("http://localhost:5000/api/auth/me", {
+    const authUrl = process.env.AUTH_SERVICE_URL || "http://localhost:5000";
+    const response = await fetch(`${authUrl}/api/auth/me`, {
       headers: { Authorization: header }
     });
     
@@ -23,7 +24,8 @@ const authMiddleware = async (req, res, next) => {
     req.user = { id: userData._id || userData.id, ...userData };
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Gagal memverifikasi token' });
+    console.error("Auth middleware error:", err.message);
+    return res.status(401).json({ message: 'Gagal memverifikasi token', error: err.message });
   }
 };
 
