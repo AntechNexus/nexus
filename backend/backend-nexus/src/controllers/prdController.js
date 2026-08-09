@@ -552,29 +552,29 @@ exports.saveGeneratedPrd = async (req, res) => {
     const lines = rawMarkdown.split("\n").map(line => line.replace(/\*\*/g, ""));
     const docChildren = [];
     for (let line of lines) {
-      
-      if (line.startsWith("# ")) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.startsWith("# ")) {
         docChildren.push(new Paragraph({ 
-          children: [new TextRun({ text: line.replace(/^# /, ""), bold: true, color: "000000" })], 
+          children: [new TextRun({ text: trimmedLine.replace(/^# /, ""), bold: true, color: "000000" })], 
           heading: HeadingLevel.HEADING_1, 
           alignment: AlignmentType.LEFT 
         }));
-      } else if (line.startsWith("## ")) {
+      } else if (trimmedLine.startsWith("## ")) {
         docChildren.push(new Paragraph({ 
-          children: [new TextRun({ text: line.replace(/^## /, ""), bold: true, color: "000000" })], 
+          children: [new TextRun({ text: trimmedLine.replace(/^## /, ""), bold: true, color: "000000" })], 
           heading: HeadingLevel.HEADING_2 
         }));
-      } else if (line.startsWith("### ")) {
+      } else if (trimmedLine.startsWith("### ")) {
         docChildren.push(new Paragraph({ 
-          children: [new TextRun({ text: line.replace(/^### /, ""), bold: true, color: "000000" })], 
+          children: [new TextRun({ text: trimmedLine.replace(/^### /, ""), bold: true, color: "000000" })], 
           heading: HeadingLevel.HEADING_3 
         }));
-      } else if (line.startsWith("- ") || line.startsWith("* ")) {
-        docChildren.push(new Paragraph({ text: line.replace(/^[-*] /, ""), bullet: { level: 0 } }));
-      } else if (line.trim() === "---") {
+      } else if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
+        docChildren.push(new Paragraph({ text: trimmedLine.replace(/^[-*] /, ""), bullet: { level: 0 } }));
+      } else if (trimmedLine === "---") {
         docChildren.push(new Paragraph({ text: "" }));
       } else {
-        docChildren.push(new Paragraph({ children: [new TextRun({ text: line, size: 24 })] }));
+        docChildren.push(new Paragraph({ children: [new TextRun({ text: trimmedLine, size: 24 })] }));
       }
     }
 
@@ -603,19 +603,24 @@ exports.saveGeneratedPrd = async (req, res) => {
           .replace(/…/g, "...")
           .replace(/[^\x00-\x7F]/g, ""); // strip all other non-ascii characters
 
-        if (line.startsWith("# ")) {
-          pdfDoc.fontSize(18).font("Helvetica-Bold").text(line.replace(/^# /, ""), { align: "left" }).moveDown(0.5);
+        const trimmedLine = line.trim();
+        if (trimmedLine.startsWith("# ")) {
+          pdfDoc.fontSize(18).font("Helvetica-Bold").text(trimmedLine.replace(/^# /, ""), { align: "left" }).moveDown(0.5);
           pdfDoc.fontSize(10).font("Helvetica");
-        } else if (line.startsWith("## ")) {
-          pdfDoc.fontSize(14).font("Helvetica-Bold").text(line.replace(/^## /, "")).moveDown(0.3);
+        } else if (trimmedLine.startsWith("## ")) {
+          pdfDoc.fontSize(14).font("Helvetica-Bold").text(trimmedLine.replace(/^## /, "")).moveDown(0.3);
           pdfDoc.fontSize(10).font("Helvetica");
-        } else if (line.startsWith("### ")) {
-          pdfDoc.fontSize(12).font("Helvetica-Bold").text(line.replace(/^### /, "")).moveDown(0.3);
+        } else if (trimmedLine.startsWith("### ")) {
+          pdfDoc.fontSize(12).font("Helvetica-Bold").text(trimmedLine.replace(/^### /, "")).moveDown(0.3);
           pdfDoc.fontSize(10).font("Helvetica");
-        } else if (line.trim() === "---") {
+        } else if (trimmedLine === "---") {
           pdfDoc.moveDown(0.5);
-        } else if (line.trim()) {
-          pdfDoc.text(line.replace(/^[-*] /, "- "), { align: "left" }).moveDown(0.2);
+        } else if (trimmedLine) {
+          if (trimmedLine.startsWith("- ") || trimmedLine.startsWith("* ")) {
+            pdfDoc.text(trimmedLine.replace(/^[-*] /, "- "), { align: "left", indent: 15 }).moveDown(0.2);
+          } else {
+            pdfDoc.text(trimmedLine, { align: "left" }).moveDown(0.2);
+          }
         }
       }
       pdfDoc.end();

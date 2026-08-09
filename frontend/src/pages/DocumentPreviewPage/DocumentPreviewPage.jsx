@@ -225,7 +225,13 @@ const DocumentPreviewPage = () => {
                       `}</style>
                       <div 
                         className="doc-content prose prose-slate max-w-none"
-                        dangerouslySetInnerHTML={{ __html: document.content }} 
+                        dangerouslySetInnerHTML={{ 
+                          __html: document.content
+                            ? document.content
+                                .replace(/<p>\s*[-*]\s+(.*?)<\/p>/g, '<ul style="list-style-type: disc; padding-left: 20px; margin-bottom: 5px; text-align: left;"><li>$1</li></ul>')
+                                .replace(/<\/ul>\s*<ul[^>]*>/g, '') 
+                            : ""
+                        }} 
                       />
                     </div>
                   ) : (
