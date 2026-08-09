@@ -221,6 +221,7 @@ const DocumentPreviewPage = () => {
                         .doc-content h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
                         .doc-content h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; }
                         .doc-content h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+                        .doc-content p { text-align: justify; }
                       `}</style>
                       <div 
                         className="doc-content prose prose-slate max-w-none"

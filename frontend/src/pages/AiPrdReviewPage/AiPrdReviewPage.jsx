@@ -283,7 +283,7 @@ const AiPrdReviewPage = () => {
                         h1: ({node, ...props}) => <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text mt-6 mb-6" {...props} />,
                         h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-nexus-text mt-10 mb-4 border-b border-nexus-border pb-2" {...props} />,
                         h3: ({node, ...props}) => <h3 className="text-lg font-bold text-nexus-text mt-6 mb-3" {...props} />,
-                        p: ({node, ...props}) => <p className="text-base text-slate-600 leading-8 mb-5" {...props} />,
+                        p: ({node, ...props}) => <p className="text-base text-slate-600 leading-8 mb-5 text-justify" {...props} />,
                         ul: ({node, ...props}) => <ul className="list-disc pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
                         li: ({node, ...props}) => <li className="leading-7" {...props} />,
