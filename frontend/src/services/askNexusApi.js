@@ -65,3 +65,18 @@ export const appendAskNexusMessage = async (payload) => {
   
   return fetchAskNexusConversation(result.conversationId);
 };
+
+export const regenerateAskNexusMessage = async (conversationId) => {
+  const res = await fetch(`${GEMINI_API}/ask-nexus/regenerate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ conversationId }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to regenerate message");
+  }
+  const result = await res.json();
+  
+  return fetchAskNexusConversation(result.conversationId);
+};

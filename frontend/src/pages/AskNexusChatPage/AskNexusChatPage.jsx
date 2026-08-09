@@ -20,6 +20,7 @@ import {
   fetchAskNexusConversation,
   fetchAskNexusConversations,
   fetchAskNexusPrompts,
+  regenerateAskNexusMessage,
 } from "../../services/askNexusApi";
 import { projectService } from "../../services/project.service";
 
@@ -60,6 +61,22 @@ const AskNexusChatPage = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [conversation]);
+
+  const handleRegenerate = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const nextConversation = await regenerateAskNexusMessage(conversationId);
+      setConversation(nextConversation);
+    } catch (error) {
+      setToast("Failed to regenerate message: " + error.message);
+    } finally {
+      setLoading(false);
+      setTimeout(() => {
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
+    }
+  };
 
   const sendMessage = async () => {
     const question = draft.trim();
@@ -223,8 +240,9 @@ const AskNexusChatPage = () => {
 
             <div className="flex-1 overflow-y-auto bg-slate-50/40">
               <div className="mx-auto max-w-3xl space-y-10 px-4 py-8 sm:px-6">
-                {(conversation.messages || []).map((message) => {
+                {(conversation.messages || []).map((message, index) => {
                   const isUser = (message.sender || message.role) === "user";
+                  const isLastMessage = index === (conversation.messages || []).length - 1;
                   const messageText = message.messageText || message.content;
                   const citations = message.citations || (message.sources || []).map((source) => ({
                     fileName: typeof source === "string" ? source : source.fileName,
@@ -232,6 +250,8 @@ const AskNexusChatPage = () => {
                     snippet: source.textSnippet || "",
                     timestamp: "",
                   }));
+
+                  const getRouteType = (fileName) => /\.(mp3|wav|m4a|ogg)$/i.test(fileName || "") ? "transcripts" : "documents";
 
                   return (
                     <article className={`flex gap-4 ${isUser ? "justify-end" : ""}`} key={message._id || message.id}>
@@ -265,7 +285,7 @@ const AskNexusChatPage = () => {
                                   className="inline-flex items-center gap-2 rounded-lg border border-nexus-border bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm transition hover:border-nexus-primary hover:text-nexus-primary"
                                   key={`${citation.fileId || citation.fileName}-${citation.timestamp}`}
                                   title={citation.snippet}
-                                  onClick={() => citation.fileId ? navigate(`/projects/${conversation.projectId}/files/${citation.fileId}`) : null}
+                                  onClick={() => citation.fileId ? navigate(`/projects/${conversation.projectId}/${getRouteType(citation.fileName)}/${citation.fileId}`) : null}
                                   type="button"
                                 >
                                   <FileText size={15} /> {citation.fileName}{citation.timestamp ? ` - ${citation.timestamp}` : ""}
@@ -279,9 +299,11 @@ const AskNexusChatPage = () => {
                             <button className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-nexus-primary" onClick={() => copyAnswer(messageText)} title="Copy" type="button">
                               <Copy size={17} />
                             </button>
-                            <button className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-nexus-primary" onClick={() => setToast("Regenerate is ready for backend streaming.")} title="Regenerate" type="button">
-                              <RefreshCw size={17} />
-                            </button>
+                            {isLastMessage && (
+                              <button className="rounded-lg p-2 text-slate-500 transition hover:bg-white hover:text-nexus-primary" onClick={handleRegenerate} title="Regenerate" type="button" disabled={loading}>
+                                <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
