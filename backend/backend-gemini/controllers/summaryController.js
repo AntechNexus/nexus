@@ -30,15 +30,23 @@ const handleSummary = async (req, res) => {
     }
 
     // Prompt Gemini to summarize
-    const prompt = `Summarize the following document into exactly very short bullet points. Keep each point under 15 words, highlighting only the absolute core message and final conclusion. Write the summary in English.\n\nDocument Text:\n${documentText.substring(0, 100000)}`;
+    const prompt = `Summarize the following document into exactly very short bullet points. Keep each point under 15 words, highlighting only the absolute core message and final conclusion. Write the summary in English.
+IMPORTANT: Do NOT wrap your response in markdown code blocks (e.g., \`\`\`md or \`\`\`markdown). Output raw text only.
+
+Document Text:
+${documentText.substring(0, 100000)}`;
     
     const response = await ai.models.generateContent({
       model: "gemini-3.6-flash",
       contents: prompt
     });
 
+    let summaryText = response.text.trim();
+    // Programmatic fallback to strip markdown blocks if model ignored instruction
+    summaryText = summaryText.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '').trim();
+
     // Match the JSON structure expected by frontend (which was looking for res.success && res.summary)
-    return res.json({ success: true, summary: response.text });
+    return res.json({ success: true, summary: summaryText });
 
   } catch (error) {
     console.error("Summary error:", error);
