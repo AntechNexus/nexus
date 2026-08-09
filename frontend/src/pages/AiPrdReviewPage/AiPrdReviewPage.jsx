@@ -210,7 +210,7 @@ const AiPrdReviewPage = () => {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-              <aside className="space-y-6">
+              <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto custom-scrollbar">
                 <section>
                   <h2 className="mb-4 px-2 text-xs font-extrabold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
                   <nav className="space-y-1">
