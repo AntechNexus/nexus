@@ -1,21 +1,28 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const { askNexus, getConversations, getConversationById, regenerateMessage } = require("../controllers/askNexusController");
 
 const router = express.Router();
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
     return next();
   }
   try {
-    const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const response = await fetch("http://localhost:5000/api/auth/me", {
+      headers: { Authorization: header }
+    });
+    
+    if (!response.ok) {
+      return res.status(401).json({ message: 'Token tidak valid dari auth service' });
+    }
+    
+    const userData = await response.json();
+    // getMe returns the user object directly, with _id
+    req.user = { id: userData._id || userData.id, ...userData };
     next();
   } catch (err) {
-    return res.status(401).json({ message: 'Token tidak valid' });
+    return res.status(401).json({ message: 'Gagal memverifikasi token' });
   }
 };
 
