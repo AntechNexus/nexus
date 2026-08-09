@@ -137,7 +137,9 @@ const AskNexusChatPage = () => {
               </button>
               <div className="rounded-xl border border-blue-100 bg-blue-50 p-3">
                 <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-nexus-primary">Project Context</p>
-                <p className="mt-1 truncate text-sm font-bold text-nexus-text">{conversation.projectName}</p>
+                <p className="mt-1 truncate text-sm font-bold text-nexus-text">
+                  {projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}
+                </p>
                 <p className="mt-0.5 text-xs text-nexus-muted">Current project documents only</p>
               </div>
             </div>
@@ -211,7 +213,9 @@ const AskNexusChatPage = () => {
                 </span>
                 <div className="min-w-0">
                   <h1 className="truncate text-lg font-bold text-nexus-text">Ask Nexus</h1>
-                  <p className="truncate text-xs font-semibold text-nexus-muted">{conversation.projectName}</p>
+                  <p className="truncate text-xs font-semibold text-nexus-muted">
+                    {projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}
+                  </p>
                 </div>
               </div>
               <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-nexus-primary">BETA</span>
@@ -326,7 +330,7 @@ const AskNexusChatPage = () => {
                         sendMessage();
                       }
                     }}
-                    placeholder={`Ask about ${conversation.projectName}...`}
+                    placeholder={`Ask about ${projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}...`}
                     value={draft}
                     disabled={loading}
                   />

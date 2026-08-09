@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users } from "lucide-react";
+import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
@@ -36,6 +36,7 @@ const AskNexusPage = () => {
   const [conversations, setConversations] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
   const [openMenuProjectId, setOpenMenuProjectId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState("");
 
   const projects = useMemo(() => {
@@ -43,7 +44,7 @@ const AskNexusPage = () => {
   }, [_projects]);
 
   const selectedProject = projects.find((project) => project._id === selectedProjectId || project.id === selectedProjectId) || projects[0];
-  const canAsk = Boolean(selectedProject && question.trim());
+  const canAsk = Boolean(selectedProject && question.trim() && !isSubmitting);
 
   useEffect(() => {
     setPrompts(fetchAskNexusPrompts());
@@ -63,6 +64,7 @@ const AskNexusPage = () => {
 
   const submitQuestion = async () => {
     if (!canAsk) return;
+    setIsSubmitting(true);
     try {
       const result = await askNexus({
         projectId: selectedProject._id || selectedProject.id,
@@ -73,6 +75,7 @@ const AskNexusPage = () => {
       navigate(`/ask-nexus/chat/${result.conversationId}`);
     } catch (error) {
       setToast("Failed to ask question: " + error.message);
+      setIsSubmitting(false);
     }
   };
 
@@ -151,7 +154,7 @@ const AskNexusPage = () => {
                       onClick={submitQuestion}
                       type="button"
                     >
-                      <ArrowUp size={20} />
+                      {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <ArrowUp size={20} />}
                     </button>
                   </div>
                   </div>
