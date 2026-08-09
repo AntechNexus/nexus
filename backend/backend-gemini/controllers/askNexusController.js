@@ -142,7 +142,9 @@ const getConversations = async (req, res) => {
     const { projectId } = req.query;
     const filter = {};
     if (projectId) filter.projectId = projectId;
-    // if (req.user) filter.createdBy = req.user.id;
+    
+    const userId = req.user?.id || req.user?._id;
+    if (userId) filter.createdBy = userId;
 
     const convs = await ChatConversation.find(filter).sort({ updatedAt: -1 });
     return res.status(200).json({ data: convs });

@@ -13,11 +13,19 @@ export const fetchAskNexusPrompts = () => {
   return defaultPrompts;
 };
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+};
+
 // Ask a new question
 export const askNexus = async (payload) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/ask`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" }, // Assuming token is handled or omitted for now
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -29,7 +37,7 @@ export const askNexus = async (payload) => {
 
 export const fetchAskNexusConversations = async (projectId = null) => {
   const url = projectId ? `${GEMINI_API}/ask-nexus/conversations?projectId=${projectId}` : `${GEMINI_API}/ask-nexus/conversations`;
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: getAuthHeaders() });
   if (!res.ok) {
     throw new Error("Failed to fetch conversations");
   }
@@ -42,7 +50,7 @@ export const fetchAskNexusConversations = async (projectId = null) => {
 };
 
 export const fetchAskNexusConversation = async (conversationId) => {
-  const res = await fetch(`${GEMINI_API}/ask-nexus/conversations/${conversationId}`);
+  const res = await fetch(`${GEMINI_API}/ask-nexus/conversations/${conversationId}`, { headers: getAuthHeaders() });
   if (!res.ok) {
     throw new Error("Failed to fetch conversation");
   }
@@ -54,7 +62,7 @@ export const appendAskNexusMessage = async (payload) => {
   // We can just call askNexus again with conversationId attached
   const res = await fetch(`${GEMINI_API}/ask-nexus/ask`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
@@ -69,7 +77,7 @@ export const appendAskNexusMessage = async (payload) => {
 export const regenerateAskNexusMessage = async (conversationId) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/regenerate`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({ conversationId }),
   });
   if (!res.ok) {
