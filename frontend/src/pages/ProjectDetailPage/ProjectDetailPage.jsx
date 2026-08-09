@@ -66,31 +66,42 @@ const ModalShell = ({ children, onClose, title }) => {
 };
 
 const AddFileModal = ({ onClose, onUpload }) => {
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [error, setError] = useState("");
   const inputRef = useRef(null);
 
-  const setFile = (file) => {
-    if (!file) return;
-    if (!isAllowedUploadFile(file.name)) {
-      setSelectedFile(null);
-      setError("Unsupported file type. Upload only PDF, DOCX, XLSX, MP3, M4A, or PRD files.");
-      return;
+  const addFiles = (files) => {
+    if (!files || files.length === 0) return;
+    
+    const validFiles = [];
+    let hasError = false;
+
+    Array.from(files).forEach((file) => {
+      if (!isAllowedUploadFile(file.name)) {
+        hasError = true;
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (hasError) {
+      setError("Some files were skipped. Unsupported file type. Upload only PDF, DOCX, XLSX, MP3, M4A, WAV, or PRD files.");
+    } else {
+      setError("");
     }
-    if (file.size > 75 * 1024 * 1024) {
-      setSelectedFile(null);
-      setError("File terlalu besar. Maksimal ukuran file adalah 75MB.");
-      return;
-    }
-    setError("");
-    setSelectedFile(file);
+    
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
   };
 
-  const selectFile = (event) => setFile(event.target.files?.[0]);
+  const selectFile = (event) => addFiles(event.target.files);
 
   const dropFile = (event) => {
     event.preventDefault();
-    setFile(event.dataTransfer.files?.[0]);
+    addFiles(event.dataTransfer.files);
+  };
+
+  const removeFile = (index) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -102,6 +113,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
           onChange={selectFile}
           ref={inputRef}
           type="file"
+          multiple
         />
         <button
           className="flex w-full flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-nexus-primary p-8 text-center transition hover:bg-blue-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
@@ -117,21 +129,25 @@ const AddFileModal = ({ onClose, onUpload }) => {
             <span className="block text-sm font-semibold text-nexus-text">Drag & drop files here</span>
             <span className="block text-sm text-nexus-muted">or browse files</span>
           </span>
-          <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, PRD</span>
+          <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, WAV, PRD</span>
         </button>
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
-        {selectedFile && (
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-50 p-3">
-            <div className="flex items-center gap-3">
-              <FileText className="text-nexus-primary" size={18} />
-              <div>
-                <p className="max-w-64 truncate text-sm font-semibold text-nexus-text">{selectedFile.name}</p>
-                <p className="text-xs text-nexus-muted">{formatFileSize(selectedFile.size)}</p>
+        {selectedFiles.length > 0 && (
+          <div className="mt-4 max-h-40 overflow-y-auto space-y-2">
+            {selectedFiles.map((file, idx) => (
+              <div key={idx} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+                <div className="flex items-center gap-3">
+                  <FileText className="text-nexus-primary" size={18} />
+                  <div>
+                    <p className="max-w-[200px] truncate text-sm font-semibold text-nexus-text">{file.name}</p>
+                    <p className="text-xs text-nexus-muted">{formatFileSize(file.size)}</p>
+                  </div>
+                </div>
+                <button aria-label="Remove selected file" className="rounded-lg p-1.5 text-red-500 hover:bg-red-50" onClick={() => removeFile(idx)} type="button">
+                  <Trash2 size={16} />
+                </button>
               </div>
-            </div>
-            <button aria-label="Remove selected file" className="rounded-lg p-1.5 text-red-500 hover:bg-red-50" onClick={() => setSelectedFile(null)} type="button">
-              <Trash2 size={16} />
-            </button>
+            ))}
           </div>
         )}
       </div>
@@ -139,7 +155,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
         <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100" onClick={onClose} type="button">
           Cancel
         </button>
-        <button className="flex-1 rounded-xl bg-nexus-primary py-2.5 text-sm font-semibold text-white transition hover:bg-nexus-action disabled:opacity-50" disabled={!selectedFile} onClick={() => onUpload(selectedFile)} type="button">
+        <button className="flex-1 rounded-xl bg-nexus-primary py-2.5 text-sm font-semibold text-white transition hover:bg-nexus-action disabled:opacity-50" disabled={selectedFiles.length === 0} onClick={() => onUpload(selectedFiles)} type="button">
           Upload Files
         </button>
       </div>
@@ -362,22 +378,30 @@ const ProjectDetailPage = () => {
     }
   };
 
-  const uploadFile = async (file) => {
-    if (!file) return;
+  const uploadFile = async (files) => {
+    if (!files || files.length === 0) return;
     try {
-      const nextDocuments = await uploadProjectDocument(projectId, {
-        id: `${slugify(file.name)}-${Date.now()}`,
-        name: file.name,
-        parentId: currentFolderId,
-        size: formatFileSize(file.size),
-        rawSize: file.size,
-        fileObject: file,
-      });
+      // Create a function to upload a single file
+      const uploadSingle = async (file) => {
+        return await uploadProjectDocument(projectId, {
+          id: `${slugify(file.name)}-${Date.now()}`,
+          name: file.name,
+          parentId: currentFolderId,
+          size: formatFileSize(file.size),
+          rawSize: file.size,
+          fileObject: file,
+        });
+      };
+      
+      // Upload all files concurrently
+      await Promise.all(files.map(uploadSingle));
+      
+      const nextDocuments = await fetchProjectDocuments(projectId);
       refreshDocuments(nextDocuments);
       setModal(null);
-      setToast("File uploaded successfully.");
+      setToast(`${files.length} file(s) uploaded successfully.`);
     } catch (error) {
-      setToast("Failed to upload file.");
+      setToast("Failed to upload one or more files.");
     }
   };
 

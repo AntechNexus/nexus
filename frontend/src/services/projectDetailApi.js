@@ -1,6 +1,6 @@
 import api from './api';
 
-export const allowedDocumentTypes = ["pdf", "docx", "xlsx", "mp3", "m4a", "prd"];
+export const allowedDocumentTypes = ["pdf", "docx", "xlsx", "mp3", "m4a", "wav", "prd"];
 export const allowedDocumentExtensions = allowedDocumentTypes.map((type) => `.${type}`).join(",");
 
 export const getDocumentType = (fileName) => {

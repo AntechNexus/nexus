@@ -21,8 +21,7 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 75 * 1024 * 1024 } // 75MB limit
+  storage: storage
 });
 
 // Wrapper middleware to handle multer errors
@@ -30,9 +29,6 @@ const handleUpload = (req, res, next) => {
   const uploadSingle = upload.single('file');
   uploadSingle(req, res, function (err) {
     if (err instanceof multer.MulterError) {
-      if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ message: "File terlalu besar. Maksimal ukuran file adalah 75MB." });
-      }
       return res.status(400).json({ message: err.message });
     } else if (err) {
       return res.status(500).json({ message: err.message });
