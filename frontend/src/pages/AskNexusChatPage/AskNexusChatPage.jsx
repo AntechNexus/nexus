@@ -126,7 +126,7 @@ const AskNexusChatPage = () => {
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
         <main className="grid h-[calc(100vh-64px)] overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)]">
-          <aside className="hidden border-r border-nexus-border bg-slate-50/80 lg:flex lg:flex-col">
+          <aside className="hidden min-h-0 border-r border-nexus-border bg-slate-50/80 lg:flex lg:flex-col">
             <div className="border-b border-nexus-border p-4">
               <button
                 className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2.5 text-sm font-bold text-nexus-text transition hover:bg-blue-50 hover:text-nexus-primary"
@@ -197,7 +197,7 @@ const AskNexusChatPage = () => {
             </div>
           </aside>
 
-          <section className="flex min-w-0 flex-col bg-white">
+          <section className="flex min-h-0 min-w-0 flex-col bg-white">
             <header className="flex min-h-16 items-center justify-between gap-4 border-b border-nexus-border px-4 py-3 sm:px-6">
               <div className="flex min-w-0 items-center gap-3">
                 <button
