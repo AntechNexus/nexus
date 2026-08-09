@@ -17,4 +17,10 @@ router.put('/files/:id/transcribe', updateTranscript);
 
 router.get('/files/:id/summary', handleSummary);
 
+// Ask Nexus & Embeddings
+const askNexusRoutes = require('./askNexusRoutes');
+const embeddingRoutes = require('./embeddingRoutes');
+router.use('/ask-nexus', askNexusRoutes);
+router.use('/embeddings', embeddingRoutes);
+
 module.exports = router;

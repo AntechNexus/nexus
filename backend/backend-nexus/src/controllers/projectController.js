@@ -80,7 +80,7 @@ exports.getProjects = async (req, res) => {
     for (const project of projects) {
       project.fileCount = await File.countDocuments({ 
         projectId: project._id, 
-        status: { $ne: 'deleted' } 
+        status: 'active'
       });
     }
 

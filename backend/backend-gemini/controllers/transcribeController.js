@@ -91,6 +91,15 @@ Note on 'segments':
 
       const parsedData = JSON.parse(responseText);
 
+      let segments = parsedData.segments || [];
+      if (!Array.isArray(segments) || segments.length === 0) {
+        segments = [{
+          start: 0,
+          end: parsedData.durationSeconds || 0,
+          text: parsedData.fullText || "No speech detected."
+        }];
+      }
+
       // Save to database using the Transcript model
       const newTranscript = new Transcript({
         fileId: file._id,
@@ -98,7 +107,7 @@ Note on 'segments':
         fullText: parsedData.fullText || "No full text provided.",
         language: parsedData.language || "Unknown",
         durationSeconds: parsedData.durationSeconds || 0,
-        segments: parsedData.segments || [],
+        segments: segments,
         createdBy: file.createdBy,
       });
 

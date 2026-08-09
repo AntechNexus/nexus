@@ -534,34 +534,47 @@ exports.saveGeneratedPrd = async (req, res) => {
     const safeName = prdName || `PRD – ${project.name}`;
     const folderName = `PRD – ${safeName} – ${safeDate}`;
 
-    // Create folder in project
-    const newFolder = new Folder({
-      projectId,
-      parentFolderId: null,
-      name: folderName,
-      path: `/${folderName}`,
-      level: 1,
-      createdBy: userId,
-      status: "active",
-    });
-    const savedFolder = await newFolder.save();
+    let savedFolder = await Folder.findOne({ projectId, name: folderName, isDeleted: false });
+    if (!savedFolder) {
+      const newFolder = new Folder({
+        projectId,
+        parentFolderId: null,
+        name: folderName,
+        path: `/${folderName}`,
+        level: 1,
+        createdBy: userId,
+        status: "active",
+      });
+      savedFolder = await newFolder.save();
+    }
 
     // ── Generate DOCX ──────────────────────────────────────────────────────
-    const lines = rawMarkdown.split("\n");
+    const lines = rawMarkdown.split("\n").map(line => line.replace(/\*\*/g, ""));
     const docChildren = [];
-    for (const line of lines) {
+    for (let line of lines) {
+      
       if (line.startsWith("# ")) {
-        docChildren.push(new Paragraph({ text: line.replace(/^# /, ""), heading: HeadingLevel.HEADING_1, alignment: AlignmentType.LEFT }));
+        docChildren.push(new Paragraph({ 
+          children: [new TextRun({ text: line.replace(/^# /, ""), bold: true, color: "000000" })], 
+          heading: HeadingLevel.HEADING_1, 
+          alignment: AlignmentType.LEFT 
+        }));
       } else if (line.startsWith("## ")) {
-        docChildren.push(new Paragraph({ text: line.replace(/^## /, ""), heading: HeadingLevel.HEADING_2 }));
+        docChildren.push(new Paragraph({ 
+          children: [new TextRun({ text: line.replace(/^## /, ""), bold: true, color: "000000" })], 
+          heading: HeadingLevel.HEADING_2 
+        }));
       } else if (line.startsWith("### ")) {
-        docChildren.push(new Paragraph({ text: line.replace(/^### /, ""), heading: HeadingLevel.HEADING_3 }));
+        docChildren.push(new Paragraph({ 
+          children: [new TextRun({ text: line.replace(/^### /, ""), bold: true, color: "000000" })], 
+          heading: HeadingLevel.HEADING_3 
+        }));
       } else if (line.startsWith("- ") || line.startsWith("* ")) {
         docChildren.push(new Paragraph({ text: line.replace(/^[-*] /, ""), bullet: { level: 0 } }));
       } else if (line.trim() === "---") {
         docChildren.push(new Paragraph({ text: "" }));
       } else {
-        docChildren.push(new Paragraph({ children: [new TextRun({ text: line.replace(/\*\*/g, ""), size: 24 })] }));
+        docChildren.push(new Paragraph({ children: [new TextRun({ text: line, size: 24 })] }));
       }
     }
 
@@ -602,7 +615,7 @@ exports.saveGeneratedPrd = async (req, res) => {
         } else if (line.trim() === "---") {
           pdfDoc.moveDown(0.5);
         } else if (line.trim()) {
-          pdfDoc.text(line.replace(/\*\*/g, "").replace(/^[-*] /, "- "), { align: "left" }).moveDown(0.2);
+          pdfDoc.text(line.replace(/^[-*] /, "- "), { align: "left" }).moveDown(0.2);
         }
       }
       pdfDoc.end();

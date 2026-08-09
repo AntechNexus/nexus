@@ -171,6 +171,21 @@ exports.createFile = async (req, res) => {
     });
 
     const savedFile = await newFile.save();
+
+    // Trigger Embedding Generation asynchronously
+    if (content) {
+      const GEMINI_URL = process.env.GEMINI_SERVICE_URL || "http://localhost:5001";
+      const axios = require("axios").default;
+      axios.post(`${GEMINI_URL}/api/embeddings/generate`, {
+        text: content,
+        projectId: savedFile.projectId,
+        fileId: savedFile._id,
+        createdBy: savedFile.createdBy
+      }).catch(err => {
+        console.error(`Auto-embedding failed for file ${savedFile._id}:`, err.message);
+      });
+    }
+
     return res.status(201).json({
       message: "File berhasil disimpan",
       data: savedFile,
@@ -281,6 +296,28 @@ exports.getFileById = async (req, res) => {
     const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
     if (!isMember) {
       return res.status(403).json({ message: "Access denied to file's project" });
+    }
+
+    if (!file.content && file.fileType && file.localPath) {
+      const fs = require('fs');
+      if (fs.existsSync(file.localPath)) {
+        const extractedContent = await parseDocumentContent(file.localPath, file.fileType);
+        if (extractedContent) {
+          file.content = extractedContent;
+          await file.save();
+
+          const GEMINI_URL = process.env.GEMINI_SERVICE_URL || "http://localhost:5001";
+          const axios = require("axios").default;
+          axios.post(`${GEMINI_URL}/api/embeddings/generate`, {
+            text: extractedContent,
+            projectId: file.projectId,
+            fileId: file._id,
+            createdBy: file.createdBy
+          }).catch(err => {
+            console.error(`Auto-embedding failed for dynamically extracted file ${file._id}:`, err.message);
+          });
+        }
+      }
     }
 
     return res.status(200).json({ data: file });

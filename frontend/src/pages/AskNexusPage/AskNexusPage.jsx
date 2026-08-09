@@ -1,0 +1,228 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
+import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
+import DashboardToast from "../../components/dashboard/DashboardToast";
+import ProjectCard from "../../components/dashboard/ProjectCard";
+import { askNexus, fetchAskNexusConversations, fetchAskNexusPrompts } from "../../services/askNexusApi";
+import { projectService } from "../../services/project.service";
+
+const fallbackProjects = [
+  {
+    id: "global-site-localization",
+    title: "Global Site Localization",
+    description: "Core architecture planning for the next-generation enterprise translation engine.",
+    fileCount: 12,
+    updatedLabel: "Updated 2h ago",
+    members: [
+      { name: "Alex Carter", initials: "AC", tone: "bg-blue-100 text-nexus-primary" },
+      { name: "Jamie Wilson", initials: "JW", tone: "bg-violet-100 text-violet-700" },
+      { name: "Logan Hurley", initials: "LH", tone: "bg-emerald-100 text-emerald-700" },
+    ],
+  },
+];
+
+const promptIcons = [FileText, ListChecks, Users];
+
+const AskNexusPage = () => {
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [_projects, set_Projects] = useState([]);
+  const [question, setQuestion] = useState("");
+  const [prompts, setPrompts] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [selectedCardId, setSelectedCardId] = useState(null);
+  const [openMenuProjectId, setOpenMenuProjectId] = useState(null);
+  const [toast, setToast] = useState("");
+
+  const projects = useMemo(() => {
+    return _projects.length > 0 ? _projects : fallbackProjects;
+  }, [_projects]);
+
+  const selectedProject = projects.find((project) => project._id === selectedProjectId || project.id === selectedProjectId) || projects[0];
+  const canAsk = Boolean(selectedProject && question.trim());
+
+  useEffect(() => {
+    setPrompts(fetchAskNexusPrompts());
+    fetchAskNexusConversations().then(setConversations).catch(console.error);
+    projectService.getProjects().then(res => {
+      const projectsData = res.data || res;
+      const mapped = projectsData.map(p => ({
+        ...p,
+        id: p._id,
+        title: p.name,
+        fileCount: p.fileCount || 0,
+      }));
+      set_Projects(mapped);
+      setSelectedProjectId(mapped[0]?.id || "");
+    }).catch(console.error);
+  }, []);
+
+  const submitQuestion = async () => {
+    if (!canAsk) return;
+    try {
+      const result = await askNexus({
+        projectId: selectedProject._id || selectedProject.id,
+        projectName: selectedProject.title || selectedProject.name,
+        question: question.trim(),
+        scope: "project",
+      });
+      navigate(`/ask-nexus/chat/${result.conversationId}`);
+    } catch (error) {
+      setToast("Failed to ask question: " + error.message);
+    }
+  };
+
+  const handleProjectAction = (action, project) => {
+    setOpenMenuProjectId(null);
+    if (action === "open") navigate(`/projects/${project.id}`);
+    if (action === "teams") navigate(`/projects/${project.id}/teams`);
+    if (action === "edit") setToast("Project editing stays available from Projects for now.");
+    if (action === "trash") setToast("Project deletion stays available from Projects for now.");
+  };
+
+  return (
+    <div className="min-h-screen bg-nexus-bg font-sans text-nexus-text">
+      <DashboardSidebar
+        collapsed={sidebarCollapsed}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+        onToggleCollapse={() => setSidebarCollapsed((current) => !current)}
+      />
+      <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
+        <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
+        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8">
+          <section className="mx-auto w-full max-w-6xl space-y-7">
+            <div className="max-w-3xl">
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-nexus-primary">
+                <Bot size={26} />
+              </span>
+              <h1 className="text-3xl font-extrabold tracking-tight text-nexus-text sm:text-4xl">
+                Ask Nexus
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-nexus-muted">
+                Ask questions using documents from the selected project. Preset questions are configured by the frontend team and can later be supplied by the AI endpoint.
+              </p>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+              <section className="space-y-5">
+                <div className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
+                      Target Project
+                    </span>
+                    <select
+                      className="h-12 w-full rounded-xl border border-nexus-border bg-white px-4 text-sm font-semibold text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+                      onChange={(event) => setSelectedProjectId(event.target.value)}
+                      value={selectedProjectId}
+                    >
+                      {projects.map((project) => (
+                        <option key={project._id || project.id} value={project._id || project.id}>
+                            {project.name || project.title}
+                        </option>
+                        ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="flex overflow-hidden rounded-2xl border-2 border-nexus-border bg-white shadow-lg transition focus-within:border-nexus-primary focus-within:ring-4 focus-within:ring-blue-100">
+                  <div className="flex min-h-[220px] max-h-[260px] flex-1 flex-col">
+                  <textarea
+                    className="min-h-0 flex-1 resize-none border-0 bg-transparent px-5 py-5 text-base leading-7 outline-none sm:px-6"
+                    onChange={(event) => setQuestion(event.target.value)}
+                    onKeyDown={(event) => {
+                      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") submitQuestion();
+                    }}
+                    placeholder="Ask NEXUS about your project documents..."
+                    value={question}
+                  />
+                  <div className="flex shrink-0 items-center justify-between gap-3 border-t border-nexus-border bg-white px-4 py-3 sm:px-5">
+                    <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                      Context: <span className="text-nexus-primary">{selectedProject?.name || selectedProject?.title}</span>
+                    </span>
+                    <button
+                      aria-label="Send question to NEXUS"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-nexus-primary text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-40"
+                      disabled={!canAsk}
+                      onClick={submitQuestion}
+                      type="button"
+                    >
+                      <ArrowUp size={20} />
+                    </button>
+                  </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2">
+                  {prompts.slice(0, 3).map((prompt, index) => {
+                    const Icon = promptIcons[index] || FileText;
+                    return (
+                    <button
+                      className="inline-flex max-w-full items-center gap-2 rounded-full border border-nexus-border bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                      key={prompt}
+                      onClick={() => setQuestion(prompt)}
+                      type="button"
+                    >
+                      <Icon className="shrink-0" size={15} /> <span className="truncate">{prompt}</span>
+                    </button>
+                    );
+                  })}
+                </div>
+
+              </section>
+
+              <aside className="space-y-5">
+                {selectedProject && (
+                  <ProjectCard
+                    menuOpen={openMenuProjectId === selectedProject.id}
+                    onMenuAction={handleProjectAction}
+                    onNavigate={(projectId) => navigate(`/projects/${projectId}`)}
+                    onSelect={setSelectedCardId}
+                    onToggleMenu={(projectId) => setOpenMenuProjectId((current) => (current === projectId ? null : projectId))}
+                    project={selectedProject}
+                    selected={selectedCardId === selectedProject.id}
+                  />
+                )}
+
+                <section className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
+                  <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Conversations</h2>
+                  <div className="space-y-1">
+                    {conversations.map((conversation) => (
+                      <button
+                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                        key={conversation._id || conversation.id}
+                        onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
+                        type="button"
+                      >
+                        <MessageSquare size={17} /> {conversation.title}
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                <section className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                  <div className="flex gap-3">
+                    <ShieldCheck className="shrink-0 text-nexus-primary" size={22} />
+                    <div>
+                      <h2 className="text-sm font-extrabold text-nexus-text">Privacy Notice</h2>
+                      <p className="mt-1 text-sm leading-6 text-nexus-muted">
+                        NEXUS only uses documents you have permission to access.
+                      </p>
+                    </div>
+                  </div>
+                </section>
+              </aside>
+            </div>
+          </section>
+        </main>
+      </div>
+      <DashboardToast message={toast} onDismiss={() => setToast("")} />
+    </div>
+  );
+};
+
+export default AskNexusPage;

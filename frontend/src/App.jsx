@@ -26,6 +26,9 @@ const AiPrdClarifyPage = React.lazy(() => import("./pages/AiPrdClarifyPage/AiPrd
 
 const TrashPage = React.lazy(() => import("./pages/TrashPage/TrashPage"));
 
+const AskNexusPage = React.lazy(() => import("./pages/AskNexusPage/AskNexusPage"));
+const AskNexusChatPage = React.lazy(() => import("./pages/AskNexusChatPage/AskNexusChatPage"));
+
 const ReservedRoute = ({ title }) => (
   <main className="reserved-route-placeholder">
     <h1>{title}</h1>
@@ -69,7 +72,8 @@ const App = () => {
             <Route path="/ai-prd-workspace/clarify" element={<AiPrdClarifyPage />} />
             <Route path="/ai-prd-workspace/review" element={<AiPrdReviewPage />} />
             <Route path="/teams" element={<TeamsPage />} />
-            <Route path="/ask-nexus" element={<ReservedRoute title="Ask Nexus placeholder" />} />
+            <Route path="/ask-nexus" element={<AskNexusPage />} />
+            <Route path="/ask-nexus/chat/:conversationId" element={<AskNexusChatPage />} />
             <Route path="/trash" element={<TrashPage />} />
             <Route path="/settings" element={<ReservedRoute title="Settings page placeholder" />} />
           </Route>

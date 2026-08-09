@@ -5,6 +5,7 @@ This repository contains the integrated architecture for Nexus AI, featuring a R
 ## Architecture
 - **Frontend** (Port 5173): React application using Vite and Tailwind CSS.
 - **Backend Nexus** (Port 5000): Primary Node.js API handling authentication, projects, and files.
+  - *Note for MacBook users: Port 5000 often conflicts with the built-in AirPlay Receiver. If you cannot start Backend Nexus on port 5000, please disable AirPlay Receiver in your Mac's Sharing Settings, or change the port.*
 - **Backend Gemini** (Port 5001): Dedicated Node.js AI service for Gemini API integration.
 - **MongoDB** (Port 27017): Database container.
 
