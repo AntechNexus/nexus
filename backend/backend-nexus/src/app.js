@@ -12,6 +12,7 @@ const teamRoutes = require("./routes/teamRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const transcriptRoutes = require("./routes/transcriptRoutes");
 const prdRoutes = require("./routes/prdRoutes");
+const searchRoutes = require("./routes/searchRoutes");
 
 const app = express();
 app.use(cors({ origin: true, credentials: true })); // origin: true allows any requester origin
@@ -44,6 +45,7 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/transcripts", transcriptRoutes);
 app.use("/api/prd", prdRoutes);
+app.use("/api/search", searchRoutes);
 
 // Jalankan Server setelah memanggil connectDB()
 const PORT = process.env.PORT || 5000;
