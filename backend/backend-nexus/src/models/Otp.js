@@ -10,7 +10,7 @@ const otpSchema = new mongoose.Schema(
     code: {
       type: String,
       required: true,
-      match: [/^\d{6}$/, "Kode OTP harus berupa 6 digit angka"],
+      match: [/^\d{6}$/, "OTP code must be a 6-digit number"],
     },
     type: {
       type: String,

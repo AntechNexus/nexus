@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Bell, FileText, LogOut, Menu, Search, Shield, UserRound, Users } from "lucide-react";
+import { Bell, LogOut, Menu, Search, UserRound, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { notificationService } from "../../services/notification.service";
@@ -59,6 +59,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
 
   const handleSignOut = () => {
     setProfileOpen(false);
+    localStorage.removeItem("nexus_token");
     navigate("/login");
   };
 
