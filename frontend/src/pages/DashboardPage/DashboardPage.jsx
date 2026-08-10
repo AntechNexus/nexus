@@ -141,28 +141,24 @@ const DashboardPage = () => {
               </button>
             </div>
             
-            {projects.length === 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {projects.length < 4 && (
                 <NewProjectCard onClick={() => navigate("/projects/new")} />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <NewProjectCard onClick={() => navigate("/projects/new")} />
-                {projects.slice(0, 7).map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    currentUser={currentUser}
-                    menuOpen={openMenuProjectId === project.id}
-                    onMenuAction={handleProjectAction}
-                    onNavigate={navigateToProject}
-                    onSelect={setSelectedProjectId}
-                    onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
-                    project={project}
-                    selected={selectedProjectId === project.id}
-                  />
-                ))}
-              </div>
-            )}
+              )}
+              {projects.slice(0, 4).map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  currentUser={currentUser}
+                  menuOpen={openMenuProjectId === project.id}
+                  onMenuAction={handleProjectAction}
+                  onNavigate={navigateToProject}
+                  onSelect={setSelectedProjectId}
+                  onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
+                  project={project}
+                  selected={selectedProjectId === project.id}
+                />
+              ))}
+            </div>
           </section>
 
           <RecentFilesTable files={recentFiles} />
