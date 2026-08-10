@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import nexusLogo from '../../assets/icons/Logo-nexus.png'; 
@@ -15,6 +15,12 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem('nexus_token')) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // Password validation rules check
   const passwordCriteria = [

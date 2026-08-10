@@ -30,7 +30,7 @@ const AiPrdClarifyPage = () => {
     return null;
   }
 
-  const { cacheId, questions = [], projectId, projectName, allFileIds = [] } = state;
+  const { cacheId, questions = [], projectId, projectName, allFileIds = [], baseVersion = 0 } = state;
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -95,6 +95,7 @@ const AiPrdClarifyPage = () => {
           projectId,
           projectName,
           allFileIds,
+          baseVersion,
         },
       });
     } catch (err) {

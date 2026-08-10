@@ -29,14 +29,14 @@ const suggestionChips = [
 const AiPrdReviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { rawMarkdown, projectId, allFileIds, cacheId, questions, answers, projectName } = location.state || {};
+  const { rawMarkdown, projectId, allFileIds, cacheId, questions, answers, projectName, baseVersion = 0 } = location.state || {};
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [regenOpen, setRegenOpen] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenInstruction, setRegenInstruction] = useState("");
-  const [version, setVersion] = useState("V1.0 Draft");
+  const [version, setVersion] = useState(`V${baseVersion + 1}.0 Draft`);
   const [toast, setToast] = useState("");
   
   const [currentMarkdown, setCurrentMarkdown] = useState(rawMarkdown || "");
@@ -139,7 +139,7 @@ const AiPrdReviewPage = () => {
       if (vMatch) {
         setVersion(`V${vMatch[1]}.${parseInt(vMatch[2]) + 1} Draft`);
       } else {
-        setVersion("V1.1 Draft");
+        setVersion(`V${baseVersion + 1}.1 Draft`);
       }
       setToast("PRD Section Regenerated");
       setRegenInstruction("");

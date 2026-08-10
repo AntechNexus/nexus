@@ -27,11 +27,13 @@
       fileName: {
         type: String,
         required: true,
+        maxlength: [100, "File name cannot exceed 100 characters"],
         index: true,
       },
       originalName: {
         type: String,
         required: true,
+        maxlength: [100, "Original file name cannot exceed 100 characters"],
       },
       fileType: {
         type: String,
@@ -55,7 +57,6 @@
       sizeBytes: {
         type: Number,
         required: true,
-        max: [52428800, "Maximum file size: 50 MB (52,428,800 bytes)"],
       },
       fileUrl: {
         type: String,

@@ -8,21 +8,7 @@ import ProjectCard from "../../components/dashboard/ProjectCard";
 import { askNexus, fetchAskNexusConversations, fetchAskNexusPrompts } from "../../services/askNexusApi";
 import { projectService } from "../../services/project.service";
 
-const fallbackProjects = [
-  {
-    id: "global-site-localization",
-    title: "Global Site Localization",
-    description: "Core architecture planning for the next-generation enterprise translation engine.",
-    fileCount: 12,
-    updatedLabel: "Updated 2h ago",
-    members: [
-      { name: "Alex Carter", initials: "AC", tone: "bg-blue-100 text-nexus-primary" },
-      { name: "Jamie Wilson", initials: "JW", tone: "bg-violet-100 text-violet-700" },
-      { name: "Logan Hurley", initials: "LH", tone: "bg-emerald-100 text-emerald-700" },
-    ],
-  },
-];
-
+// Fallback removed to show empty state when no projects exist
 const promptIcons = [FileText, ListChecks, Users];
 
 const AskNexusPage = () => {
@@ -39,9 +25,8 @@ const AskNexusPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState("");
 
-  const projects = useMemo(() => {
-    return _projects.length > 0 ? _projects : fallbackProjects;
-  }, [_projects]);
+  const [projects, setProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const selectedProject = projects.find((project) => project._id === selectedProjectId || project.id === selectedProjectId) || projects[0];
   const canAsk = Boolean(selectedProject && question.trim() && !isSubmitting);
@@ -57,9 +42,9 @@ const AskNexusPage = () => {
         title: p.name,
         fileCount: p.fileCount || 0,
       }));
-      set_Projects(mapped);
+      setProjects(mapped);
       setSelectedProjectId(mapped[0]?.id || "");
-    }).catch(console.error);
+    }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 
   const submitQuestion = async () => {
@@ -111,6 +96,30 @@ const AskNexusPage = () => {
               </p>
             </div>
 
+            {isLoading ? (
+              <div className="flex h-64 items-center justify-center">
+                <div className="flex flex-col items-center gap-4 text-nexus-muted">
+                  <Loader2 className="animate-spin text-nexus-primary" size={40} />
+                  <p className="font-semibold">Loading projects...</p>
+                </div>
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
+                <span className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-nexus-primary shadow-sm">
+                  <MessageSquare size={40} />
+                </span>
+                <h2 className="text-2xl font-extrabold text-nexus-text">No Projects Available</h2>
+                <p className="mt-3 max-w-md text-sm leading-6 text-nexus-muted">
+                  You need to create a project and upload some documents before you can ask Nexus questions about them.
+                </p>
+                <button
+                  onClick={() => navigate("/projects")}
+                  className="mt-8 rounded-xl bg-nexus-primary px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                >
+                  Create New Project
+                </button>
+              </div>
+            ) : (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <section className="space-y-5">
                 <div className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
@@ -220,6 +229,7 @@ const AskNexusPage = () => {
                 </section>
               </aside>
             </div>
+            )}
           </section>
         </main>
       </div>

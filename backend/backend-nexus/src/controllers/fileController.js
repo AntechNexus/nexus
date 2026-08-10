@@ -68,6 +68,7 @@ async function checkAndIncrementStorage(ownerId, fileSize) {
     // Send full storage notification
     await Notification.create({
       recipientId: ownerId,
+      createdBy: ownerId,
       type: "storage_warning",
       title: "Storage Penuh",
       message: "Kapasitas penyimpanan Anda sudah penuh. File baru gagal diunggah.",
@@ -88,6 +89,7 @@ async function checkAndIncrementStorage(ownerId, fileSize) {
   if (newPercent >= 0.9 && prevPercent < 0.9) {
     await Notification.create({
       recipientId: ownerId,
+      createdBy: ownerId,
       type: "storage_warning",
       title: "Storage Hampir Penuh",
       message: "Kapasitas penyimpanan Anda sudah terpakai 90%. Segera kosongkan Trash atau perbarui layanan Anda.",

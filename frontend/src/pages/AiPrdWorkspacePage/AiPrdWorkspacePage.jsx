@@ -234,6 +234,21 @@ const AiPrdWorkspacePage = () => {
         questions = aiResult.questions || [];
       }
 
+      // Try to extract the highest PRD version from the uploaded file names
+      let baseVersion = 0;
+      const allSelectedFiles = [
+        ...localFiles,
+        ...nexusFiles.map((f) => ({ name: f.name })),
+      ];
+      
+      allSelectedFiles.forEach(f => {
+        const match = f.name.match(/PRD.*V(\d+)/i) || f.name.match(/V(\d+)\.0/i) || f.name.match(/V(\d+)/i);
+        if (match) {
+          const v = parseInt(match[1]);
+          if (v > baseVersion) baseVersion = v;
+        }
+      });
+
       navigate("/ai-prd-workspace/clarify", {
         state: {
           cacheId,
@@ -241,6 +256,7 @@ const AiPrdWorkspacePage = () => {
           projectId: selectedProjectId,
           projectName: selectedProject.title,
           allFileIds: savedFileIds,
+          baseVersion,
         },
       });
     } catch (err) {

@@ -1,5 +1,14 @@
-const { GoogleGenAI } = require("@google/genai");
+const { pipeline } = require('@xenova/transformers');
 const DocumentEmbedding = require("../models/DocumentEmbedding");
+
+let extractor = null;
+async function getExtractor() {
+  if (!extractor) {
+    // bge-base-en-v1.5 outputs 768 dimensions, perfectly matching the database schema
+    extractor = await pipeline('feature-extraction', 'Xenova/bge-base-en-v1.5', { quantized: true });
+  }
+  return extractor;
+}
 
 // Function to chunk text into smaller pieces
 function chunkText(text, maxChars = 1000) {
@@ -28,8 +37,8 @@ const generateEmbeddings = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields for embedding" });
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-    const chunks = chunkText(text, 1000); // 1000 chars per chunk is approx 200-250 tokens
+    const extract = await getExtractor();
+    const chunks = chunkText(text, 1000); // 1000 chars per chunk
 
     let savedCount = 0;
 
@@ -40,12 +49,9 @@ const generateEmbeddings = async (req, res) => {
       const chunk = chunks[i];
       if (!chunk) continue;
 
-      const embedRes = await ai.models.embedContent({
-        model: 'gemini-embedding-2',
-        contents: chunk,
-      });
-
-      const embeddingValues = embedRes.embeddings[0].values;
+      // Extract local embedding
+      const output = await extract(chunk, { pooling: 'mean', normalize: true });
+      const embeddingValues = Array.from(output.data);
 
       const docEmbed = new DocumentEmbedding({
         projectId,

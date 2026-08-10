@@ -192,9 +192,14 @@ export const uploadProjectDocument = async (projectId, document) => {
         'Content-Type': 'multipart/form-data'
       }
     });
+    
+    // Dispatch global event so StorageCard can update in real-time
+    window.dispatchEvent(new Event("storageUpdated"));
+
     return await fetchProjectDocuments(projectId);
   } catch (error) {
     console.error("Failed to upload document:", error.response?.data || error.message);
+    window.dispatchEvent(new Event("notificationUpdated"));
     throw error;
   }
 };

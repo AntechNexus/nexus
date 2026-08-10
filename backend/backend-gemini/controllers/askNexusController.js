@@ -1,8 +1,17 @@
-const { GoogleGenAI } = require("@google/genai");
+const { pipeline } = require('@xenova/transformers');
+const { OpenAI } = require("openai");
 const DocumentEmbedding = require("../models/DocumentEmbedding");
-const ChatConversation = require("../models/ChatConversation"); // We'll need to copy this to backend-gemini too or just use Mongoose
+const ChatConversation = require("../models/ChatConversation");
 const Project = require("../models/Project");
 const mongoose = require("mongoose");
+
+let extractor = null;
+async function getExtractor() {
+  if (!extractor) {
+    extractor = await pipeline('feature-extraction', 'Xenova/bge-base-en-v1.5', { quantized: true });
+  }
+  return extractor;
+}
 
 function cosineSimilarity(vecA, vecB) {
   let dotProduct = 0;
@@ -38,14 +47,10 @@ const askNexus = async (req, res) => {
       }
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-    // 1. Embed the question
-    const questionEmbedRes = await ai.models.embedContent({
-      model: 'gemini-embedding-2',
-      contents: question,
-    });
-    const questionVector = questionEmbedRes.embeddings[0].values;
+    // 1. Embed the question locally using Transformers.js
+    const extract = await getExtractor();
+    const output = await extract(question, { pooling: 'mean', normalize: true });
+    const questionVector = Array.from(output.data);
 
     // 2. Fetch all embeddings for this project
     const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate("fileId", "originalName fileName");
@@ -82,24 +87,30 @@ const askNexus = async (req, res) => {
       conversation = await ChatConversation.findById(conversationId);
       if (conversation) {
         history = conversation.messages.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: [{ text: msg.content }]
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
         }));
       }
     }
 
-    // 7. Call Gemini
-    const contents = [...history, { role: "user", parts: [{ text: question }] }];
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents,
-      config: {
-        systemInstruction: { role: "system", parts: [{ text: contextText }] }
-      }
+    // 7. Call Elice API (OpenAI Compatible)
+    const messages = [
+      { role: "system", content: contextText },
+      ...history,
+      { role: "user", content: question }
+    ];
+
+    const client = new OpenAI({
+      baseURL: process.env.ELICE_URL_3_6_FLASH,
+      apiKey: process.env.ELICE_API_KEY
     });
 
-    const answerText = response.text;
+    const response = await client.chat.completions.create({
+      model: "gemini-3.6-flash",
+      messages,
+    });
+
+    const answerText = response.choices[0].message.content;
 
     // 8. Save to ChatConversation
     if (!conversation) {
@@ -118,7 +129,7 @@ const askNexus = async (req, res) => {
     });
 
     conversation.messages.push({
-      role: 'model',
+      role: 'model', // we keep 'model' internally to match existing DB
       content: answerText,
       sources: sources
     });
@@ -191,14 +202,10 @@ const regenerateMessage = async (req, res) => {
     const question = lastUserMessage.content;
     const projectId = conversation.projectId;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-    // 1. Embed the question
-    const questionEmbedRes = await ai.models.embedContent({
-      model: 'gemini-embedding-2',
-      contents: question,
-    });
-    const questionVector = questionEmbedRes.embeddings[0].values;
+    // 1. Embed the question locally using Transformers.js
+    const extract = await getExtractor();
+    const output = await extract(question, { pooling: 'mean', normalize: true });
+    const questionVector = Array.from(output.data);
 
     // 2. Fetch all embeddings for this project
     const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate("fileId", "originalName fileName");
@@ -230,22 +237,28 @@ const regenerateMessage = async (req, res) => {
 
     // 6. Fetch conversation history up to the user message
     const history = conversation.messages.slice(0, -1).map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.content }]
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
     }));
 
-    // 7. Call Gemini
-    const contents = [...history, { role: "user", parts: [{ text: question }] }];
-    
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents,
-      config: {
-        systemInstruction: { role: "system", parts: [{ text: contextText }] }
-      }
+    // 7. Call Elice API
+    const messages = [
+      { role: "system", content: contextText },
+      ...history,
+      { role: "user", content: question }
+    ];
+
+    const client = new OpenAI({
+      baseURL: process.env.ELICE_URL_3_6_FLASH,
+      apiKey: process.env.ELICE_API_KEY
     });
 
-    const answerText = response.text;
+    const response = await client.chat.completions.create({
+      model: "gemini-3.6-flash",
+      messages,
+    });
+
+    const answerText = response.choices[0].message.content;
 
     // 8. Save the new AI response
     conversation.messages.push({

@@ -69,6 +69,7 @@ export const removeTrashItem = async (item) => {
     } else {
       await api.delete(`/files/${item.id}`);
     }
+    window.dispatchEvent(new Event("storageUpdated"));
     return true;
   } catch (error) {
     console.error("Failed to permanently delete item:", error);
@@ -82,6 +83,7 @@ export const emptyTrash = async () => {
       api.delete("/folders/trash/empty"),
       api.delete("/files/trash/empty")
     ]);
+    window.dispatchEvent(new Event("storageUpdated"));
     return true;
   } catch (error) {
     console.error("Failed to empty trash:", error);
