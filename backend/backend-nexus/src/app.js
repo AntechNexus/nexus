@@ -15,6 +15,8 @@ const prdRoutes = require("./routes/prdRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 
 const app = express();
+app.set("trust proxy", 1); // Enable trusting proxy to get real IP for rate limiting
+
 app.use(cors({ origin: true, credentials: true })); // origin: true allows any requester origin
 app.use(express.json());
 const path = require("path");

@@ -19,13 +19,7 @@ const registerLimiter = rateLimit({
   message: { message: 'Too many registration attempts, please try again after 1 hour' },
 });
 
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { message: 'Too many requests, please try again later' },
-});
-
-router.use(generalLimiter);
+// Removed generalLimiter as it conflicts with /auth/me polling and Google SSO redirects
 
 router.post("/register", registerLimiter, auth.register);
 router.post("/verify-otp", auth.verifyOtp);
