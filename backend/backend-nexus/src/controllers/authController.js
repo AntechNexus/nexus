@@ -501,15 +501,28 @@ exports.getStorage = async (req, res) => {
       prd: 0,
     };
 
+    let actualUsedBytes = 0;
+
     breakdownAgg.forEach(item => {
       if (item._id && breakdown[item._id] !== undefined) {
         breakdown[item._id] = item.totalSize;
+        actualUsedBytes += item.totalSize;
       }
     });
 
+    const dbUsedBytes = user.storage?.usedBytes || 0;
+
+    // Self-healing mechanism: correct storage leak if there's a discrepancy
+    if (dbUsedBytes !== actualUsedBytes) {
+      await User.updateOne({ _id: userId }, { 'storage.usedBytes': actualUsedBytes });
+      if (user.storage) {
+        user.storage.usedBytes = actualUsedBytes;
+      }
+    }
+
     res.json({
       limitBytes: user.storage?.limitBytes || 4294967296,
-      usedBytes: user.storage?.usedBytes || 0,
+      usedBytes: actualUsedBytes,
       breakdown,
     });
   } catch (error) {

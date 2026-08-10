@@ -2,6 +2,30 @@ import React from "react";
 import { FileText, Folder, MoreVertical, Plus } from "lucide-react";
 import ProjectActionMenu from "./ProjectActionMenu";
 
+const getRelativeTime = (dateString) => {
+  if (!dateString) return "Updated just now";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Updated just now";
+  
+  const now = new Date();
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) return "Updated just now";
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `Updated ${diffInMinutes}m ago`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `Updated ${diffInHours}h ago`;
+  
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) return `Updated ${diffInDays}d ago`;
+  
+  const diffInMonths = Math.floor(diffInDays / 30);
+  if (diffInMonths < 12) return `Updated ${diffInMonths}mo ago`;
+  
+  return `Updated ${Math.floor(diffInMonths / 12)}y ago`;
+};
 const ProjectCard = ({ currentUser, menuOpen, onMenuAction, onNavigate, onSelect, onToggleMenu, project, selected }) => {
   const hasLongDescription = project.description && project.description.length > 86;
   const createdById = project.createdBy?._id || project.createdBy?.id || project.createdBy;
@@ -67,7 +91,7 @@ const ProjectCard = ({ currentUser, menuOpen, onMenuAction, onNavigate, onSelect
         <span className="flex items-center justify-end gap-1">
           <FileText size={12} /> {project.fileCount ?? 0} Files
         </span>
-        <span>{project.updatedLabel || "Updated just now"}</span>
+        <span>{project.updatedLabel || getRelativeTime(project.updatedAt)}</span>
       </div>
     </div>
   </article>

@@ -12,7 +12,11 @@ const StorageCard = ({ compact = false }) => {
   const [storageData, setStorageData] = useState(null);
 
   useEffect(() => {
-    authService.getStorageInfo().then(setStorageData).catch(console.error);
+    const fetchStorage = () => authService.getStorageInfo().then(setStorageData).catch(console.error);
+    fetchStorage();
+
+    window.addEventListener("storageUpdated", fetchStorage);
+    return () => window.removeEventListener("storageUpdated", fetchStorage);
   }, []);
 
   if (!storageData) return null;

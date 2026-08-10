@@ -1,7 +1,5 @@
-const { GoogleGenAI } = require("@google/genai");
+const { OpenAI } = require("openai");
 const File = require("../models/File");
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const handleSummary = async (req, res) => {
   try {
@@ -36,12 +34,14 @@ IMPORTANT: Do NOT wrap your response in markdown code blocks (e.g., \`\`\`md or 
 Document Text:
 ${documentText.substring(0, 100000)}`;
     
-    const response = await ai.models.generateContent({
+    const client = new OpenAI({ baseURL: process.env.ELICE_URL_3_6_FLASH, apiKey: process.env.ELICE_API_KEY });
+
+    const response = await client.chat.completions.create({
       model: "gemini-3.6-flash",
-      contents: prompt
+      messages: [{ role: "user", content: prompt }]
     });
 
-    let summaryText = response.text.trim();
+    let summaryText = response.choices[0].message.content.trim();
     // Programmatic fallback to strip markdown blocks if model ignored instruction
     summaryText = summaryText.replace(/^```[a-zA-Z]*\n?/, '').replace(/\n?```$/, '').trim();
 

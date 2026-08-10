@@ -1,10 +1,5 @@
-const { GoogleGenAI } = require("@google/genai");
-
-// Ensure environment variable exists
-if (!process.env.GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY is not set in environment");
-}
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const { OpenAI } = require("openai");
+const fs = require("fs").promises;
 
 const handleGeneratePrd = async (req, res) => {
   try {
@@ -29,9 +24,17 @@ const handleGeneratePrd = async (req, res) => {
       answersContext += "(No clarifying questions were asked; user requested direct PRD generation)\n\n";
     }
 
-    // Handle improvement instruction if provided (for re-generate)
     if (answers && answers._improvement_instruction) {
       answersContext += `\n---\nIMPROVEMENT INSTRUCTION FROM USER:\n${answers._improvement_instruction}\n---\n\n`;
+    }
+
+    // Read the original context text we saved in uploadController
+    let originalContext = "";
+    try {
+       originalContext = await fs.readFile(cacheId, "utf8");
+    } catch (e) {
+       console.error("Failed to read context file:", cacheId);
+       return res.status(400).json({ error: "Context cache expired or missing." });
     }
 
     const prdPrompt = `
@@ -149,24 +152,18 @@ const handleGeneratePrd = async (req, res) => {
       Do NOT include any preamble such as "Sure, here is the PRD" — start directly from the first line (# Product Requirements Document (PRD)).
     `;
 
-    let config = { temperature: 0.4 };
-    let contents = [{ role: "user", parts: [{ text: prdPrompt }] }];
-
-    if (cacheId.startsWith("fileUris:")) {
-       const fileUris = JSON.parse(cacheId.replace("fileUris:", ""));
-       const fileParts = fileUris.map((f) => ({ fileData: { fileUri: f.uri, mimeType: f.mimeType } }));
-       contents[0].parts = [...fileParts, { text: prdPrompt }];
-    } else {
-       config.cachedContent = cacheId;
-    }
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents,
-      config
+    const clientPro = new OpenAI({ baseURL: process.env.ELICE_URL_3_1_PRO, apiKey: process.env.ELICE_API_KEY });
+     
+    const response = await clientPro.chat.completions.create({
+      model: "gemini-3.1-pro",
+      messages: [
+          { role: "system", content: "You are a Senior Product Manager." },
+          { role: "user", content: `Context Documents:\n${originalContext}\n\n${prdPrompt}` }
+      ],
+      temperature: 0.4
     });
 
-    return res.json({ prd: response.text });
+    return res.json({ prd: response.choices[0].message.content });
 
   } catch (error) {
     console.error("PRD Generation error:", error);

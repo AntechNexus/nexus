@@ -104,6 +104,14 @@ const AddFileModal = ({ onClose, onUpload }) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUploadClick = async () => {
+    setIsUploading(true);
+    await onUpload(selectedFiles);
+    setIsUploading(false);
+  };
+
   return (
     <ModalShell onClose={onClose} title="Upload Files">
       <div className="p-6">
@@ -132,18 +140,24 @@ const AddFileModal = ({ onClose, onUpload }) => {
           <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, WAV, PRD</span>
         </button>
         {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
+
         {selectedFiles.length > 0 && (
-          <div className="mt-4 max-h-40 overflow-y-auto space-y-2">
-            {selectedFiles.map((file, idx) => (
-              <div key={idx} className="flex items-center justify-between rounded-xl bg-slate-50 p-3">
+          <div className="mt-6 flex flex-col gap-3">
+            {selectedFiles.map((file, index) => (
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4" key={index}>
                 <div className="flex items-center gap-3">
-                  <FileText className="text-nexus-primary" size={18} />
+                  <FileText className="text-nexus-primary" size={20} />
                   <div>
-                    <p className="max-w-[200px] truncate text-sm font-semibold text-nexus-text">{file.name}</p>
-                    <p className="text-xs text-nexus-muted">{formatFileSize(file.size)}</p>
+                    <span className="block text-sm font-semibold text-nexus-text">{file.name}</span>
+                    <span className="block text-xs font-medium text-slate-500">{formatFileSize(file.size)}</span>
                   </div>
                 </div>
-                <button aria-label="Remove selected file" className="rounded-lg p-1.5 text-red-500 hover:bg-red-50" onClick={() => removeFile(idx)} type="button">
+                <button
+                  className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                  onClick={() => removeFile(index)}
+                  type="button"
+                  disabled={isUploading}
+                >
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -152,11 +166,21 @@ const AddFileModal = ({ onClose, onUpload }) => {
         )}
       </div>
       <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
-        <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100" onClick={onClose} type="button">
+        <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100 disabled:opacity-50" onClick={onClose} type="button" disabled={isUploading}>
           Cancel
         </button>
-        <button className="flex-1 rounded-xl bg-nexus-primary py-2.5 text-sm font-semibold text-white transition hover:bg-nexus-action disabled:opacity-50" disabled={selectedFiles.length === 0} onClick={() => onUpload(selectedFiles)} type="button">
-          Upload Files
+        <button className="flex-1 rounded-xl bg-nexus-primary py-2.5 text-sm font-semibold text-white transition hover:bg-nexus-action disabled:opacity-50 flex justify-center items-center gap-2" disabled={selectedFiles.length === 0 || isUploading} onClick={handleUploadClick} type="button">
+          {isUploading ? (
+            <>
+              <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Uploading...
+            </>
+          ) : (
+            "Upload Files"
+          )}
         </button>
       </div>
     </ModalShell>

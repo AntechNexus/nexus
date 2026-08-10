@@ -40,7 +40,11 @@ const DashboardHeader = ({ onOpenSidebar }) => {
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
-    return () => clearInterval(interval);
+    window.addEventListener("notificationUpdated", fetchNotifications);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("notificationUpdated", fetchNotifications);
+    };
   }, []);
 
   useEffect(() => {
@@ -66,6 +70,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
   }, []);
 
   const handleSignOut = () => {
+    localStorage.removeItem("nexus_token");
     setProfileOpen(false);
     localStorage.removeItem("nexus_token");
     navigate("/login");

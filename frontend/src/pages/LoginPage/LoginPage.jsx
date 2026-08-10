@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
@@ -15,6 +15,12 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (localStorage.getItem("nexus_token")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const validate = () => {
     const nextErrors = {};
