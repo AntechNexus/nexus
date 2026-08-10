@@ -39,7 +39,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
 
   useEffect(() => {
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
     window.addEventListener("notificationUpdated", fetchNotifications);
     return () => {
       clearInterval(interval);

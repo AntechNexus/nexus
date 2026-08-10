@@ -241,6 +241,20 @@ export const removeProjectDocument = async (projectId, item) => {
   }
 };
 
+export const moveProjectDocument = async (projectId, item, targetFolderId) => {
+  try {
+    if (item.type === "folder") {
+      await api.patch(`/folders/${item.id}/move`, { parentFolderId: targetFolderId });
+    } else {
+      await api.put(`/files/${item.id}`, { folderId: targetFolderId });
+    }
+    return await fetchProjectDocuments(projectId);
+  } catch (error) {
+    console.error("Failed to move document:", error);
+    throw error;
+  }
+};
+
 export const getProjectDocumentSummary = async (projectId) => {
   const documents = await fetchProjectDocuments(projectId);
   const fileCount = documents.filter((document) => document.type !== "folder").length;

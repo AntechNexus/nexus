@@ -364,3 +364,57 @@ exports.emptyTrashFolders = async (req, res) => {
     return res.status(500).json({ message: "Error emptying trash folders" });
   }
 };
+
+// PATCH /api/folders/:id/move
+exports.moveFolder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { parentFolderId } = req.body;
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const folder = await Folder.findById(id);
+    if (!folder || folder.status !== "active") {
+      return res.status(404).json({ message: "Folder not found or not active" });
+    }
+
+    const project = await Project.findOne({ _id: folder.projectId, isDeleted: false });
+    if (!project) {
+      return res.status(404).json({ message: "Associated project not found" });
+    }
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    if (!isMember) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // Prevent circular reference: folder cannot be moved into itself
+    if (parentFolderId && parentFolderId.toString() === id.toString()) {
+      return res.status(400).json({ message: "Cannot move a folder into itself" });
+    }
+    
+    // Check if target folder exists and belongs to the same project
+    if (parentFolderId) {
+      const targetFolder = await Folder.findById(parentFolderId);
+      if (!targetFolder || targetFolder.status !== "active") {
+        return res.status(404).json({ message: "Target folder not found" });
+      }
+      if (targetFolder.projectId.toString() !== folder.projectId.toString()) {
+         return res.status(400).json({ message: "Cannot move folder to a different project" });
+      }
+      
+      if (targetFolder.parentFolderId && targetFolder.parentFolderId.toString() === id.toString()) {
+        return res.status(400).json({ message: "Cannot move a folder into its own subfolder" });
+      }
+    }
+
+    folder.parentFolderId = parentFolderId || null;
+    folder.updatedBy = userId;
+    await folder.save();
+
+    return res.status(200).json({ message: "Folder moved successfully", data: folder });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to move folder", error: error.message });
+  }
+};

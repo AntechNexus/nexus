@@ -14,8 +14,10 @@ import {
   removeProjectDocument,
   renameProjectDocument,
   uploadProjectDocument,
+  moveProjectDocument,
 } from "../../services/projectDetailApi";
 import authService from "../../services/auth.service";
+import MoveDocumentModal from "../../components/dashboard/MoveDocumentModal";
 
 const fileStyles = {
   folder: { Icon: Folder, tone: "bg-blue-50 text-nexus-primary" },
@@ -309,6 +311,12 @@ const ProjectDetailPage = () => {
   const [activeItem, setActiveItem] = useState(null);
   const [actionMenuPosition, setActionMenuPosition] = useState(null);
   const [toast, setToast] = useState("");
+  
+  // Drag & Drop State
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [dragOverFolderId, setDragOverFolderId] = useState(null);
+  const [confirmMoveItem, setConfirmMoveItem] = useState(null);
+  
   const addRef = useRef(null);
   const actionRef = useRef(null);
 
@@ -333,7 +341,11 @@ const ProjectDetailPage = () => {
       });
     }).catch(console.error);
 
-    fetchProjectDocuments(projectId).then(setDocuments).catch(console.error);
+    const loadDocs = () => fetchProjectDocuments(projectId).then(setDocuments).catch(console.error);
+    loadDocs();
+    const interval = setInterval(loadDocs, 15000); // Poll every 15s
+    
+    return () => clearInterval(interval);
   }, [projectId]);
 
   useEffect(() => {
@@ -477,6 +489,48 @@ const ProjectDetailPage = () => {
     }
   };
 
+  const handleMove = async (item, targetFolderId) => {
+    try {
+      const nextDocuments = await moveProjectDocument(projectId, item, targetFolderId);
+      refreshDocuments(nextDocuments);
+      setToast("Item moved successfully.");
+    } catch (error) {
+      setToast("Failed to move item.");
+    }
+  };
+
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e, item) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+    if (item.type === "folder" && item.id !== draggedItem.id) {
+      setDragOverFolderId(item.id);
+    } else {
+      setDragOverFolderId(null);
+    }
+  };
+
+  const handleDrop = (e, targetFolder) => {
+    e.preventDefault();
+    setDragOverFolderId(null);
+    if (!draggedItem || draggedItem.id === targetFolder.id) return;
+    if (targetFolder.type === "folder") {
+      setConfirmMoveItem({ source: draggedItem, target: targetFolder });
+    }
+    setDraggedItem(null);
+  };
+
+  const executeDropMove = () => {
+    if (confirmMoveItem) {
+      handleMove(confirmMoveItem.source, confirmMoveItem.target.id);
+    }
+    setConfirmMoveItem(null);
+  };
+
   const createdById = project.createdBy?._id || project.createdBy?.id || project.createdBy;
   const currentUserId = currentUser?._id || currentUser?.id;
   const isOwner = createdById && currentUserId && String(createdById) === String(currentUserId);
@@ -510,13 +564,25 @@ const ProjectDetailPage = () => {
             <nav className="mb-4 flex flex-wrap items-center gap-2 text-sm text-nexus-muted">
               <Link className="transition hover:text-nexus-primary" to="/projects">Projects</Link>
               <ChevronRight size={14} />
-              <button className="font-semibold text-nexus-text transition hover:text-nexus-primary" onClick={() => setCurrentFolderId(null)} type="button">
+              <button 
+                className={`font-semibold text-nexus-text transition hover:text-nexus-primary ${dragOverFolderId === "root" ? "ring-2 ring-nexus-primary rounded px-1" : ""}`} 
+                onClick={() => setCurrentFolderId(null)} 
+                onDragOver={(e) => { e.preventDefault(); if (draggedItem) setDragOverFolderId("root"); }}
+                onDrop={(e) => { e.preventDefault(); setDragOverFolderId(null); if (draggedItem) setConfirmMoveItem({ source: draggedItem, target: { id: null, name: "Project Root" } }); setDraggedItem(null); }}
+                type="button"
+              >
                 {project.title}
               </button>
               {folderPath.map((folder) => (
                 <React.Fragment key={folder.id}>
                   <ChevronRight size={14} />
-                  <button className="font-semibold text-nexus-text transition hover:text-nexus-primary" onClick={() => setCurrentFolderId(folder.id)} type="button">
+                  <button 
+                    className={`font-semibold text-nexus-text transition hover:text-nexus-primary ${dragOverFolderId === folder.id ? "ring-2 ring-nexus-primary rounded px-1" : ""}`} 
+                    onClick={() => setCurrentFolderId(folder.id)} 
+                    onDragOver={(e) => { e.preventDefault(); if (draggedItem && draggedItem.id !== folder.id) setDragOverFolderId(folder.id); }}
+                    onDrop={(e) => { e.preventDefault(); setDragOverFolderId(null); if (draggedItem && draggedItem.id !== folder.id) setConfirmMoveItem({ source: draggedItem, target: folder }); setDraggedItem(null); }}
+                    type="button"
+                  >
                     {folder.name}
                   </button>
                 </React.Fragment>
@@ -573,12 +639,17 @@ const ProjectDetailPage = () => {
                       const style = fileStyles[item.type] || fileStyles.docx;
                       const Icon = style.Icon;
                       const highlighted = highlightedItemId === item.id;
+                      const isDragOver = dragOverFolderId === item.id;
                       return (
                         <tr
-                          className={`group cursor-pointer transition hover:bg-slate-50 ${highlighted ? "bg-blue-50/70 ring-1 ring-inset ring-blue-100" : ""}`}
+                          className={`group cursor-pointer transition hover:bg-slate-50 ${highlighted ? "bg-blue-50/70 ring-1 ring-inset ring-blue-100" : ""} ${isDragOver ? "bg-blue-100/50 ring-2 ring-inset ring-nexus-primary" : ""} ${draggedItem?.id === item.id ? "opacity-50" : ""}`}
                           key={item.id}
                           onClick={() => handleRowClick(item)}
                           onDoubleClick={() => handleRowDoubleClick(item)}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, item)}
+                          onDragOver={(e) => handleDragOver(e, item)}
+                          onDrop={(e) => handleDrop(e, item)}
                         >
                           <td className="px-8 py-4">
                             <div className="flex items-center gap-4">
@@ -616,7 +687,7 @@ const ProjectDetailPage = () => {
           style={{ top: actionMenuPosition.top, left: actionMenuPosition.left }}
         >
           <button
-            className="block w-full px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nexus-primary"
+            className="block w-full px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nexus-primary"
             onClick={() => {
               setActionMenuPosition(null);
               setModal("rename");
@@ -625,9 +696,19 @@ const ProjectDetailPage = () => {
           >
             Rename
           </button>
+          <button
+            className="block w-full px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nexus-primary"
+            onClick={() => {
+              setActionMenuPosition(null);
+              setModal("move");
+            }}
+            type="button"
+          >
+            Move to...
+          </button>
           {isOwner && (
             <button
-              className="block w-full px-3 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"
+              className="block w-full px-3 py-2 text-left text-sm font-semibold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"
               onClick={() => {
                 setActionMenuPosition(null);
                 setModal("remove");
@@ -644,6 +725,24 @@ const ProjectDetailPage = () => {
       {modal === "add-folder" && <FolderModal existingNames={existingNames} onClose={() => setModal(null)} onCreate={createFolder} />}
       {modal === "rename" && activeItem && <RenameModal item={activeItem} onClose={() => { setModal(null); setActiveItem(null); }} onSave={renameItem} />}
       {modal === "remove" && activeItem && <RemoveModal item={activeItem} onClose={() => { setModal(null); setActiveItem(null); }} onRemove={removeItem} />}
+      {modal === "move" && activeItem && <MoveDocumentModal isOpen={true} onClose={() => { setModal(null); setActiveItem(null); }} documentToMove={activeItem} projectId={projectId} onMove={handleMove} />}
+      
+      {confirmMoveItem && (
+        <ModalShell onClose={() => setConfirmMoveItem(null)} title="Confirm Move">
+          <div className="p-6">
+            <p className="text-sm font-semibold text-slate-700">Are you sure you want to move <strong>{confirmMoveItem.source.name}</strong> to <strong>{confirmMoveItem.target.name}</strong>?</p>
+          </div>
+          <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
+            <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100" onClick={() => setConfirmMoveItem(null)} type="button">
+              Cancel
+            </button>
+            <button className="flex-1 rounded-xl bg-nexus-primary py-2.5 text-sm font-semibold text-white hover:bg-nexus-action" onClick={executeDropMove} type="button">
+              Yes, move it
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
       <DashboardToast message={toast} onDismiss={() => setToast("")} />
     </div>
   );

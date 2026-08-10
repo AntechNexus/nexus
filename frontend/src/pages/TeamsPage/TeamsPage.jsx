@@ -464,8 +464,12 @@ const TeamsPage = () => {
   useEffect(() => {
     fetchProjects();
     const handleUpdate = () => fetchProjects();
+    const interval = setInterval(fetchProjects, 15000); // Poll every 15s
     window.addEventListener("projectListUpdated", handleUpdate);
-    return () => window.removeEventListener("projectListUpdated", handleUpdate);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("projectListUpdated", handleUpdate);
+    };
   }, [projectId]); // re-run if URL changes
 
   useEffect(() => {

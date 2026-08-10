@@ -45,7 +45,13 @@ const ProjectsPage = () => {
         console.error("Failed to fetch projects", err);
       }
     };
+    
     fetchProjects();
+    const interval = setInterval(fetchProjects, 15000); // Poll every 15s
+    
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   const closeMenu = useCallback(() => setOpenMenuProjectId(null), []);
