@@ -108,7 +108,7 @@ const LoginPage = () => {
 
           {onboardingNotice && (
             <p className="auth-success-message" role="status">
-              Your sign up process has been completed successfully. Please sign in to continue.
+              Successfully Registered
             </p>
           )}
           {passwordResetNotice && (
