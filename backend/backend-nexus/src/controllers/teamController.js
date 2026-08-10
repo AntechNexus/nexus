@@ -186,7 +186,6 @@ exports.removeProjectMember = async (req, res) => {
     await Notification.updateMany(
       {
         recipientId: targetUserId,
-        senderId: userId,
         projectId,
         type: "collaboration_invite",
         status: { $in: ["pending", "read"] },
