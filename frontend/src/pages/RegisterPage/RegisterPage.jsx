@@ -27,6 +27,10 @@ const RegisterPage = () => {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
+  const clearStaleAuth = () => {
+    localStorage.removeItem("nexus_token");
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors((current) => ({ ...current, [e.target.name]: undefined }));
@@ -45,6 +49,7 @@ const RegisterPage = () => {
 
     setIsLoading(true);
     try {
+      clearStaleAuth();
       await authService.register(formData.email, formData.password, formData.fullName);
       navigate('/signup/verify', { state: { email: formData.email, fullName: formData.fullName } });
     } catch (err) {
@@ -88,7 +93,10 @@ const RegisterPage = () => {
             Hiring a global team is complex. Nexus makes it easy.
           </p>
 
-          <button type="button" className="google-btn" onClick={() => window.location.href = "http://localhost:5000/api/auth/google"}>
+          <button type="button" className="google-btn" onClick={() => {
+            clearStaleAuth();
+            window.location.href = "http://localhost:5000/api/auth/google";
+          }}>
             <img 
               src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" 
               alt="Google" 

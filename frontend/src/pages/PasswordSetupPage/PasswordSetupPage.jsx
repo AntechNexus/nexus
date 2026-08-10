@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Check, Eye, EyeOff } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
@@ -11,17 +11,46 @@ const PasswordSetupPage = () => {
   const resetEmail = new URLSearchParams(location.search).get("email");
   const resetCode = new URLSearchParams(location.search).get("code");
   const isResetFlow = location.pathname === "/reset-password" || location.state?.flow === "reset";
-  const resetToken = location.state?.resetToken || resetCode;
-  const account = location.state?.account || {
+  const initialAccount = location.state?.account || {
     name: isResetFlow ? "Nexus User" : "Google User",
-    email: location.state?.email || resetEmail || "google.user@gmail.com",
+    email: location.state?.email || resetEmail || "",
   };
   
+  const [account, setAccount] = useState(initialAccount);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (isResetFlow || account.email) return;
+
+    let isMounted = true;
+
+    const loadGoogleAccount = async () => {
+      try {
+        const response = await authService.getProfile();
+        const user = response.user;
+        if (!isMounted || !user?.email) return;
+
+        setAccount({
+          name: user.profile?.fullName || "Google User",
+          email: user.email,
+        });
+      } catch {
+        if (isMounted) {
+          setError("Unable to load your Google account. Please try signing in again.");
+        }
+      }
+    };
+
+    loadGoogleAccount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [account.email, isResetFlow]);
 
   const criteria = useMemo(
     () => [
@@ -54,7 +83,8 @@ const PasswordSetupPage = () => {
         navigate("/login", { replace: true });
       } else {
         await authService.setPassword(password);
-        navigate("/onboarding", { replace: true });
+        localStorage.removeItem("nexus_token");
+        navigate("/login", { replace: true, state: { onboardingCompleted: true } });
       }
     } catch (err) {
       setStatus("idle");
@@ -83,7 +113,9 @@ const PasswordSetupPage = () => {
           <p className="auth-subtitle">
             {isResetFlow
               ? `Create a new password for ${account.email}. After this, sign in again to continue.`
-              : `You're connected as ${account.email}. Create a NEXUS password to complete your profile.`}
+              : account.email
+                ? `You're connected as ${account.email}. Create a NEXUS password to complete your profile.`
+                : "Loading your Google account details..."}
           </p>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
