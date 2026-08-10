@@ -5,7 +5,7 @@ import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
 import EditProjectModal from "../../components/dashboard/EditProjectModal";
-import ProjectCard from "../../components/dashboard/ProjectCard";
+import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
 import { projectService } from "../../services/project.service";
 
@@ -130,6 +130,7 @@ const ProjectsPage = () => {
           </div>
 
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
+            <NewProjectCard onClick={() => navigate("/projects/new")} />
             {projects.map((project) => (
               <ProjectCard
                 key={project.id}

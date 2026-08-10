@@ -20,7 +20,7 @@ const TrashProjectModal = ({ onClose, onConfirm, project }) => {
           <h2 className="text-xl font-semibold">Move this project to Trash?</h2>
         </div>
         <p className="mb-6 text-sm leading-6 text-slate-600">
-          The project will be removed from your active workspace. You can restore it later from Trash.
+          The project will be removed from your active workspace.
         </p>
         <div className="flex justify-end gap-3">
           <button className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">

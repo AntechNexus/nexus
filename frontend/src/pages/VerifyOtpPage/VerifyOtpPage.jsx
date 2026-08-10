@@ -43,15 +43,17 @@ const VerifyOtpPage = () => {
     setStatus("loading");
     try {
       const code = otp.join("");
+      localStorage.removeItem("nexus_token");
       const response = await authService.verifyOtp(email, code);
-      if (response.token) {
-        localStorage.setItem("nexus_token", response.token);
+      if (!response.token) {
+        throw new Error("Verification succeeded but no session token was returned.");
       }
+      localStorage.setItem("nexus_token", response.token);
       setStatus("success");
       navigate("/onboarding", { replace: true, state: { email, fullName } });
     } catch (err) {
       setStatus("idle");
-      setError(err.response?.data?.message || "Invalid or expired OTP.");
+      setError(err.response?.data?.message || err.message || "Invalid or expired OTP.");
     }
   };
 

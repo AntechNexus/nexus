@@ -8,8 +8,8 @@ import EditProjectModal from "../../components/dashboard/EditProjectModal";
 import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import RecentFilesTable from "../../components/dashboard/RecentFilesTable";
 import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
-import { recentFiles } from "../../data/dashboardMockData";
 import { projectService } from "../../services/project.service";
+import { fetchRecentFiles } from "../../services/recentFilesApi";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const DashboardPage = () => {
   const [trashProject, setTrashProject] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [recentFiles, setRecentFiles] = useState([]);
 
   const fetchProjects = async () => {
     try {
@@ -41,6 +42,15 @@ const DashboardPage = () => {
     }
   };
 
+  const loadRecentFiles = async () => {
+    try {
+      const files = await fetchRecentFiles(10);
+      setRecentFiles(files);
+    } catch (err) {
+      console.error("Failed to load recent files", err);
+    }
+  };
+
   useEffect(() => {
     import("../../services/auth.service").then(module => {
       module.default.getProfile().then(res => {
@@ -49,7 +59,11 @@ const DashboardPage = () => {
     });
 
     fetchProjects();
-    const handleUpdate = () => fetchProjects();
+    loadRecentFiles();
+    const handleUpdate = () => {
+      fetchProjects();
+      loadRecentFiles();
+    };
     window.addEventListener("projectListUpdated", handleUpdate);
     return () => window.removeEventListener("projectListUpdated", handleUpdate);
   }, []);
@@ -141,28 +155,24 @@ const DashboardPage = () => {
               </button>
             </div>
             
-            {projects.length === 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {projects.length < 4 && (
                 <NewProjectCard onClick={() => navigate("/projects/new")} />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <NewProjectCard onClick={() => navigate("/projects/new")} />
-                {projects.slice(0, 7).map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    currentUser={currentUser}
-                    menuOpen={openMenuProjectId === project.id}
-                    onMenuAction={handleProjectAction}
-                    onNavigate={navigateToProject}
-                    onSelect={setSelectedProjectId}
-                    onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
-                    project={project}
-                    selected={selectedProjectId === project.id}
-                  />
-                ))}
-              </div>
-            )}
+              )}
+              {projects.slice(0, 4).map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  currentUser={currentUser}
+                  menuOpen={openMenuProjectId === project.id}
+                  onMenuAction={handleProjectAction}
+                  onNavigate={navigateToProject}
+                  onSelect={setSelectedProjectId}
+                  onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
+                  project={project}
+                  selected={selectedProjectId === project.id}
+                />
+              ))}
+            </div>
           </section>
 
           <RecentFilesTable files={recentFiles} />

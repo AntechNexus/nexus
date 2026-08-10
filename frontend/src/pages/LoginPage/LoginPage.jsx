@@ -108,7 +108,7 @@ const LoginPage = () => {
 
           {onboardingNotice && (
             <p className="auth-success-message" role="status">
-              Your sign up process has been completed successfully. Please sign in to continue.
+              Successfully Registered
             </p>
           )}
           {passwordResetNotice && (
@@ -117,7 +117,10 @@ const LoginPage = () => {
             </p>
           )}
 
-          <button type="button" className="auth-google-button" onClick={() => { window.location.href = "http://localhost:5000/api/auth/google"; }}>
+          <button type="button" className="auth-google-button" onClick={() => {
+            localStorage.removeItem("nexus_token");
+            window.location.href = "http://localhost:5000/api/auth/google";
+          }}>
             <img
               alt=""
               aria-hidden="true"

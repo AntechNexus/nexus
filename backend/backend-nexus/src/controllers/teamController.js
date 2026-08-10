@@ -10,7 +10,9 @@ exports.searchUsersByEmail = async (req, res) => {
       return res.status(400).json({ success: false, message: "Query parameter 'q' is required" });
     }
 
+    const userId = req.user?.id || req.user?._id;
     const users = await User.find({
+      _id: { $ne: userId },
       $or: [
         { email: { $regex: query, $options: "i" } },
         { "profile.fullName": { $regex: query, $options: "i" } }
@@ -107,7 +109,7 @@ exports.addProjectMember = async (req, res) => {
     if (project.members.length >= 5) {
       return res.status(400).json({
         success: false,
-        message: "Project has reached maximum limit of 5 members",
+        message: "Project member limit reached. You can invite up to 5 collaborators.",
       });
     }
 
@@ -181,6 +183,22 @@ exports.removeProjectMember = async (req, res) => {
     }
 
     await project.save();
+    await Notification.updateMany(
+      {
+        recipientId: targetUserId,
+        senderId: userId,
+        projectId,
+        type: "collaboration_invite",
+        status: { $in: ["pending", "read"] },
+        deletedAt: null,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+          updatedBy: userId,
+        },
+      }
+    );
 
     return res.status(200).json({
       success: true,
