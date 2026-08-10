@@ -108,7 +108,11 @@ const AddFileModal = ({ onClose, onUpload }) => {
 
   const handleUploadClick = async () => {
     setIsUploading(true);
-    await onUpload(selectedFiles);
+    setError("");
+    const res = await onUpload(selectedFiles);
+    if (res && res.success === false) {
+      setError(res.error?.response?.data?.message || "Failed to upload one or more files.");
+    }
     setIsUploading(false);
   };
 
@@ -139,7 +143,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
           </span>
           <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, WAV, PRD</span>
         </button>
-        {error && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-600">{error}</p>}
+        {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600 border border-red-200 leading-relaxed">{error}</p>}
 
         {selectedFiles.length > 0 && (
           <div className="mt-6 flex flex-col gap-3">
@@ -211,9 +215,9 @@ const FolderModal = ({ existingNames, onClose, onCreate }) => {
         <div className="p-6">
           <label className="block text-sm font-semibold text-nexus-text">
             Folder name
-            <input className="mt-2 h-11 w-full rounded-xl border border-nexus-border px-4 text-sm outline-none focus:border-nexus-primary focus:ring-4 focus:ring-blue-100" onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Enter folder name" value={name} />
+            <input className={`mt-2 h-11 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"}`} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Enter folder name" value={name} />
           </label>
-          {error && <p className="mt-2 text-xs font-medium text-red-600">{error}</p>}
+          {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
         </div>
         <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
           <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100" onClick={onClose} type="button">
@@ -230,20 +234,29 @@ const FolderModal = ({ existingNames, onClose, onCreate }) => {
 
 const RenameModal = ({ item, onClose, onSave }) => {
   const [name, setName] = useState(item?.name ?? "");
+  const [error, setError] = useState("");
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!name.trim()) {
+      setError("Name cannot be empty.");
+      return;
+    }
+    const res = await onSave(name.trim());
+    if (res && res.success === false) {
+      setError(res.error?.response?.data?.message || "Failed to rename.");
+    }
+  };
 
   return (
     <ModalShell onClose={onClose} title="Rename Item">
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (name.trim()) onSave(name.trim());
-        }}
-      >
+      <form onSubmit={submit}>
         <div className="p-6">
           <label className="block text-sm font-semibold text-nexus-text">
             New Name
-            <input className="mt-2 h-11 w-full rounded-xl border border-nexus-border px-4 text-sm outline-none focus:border-nexus-primary focus:ring-4 focus:ring-blue-100" onChange={(event) => setName(event.target.value)} value={name} />
+            <input className={`mt-2 h-11 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"}`} onChange={(event) => { setName(event.target.value); setError(""); }} value={name} />
           </label>
+          {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
         </div>
         <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
           <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100" onClick={onClose} type="button">
@@ -384,6 +397,10 @@ const ProjectDetailPage = () => {
       setHighlightedItemId(null);
       return;
     }
+
+    // Log this file as recently accessed
+    api.post(`/files/${item.id}/recent`).catch(err => console.error(err));
+
     navigate(
       isAudioTranscriptDocument(item)
         ? `/projects/${projectId}/transcripts/${item.id}`
@@ -424,8 +441,9 @@ const ProjectDetailPage = () => {
       refreshDocuments(nextDocuments);
       setModal(null);
       setToast(`${files.length} file(s) uploaded successfully.`);
+      return { success: true };
     } catch (error) {
-      setToast("Failed to upload one or more files.");
+      return { success: false, error };
     }
   };
 
@@ -438,8 +456,9 @@ const ProjectDetailPage = () => {
       setActionMenuPosition(null);
       setModal(null);
       setToast("Item renamed successfully.");
+      return { success: true };
     } catch (error) {
-      setToast("Failed to rename item.");
+      return { success: false, error };
     }
   };
 

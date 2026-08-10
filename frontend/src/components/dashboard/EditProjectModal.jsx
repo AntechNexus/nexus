@@ -4,12 +4,12 @@ import { X } from "lucide-react";
 const EditProjectModal = ({ onClose, onSave, project }) => {
   const [name, setName] = useState(project?.title ?? "");
   const [description, setDescription] = useState(project?.description ?? "");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setName(project?.title ?? "");
     setDescription(project?.description ?? "");
-    setError("");
+    setErrors({});
   }, [project]);
 
   useEffect(() => {
@@ -22,13 +22,21 @@ const EditProjectModal = ({ onClose, onSave, project }) => {
 
   if (!project) return null;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!name.trim()) {
-      setError("Project name cannot be empty.");
+      setErrors({ name: "Project name cannot be empty." });
       return;
     }
-    onSave({ ...project, title: name.trim(), description: description.trim() });
+    const res = await onSave({ ...project, title: name.trim(), description: description.trim() });
+    if (res && res.success === false) {
+      const err = res.error;
+      if (err.response?.data?.validationErrors) {
+        setErrors(err.response.data.validationErrors);
+      } else {
+        setErrors({ general: err.response?.data?.message || "Failed to update project." });
+      }
+    }
   };
 
   return (
@@ -43,23 +51,32 @@ const EditProjectModal = ({ onClose, onSave, project }) => {
         <label className="mb-4 block text-sm font-medium text-slate-600">
           Project Name
           <input
-            className="mt-1 h-11 w-full rounded-xl border border-nexus-border px-3 text-sm text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+            className={`mt-1 h-11 w-full rounded-xl border px-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+              errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+            }`}
             onChange={(event) => {
               setName(event.target.value);
-              setError("");
+              setErrors((prev) => ({ ...prev, name: null }));
             }}
             value={name}
           />
         </label>
-        {error && <p className="-mt-2 mb-4 text-sm text-red-600">{error}</p>}
+        {errors.name && <p className="-mt-2 mb-4 text-sm font-semibold text-red-600">{errors.name}</p>}
+        {errors.general && <p className="-mt-2 mb-4 text-sm font-semibold text-red-600">{errors.general}</p>}
         <label className="mb-6 block text-sm font-medium text-slate-600">
           Project Description
           <textarea
-            className="mt-1 h-24 w-full resize-none rounded-xl border border-nexus-border p-3 text-sm text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
-            onChange={(event) => setDescription(event.target.value)}
+            className={`mt-1 h-24 w-full resize-none rounded-xl border p-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+              errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+            }`}
+            onChange={(event) => {
+              setDescription(event.target.value);
+              setErrors((prev) => ({ ...prev, description: null }));
+            }}
             value={description}
           />
         </label>
+        {errors.description && <p className="-mt-2 mb-6 text-sm font-semibold text-red-600">{errors.description}</p>}
         <div className="flex justify-end gap-3">
           <button className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">
             Cancel

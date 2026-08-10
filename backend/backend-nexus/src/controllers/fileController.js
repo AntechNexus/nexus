@@ -150,7 +150,7 @@ exports.createFile = async (req, res) => {
     const ownerId = project.createdBy.toString();
     const isStorageSufficient = await checkAndIncrementStorage(ownerId, sizeBytes);
     if (!isStorageSufficient) {
-      return res.status(400).json({ message: "Storage limit exceeded. Cannot upload file." });
+      return res.status(400).json({ message: "Storage limit exceeded. You do not have enough space to upload this file. Please empty your trash or upgrade your storage plan." });
     }
 
     const fileName = await getUniqueFileName(projectId, folderId, originalName);
@@ -533,7 +533,7 @@ exports.createFileVersion = async (req, res) => {
     const ownerId = project.createdBy.toString();
     const isStorageSufficient = await checkAndIncrementStorage(ownerId, sizeBytes);
     if (!isStorageSufficient) {
-      return res.status(400).json({ message: "Storage limit exceeded. Cannot upload new version." });
+      return res.status(400).json({ message: "Storage limit exceeded. You do not have enough space to upload this new version. Please empty your trash or upgrade your storage plan." });
     }
 
     const newVersionFile = new File({
@@ -788,6 +788,28 @@ exports.downloadFile = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Log Recent Access Endpoint
+exports.logRecentAccess = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const file = await File.findOne({ _id: id, status: { $ne: 'deleted' } });
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    await recordFileAccess(userId, file._id, file.projectId);
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
 

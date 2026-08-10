@@ -95,8 +95,11 @@ const ProfilePage = () => {
     setEditModalOpen(true);
   };
 
+  const [editError, setEditError] = useState("");
+
   const handleEditSubmit = async (event) => {
     event.preventDefault();
+    setEditError("");
     try {
       const updatedProfile = {
         fullName: editForm.fullName.trim(),
@@ -118,7 +121,7 @@ const ProfilePage = () => {
       setEditModalOpen(false);
       setToast("Profile details updated successfully.");
     } catch (err) {
-      setToast(err.response?.data?.message || "Failed to update profile.");
+      setEditError(err.response?.data?.message || "Failed to update profile.");
     }
   };
 
@@ -356,6 +359,7 @@ const ProfilePage = () => {
                 </select>
               </label>
             </div>
+            {editError && <div className="px-6 pb-2"><p className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600">{editError}</p></div>}
             <div className="flex gap-3 border-t border-nexus-border p-6">
               <button className="flex-1 rounded-lg border border-nexus-border px-4 py-2.5 text-sm font-semibold" onClick={() => setEditModalOpen(false)} type="button">
                 Cancel

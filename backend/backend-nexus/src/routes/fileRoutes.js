@@ -52,6 +52,7 @@ router.get("/:id", fileController.getFileById);
 router.get("/:id/download", fileController.downloadFile);
 router.put("/:id", fileController.updateFile);
 router.post("/:id/version", handleUpload, fileController.createFileVersion);
+router.post("/:id/recent", fileController.logRecentAccess);
 router.patch("/:id/trash", fileController.moveToTrash);
 router.patch("/:id/restore", fileController.restoreFromTrash);
 router.delete("/:id", fileController.deleteFile);
