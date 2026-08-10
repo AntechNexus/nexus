@@ -109,7 +109,7 @@ const OnboardingPage = () => {
         teamSize: details.teamSize,
         industry: details.industry,
       });
-      navigate("/dashboard");
+      navigate("/login", { replace: true, state: { onboardingCompleted: true } });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile.");
     }
@@ -123,8 +123,8 @@ const OnboardingPage = () => {
         teamSize: "",
         industry: "",
       });
-      navigate("/dashboard");
-    } catch (err) {
+      navigate("/login", { replace: true, state: { onboardingCompleted: true } });
+    } catch {
       setError("Failed to skip onboarding. Please try again.");
     }
   };

@@ -8,8 +8,8 @@ import EditProjectModal from "../../components/dashboard/EditProjectModal";
 import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import RecentFilesTable from "../../components/dashboard/RecentFilesTable";
 import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
-import { recentFiles } from "../../data/dashboardMockData";
 import { projectService } from "../../services/project.service";
+import { fetchRecentFiles } from "../../services/recentFilesApi";
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const DashboardPage = () => {
   const [trashProject, setTrashProject] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [recentFiles, setRecentFiles] = useState([]);
 
   const fetchProjects = async () => {
     try {
@@ -41,6 +42,15 @@ const DashboardPage = () => {
     }
   };
 
+  const loadRecentFiles = async () => {
+    try {
+      const files = await fetchRecentFiles(10);
+      setRecentFiles(files);
+    } catch (err) {
+      console.error("Failed to load recent files", err);
+    }
+  };
+
   useEffect(() => {
     import("../../services/auth.service").then(module => {
       module.default.getProfile().then(res => {
@@ -49,7 +59,11 @@ const DashboardPage = () => {
     });
 
     fetchProjects();
-    const handleUpdate = () => fetchProjects();
+    loadRecentFiles();
+    const handleUpdate = () => {
+      fetchProjects();
+      loadRecentFiles();
+    };
     window.addEventListener("projectListUpdated", handleUpdate);
     return () => window.removeEventListener("projectListUpdated", handleUpdate);
   }, []);

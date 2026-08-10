@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronDown,
-  Folder,
   Globe2,
   MoreVertical,
   PlusCircle,
@@ -14,6 +13,7 @@ import {
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import { projectService } from "../../services/project.service";
 import { teamService } from "../../services/team.service";
 
@@ -358,6 +358,7 @@ const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
 
 const TeamsPage = () => {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -509,7 +510,7 @@ const TeamsPage = () => {
       setToast("Member added successfully.");
       fetchProjects();
     } catch (err) {
-      setToast("Failed to add member.");
+      setToast(err.response?.data?.message || "Failed to add member.");
     } finally {
       setAddMemberProject(null);
     }
@@ -566,8 +567,10 @@ const TeamsPage = () => {
             </div>
           </div>
 
-          <section className="space-y-4">
-            {visibleProjects.map((project) => {
+          <section className={visibleProjects.length === 0 ? "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4" : "space-y-4"}>
+            {visibleProjects.length === 0 ? (
+              <NewProjectCard onClick={() => navigate("/projects/new")} />
+            ) : visibleProjects.map((project) => {
               const isOpen = openProjectIds.includes(project.id);
               const isCurrentUserOwner = project.members.some(m => m.permission === "Owner" && m.id === currentUser?.id);
               

@@ -16,13 +16,13 @@ const loginLimiter = rateLimit({
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
   max: 5, 
-  message: { message: 'Terlalu banyak percobaan daftar, coba lagi setelah 1 jam' },
+  message: { message: 'Too many registration attempts, please try again after 1 hour' },
 });
 
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: { message: 'Terlalu banyak request, coba lagi nanti' },
+  message: { message: 'Too many requests, please try again later' },
 });
 
 router.use(generalLimiter);
