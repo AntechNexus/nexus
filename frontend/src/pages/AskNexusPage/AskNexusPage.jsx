@@ -103,22 +103,6 @@ const AskNexusPage = () => {
                   <p className="font-semibold">Loading projects...</p>
                 </div>
               </div>
-            ) : projects.length === 0 ? (
-              <div className="flex min-h-[50vh] flex-col items-center justify-center text-center">
-                <span className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-blue-50 text-nexus-primary shadow-sm">
-                  <MessageSquare size={40} />
-                </span>
-                <h2 className="text-2xl font-extrabold text-nexus-text">No Projects Available</h2>
-                <p className="mt-3 max-w-md text-sm leading-6 text-nexus-muted">
-                  You need to create a project and upload some documents before you can ask Nexus questions about them.
-                </p>
-                <button
-                  onClick={() => navigate("/projects")}
-                  className="mt-8 rounded-xl bg-nexus-primary px-6 py-3 text-sm font-bold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
-                >
-                  Create New Project
-                </button>
-              </div>
             ) : (
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
               <section className="space-y-5">
@@ -128,33 +112,39 @@ const AskNexusPage = () => {
                       Target Project
                     </span>
                     <select
-                      className="h-12 w-full rounded-xl border border-nexus-border bg-white px-4 text-sm font-semibold text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+                      className="h-12 w-full rounded-xl border border-nexus-border bg-white px-4 text-sm font-semibold text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100 disabled:opacity-50 disabled:bg-slate-50"
                       onChange={(event) => setSelectedProjectId(event.target.value)}
                       value={selectedProjectId}
+                      disabled={projects.length === 0}
                     >
-                      {projects.map((project) => (
-                        <option key={project._id || project.id} value={project._id || project.id}>
-                            {project.name || project.title}
-                        </option>
-                        ))}
+                      {projects.length === 0 ? (
+                        <option value="" disabled>No projects available</option>
+                      ) : (
+                        projects.map((project) => (
+                          <option key={project._id || project.id} value={project._id || project.id}>
+                              {project.name || project.title}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </label>
                 </div>
 
-                <div className="flex overflow-hidden rounded-2xl border-2 border-nexus-border bg-white shadow-lg transition focus-within:border-nexus-primary focus-within:ring-4 focus-within:ring-blue-100">
+                <div className={`flex overflow-hidden rounded-2xl border-2 border-nexus-border bg-white shadow-lg transition ${projects.length > 0 ? "focus-within:border-nexus-primary focus-within:ring-4 focus-within:ring-blue-100" : "opacity-60 bg-slate-50"}`}>
                   <div className="flex min-h-[220px] max-h-[260px] flex-1 flex-col">
                   <textarea
-                    className="min-h-0 flex-1 resize-none border-0 bg-transparent px-5 py-5 text-base leading-7 outline-none sm:px-6"
+                    className="min-h-0 flex-1 resize-none border-0 bg-transparent px-5 py-5 text-base leading-7 outline-none sm:px-6 disabled:cursor-not-allowed"
                     onChange={(event) => setQuestion(event.target.value)}
                     onKeyDown={(event) => {
                       if ((event.ctrlKey || event.metaKey) && event.key === "Enter") submitQuestion();
                     }}
-                    placeholder="Ask NEXUS about your project documents..."
+                    placeholder={projects.length === 0 ? "Create a project first to ask NEXUS..." : "Ask NEXUS about your project documents..."}
                     value={question}
+                    disabled={projects.length === 0}
                   />
                   <div className="flex shrink-0 items-center justify-between gap-3 border-t border-nexus-border bg-white px-4 py-3 sm:px-5">
                     <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
-                      Context: <span className="text-nexus-primary">{selectedProject?.name || selectedProject?.title}</span>
+                      Context: <span className="text-nexus-primary">{selectedProject?.name || selectedProject?.title || "None"}</span>
                     </span>
                     <button
                       aria-label="Send question to NEXUS"
@@ -174,10 +164,11 @@ const AskNexusPage = () => {
                     const Icon = promptIcons[index] || FileText;
                     return (
                     <button
-                      className="inline-flex max-w-full items-center gap-2 rounded-full border border-nexus-border bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                      className="inline-flex max-w-full items-center gap-2 rounded-full border border-nexus-border bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:opacity-50 disabled:pointer-events-none"
                       key={prompt}
                       onClick={() => setQuestion(prompt)}
                       type="button"
+                      disabled={projects.length === 0}
                     >
                       <Icon className="shrink-0" size={15} /> <span className="truncate">{prompt}</span>
                     </button>
@@ -188,7 +179,7 @@ const AskNexusPage = () => {
               </section>
 
               <aside className="space-y-5">
-                {selectedProject && (
+                {selectedProject ? (
                   <ProjectCard
                     menuOpen={openMenuProjectId === selectedProject.id}
                     onMenuAction={handleProjectAction}
@@ -198,21 +189,31 @@ const AskNexusPage = () => {
                     project={selectedProject}
                     selected={selectedCardId === selectedProject.id}
                   />
+                ) : (
+                  <div className="flex min-h-[220px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+                    <FileText className="mb-3 text-slate-300" size={32} />
+                    <p className="text-sm font-semibold text-slate-500">No project selected</p>
+                    <p className="mt-1 text-xs text-slate-400">Please create a project first</p>
+                  </div>
                 )}
 
                 <section className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
                   <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Conversations</h2>
                   <div className="space-y-1">
-                    {conversations.map((conversation) => (
-                      <button
-                        className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
-                        key={conversation._id || conversation.id}
-                        onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
-                        type="button"
-                      >
-                        <MessageSquare size={17} /> {conversation.title}
-                      </button>
-                    ))}
+                    {conversations.length === 0 ? (
+                      <p className="py-2 text-sm text-slate-400">No recent conversations.</p>
+                    ) : (
+                      conversations.map((conversation) => (
+                        <button
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                          key={conversation._id || conversation.id}
+                          onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
+                          type="button"
+                        >
+                          <MessageSquare size={17} /> {conversation.title}
+                        </button>
+                      ))
+                    )}
                   </div>
                 </section>
 
