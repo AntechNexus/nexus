@@ -183,6 +183,22 @@ exports.removeProjectMember = async (req, res) => {
     }
 
     await project.save();
+    await Notification.updateMany(
+      {
+        recipientId: targetUserId,
+        senderId: userId,
+        projectId,
+        type: "collaboration_invite",
+        status: { $in: ["pending", "read"] },
+        deletedAt: null,
+      },
+      {
+        $set: {
+          deletedAt: new Date(),
+          updatedBy: userId,
+        },
+      }
+    );
 
     return res.status(200).json({
       success: true,
