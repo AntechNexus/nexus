@@ -10,7 +10,9 @@ exports.searchUsersByEmail = async (req, res) => {
       return res.status(400).json({ success: false, message: "Query parameter 'q' is required" });
     }
 
+    const userId = req.user?.id || req.user?._id;
     const users = await User.find({
+      _id: { $ne: userId },
       $or: [
         { email: { $regex: query, $options: "i" } },
         { "profile.fullName": { $regex: query, $options: "i" } }
