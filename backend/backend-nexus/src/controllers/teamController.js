@@ -109,7 +109,7 @@ exports.addProjectMember = async (req, res) => {
     if (project.members.length >= 5) {
       return res.status(400).json({
         success: false,
-        message: "Project has reached maximum limit of 5 members",
+        message: "Project member limit reached. You can invite up to 5 collaborators.",
       });
     }
 
