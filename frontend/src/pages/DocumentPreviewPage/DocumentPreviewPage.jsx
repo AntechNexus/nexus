@@ -22,7 +22,7 @@ import { fetchProjectDocumentPreview, getProjectDocumentSummaryAI, isAudioTransc
 
 const iconTone = {
   folder: "text-slate-600",
-  pdf: "text-nexus-primary",
+  pdf: "text-red-600",
   docx: "text-nexus-primary",
   xlsx: "text-emerald-600",
   mp3: "text-nexus-ai",
@@ -248,12 +248,12 @@ const DocumentPreviewPage = () => {
             </article>
 
             <aside className="border-t border-nexus-border bg-white lg:border-l lg:border-t-0">
-              <button className="flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold text-nexus-text transition hover:bg-slate-50" type="button">
+              <a href={document?.fileUrl || "#"} download={document?.name} target="_blank" rel="noreferrer" className="flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold text-nexus-text transition hover:bg-slate-50">
                 <span className="flex items-center gap-2">
-                  <Download size={16} /> Export PDF
+                  <Download size={16} /> Download
                 </span>
                 <ChevronRight size={16} />
-              </button>
+              </a>
               <div className="border-b border-nexus-border px-5 py-4">
                 <div className="flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-base font-bold text-nexus-text">

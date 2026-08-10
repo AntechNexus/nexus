@@ -105,4 +105,10 @@ const userSchema = new mongoose.Schema(
   },
 );
 
+// TTL index to hard delete unverified users after 20 minutes (1200 seconds)
+userSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 1200, partialFilterExpression: { isVerified: false } }
+);
+
 module.exports = mongoose.model('User', userSchema);

@@ -16,17 +16,27 @@ const fileTypeStyles = {
     icon: "bg-red-50 text-red-600",
     Icon: FileText,
   },
+  Audio: {
+    badge: "bg-pink-50 text-nexus-ai",
+    icon: "bg-pink-50 text-nexus-ai",
+    Icon: FileAudio,
+  },
   Transcript: {
     badge: "bg-pink-50 text-nexus-ai",
     icon: "bg-pink-50 text-nexus-ai",
     Icon: FileAudio,
   },
-  XLSX: {
+  Video: {
+    badge: "bg-pink-50 text-nexus-ai",
+    icon: "bg-pink-50 text-nexus-ai",
+    Icon: FileAudio,
+  },
+  Spreadsheet: {
     badge: "bg-emerald-50 text-emerald-600",
     icon: "bg-emerald-50 text-emerald-600",
     Icon: FileSpreadsheet,
   },
-  DOCX: {
+  Document: {
     badge: "bg-blue-50 text-nexus-primary",
     icon: "bg-blue-50 text-nexus-primary",
     Icon: FileText,
@@ -204,7 +214,6 @@ const RecentFilesTable = ({ files }) => {
                 <th className="px-6 py-4 font-semibold">Last Modified</th>
                 <th className="px-6 py-4 font-semibold">Modified By</th>
                 <th className="px-6 py-4 font-semibold">Size</th>
-                <th className="px-6 py-4 font-semibold"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-nexus-border">
@@ -257,16 +266,6 @@ const RecentFilesTable = ({ files }) => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-nexus-muted">{file.size}</td>
-                    <td className="px-6 py-4">
-                      <button
-                        aria-label={`Open actions for ${file.name}`}
-                        className="rounded-full p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
-                        onClick={(event) => event.stopPropagation()}
-                        type="button"
-                      >
-                        <MoreVertical size={20} />
-                      </button>
-                    </td>
                   </tr>
                 );
               })}
