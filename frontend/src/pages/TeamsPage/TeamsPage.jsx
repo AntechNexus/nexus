@@ -111,11 +111,11 @@ const SortMenu = ({ onSelect, open, selectedSort }) => {
 
 const RenameProjectModal = ({ onClose, onSave, project }) => {
   const [name, setName] = useState(project?.title ?? "");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setName(project?.title ?? "");
-    setError("");
+    setErrors({});
   }, [project]);
 
   useEffect(() => {
@@ -129,13 +129,21 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
 
   if (!project) return null;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!name.trim()) {
-      setError("Project name cannot be empty.");
+      setErrors({ name: "Project name cannot be empty." });
       return;
     }
-    onSave(name.trim());
+    const res = await onSave(name.trim());
+    if (res && res.success === false) {
+      const err = res.error;
+      if (err.response?.data?.validationErrors) {
+        setErrors(err.response.data.validationErrors);
+      } else {
+        setErrors({ general: err.response?.data?.message || "Failed to rename project." });
+      }
+    }
   };
 
   return (
@@ -150,15 +158,18 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
         <label className="mb-2 block text-sm font-medium text-slate-600">
           Project Name
           <input
-            className="mt-1 h-11 w-full rounded-xl border border-nexus-border px-3 text-sm text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+            className={`mt-1 h-11 w-full rounded-xl border px-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+              errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+            }`}
             onChange={(event) => {
               setName(event.target.value);
-              setError("");
+              setErrors((prev) => ({ ...prev, name: null }));
             }}
             value={name}
           />
         </label>
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {errors.name && <p className="mb-4 text-sm font-semibold text-red-600">{errors.name}</p>}
+        {errors.general && <p className="mb-4 text-sm font-semibold text-red-600">{errors.general}</p>}
         <div className="mt-6 flex justify-end gap-3">
           <button className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">
             Cancel
@@ -211,12 +222,14 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!project) return undefined;
     setSelected(null);
     setSearchQuery("");
     setSearchResults([]);
+    setError("");
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
     };
@@ -260,9 +273,13 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
               className="h-12 w-full rounded-xl border border-nexus-border bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100" 
               placeholder="Search by name or email" 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setError("");
+              }}
             />
           </label>
+          {error && <p className="-mt-2 text-sm font-semibold text-red-600">{error}</p>}
           <div>
             <p className="mb-3 text-xs font-bold uppercase tracking-widest text-nexus-muted">Search Results</p>
             {searchResults.length === 0 && searchQuery.length >= 3 && (
@@ -308,7 +325,13 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
           <button
             className="rounded-xl bg-nexus-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
             disabled={!selected}
-            onClick={() => onAdd(selected)}
+            onClick={async () => {
+              setError("");
+              const res = await onAdd(selected);
+              if (res && res.success === false) {
+                setError(res.error?.response?.data?.message || "Failed to add member.");
+              }
+            }}
             type="button"
           >
             Add Member
@@ -480,13 +503,13 @@ const TeamsPage = () => {
   const handleRenameProject = async (name) => {
     if (!renameProject) return;
     try {
-      await projectService.updateProject(renameProject.id, { title: name });
+      await projectService.updateProject(renameProject.id, { name: name }); // Fixed title to name
       setToast("Project renamed successfully.");
       fetchProjects();
-    } catch (err) {
-      setToast("Failed to rename project.");
-    } finally {
       setRenameProject(null);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
     }
   };
 
@@ -509,10 +532,10 @@ const TeamsPage = () => {
       await teamService.addProjectMember(addMemberProject.id, selectedUser._id, "editor");
       setToast("Member added successfully.");
       fetchProjects();
-    } catch (err) {
-      setToast(err.response?.data?.message || "Failed to add member.");
-    } finally {
       setAddMemberProject(null);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
     }
   };
 

@@ -36,6 +36,8 @@ app.use((req, res, next) => {
 // Inisialisasi Passport JS
 app.use(passport.initialize());
 
+const errorHandler = require("./middleware/errorHandler");
+
 // Mounting Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/files", fileRoutes);
@@ -47,10 +49,10 @@ app.use("/api/transcripts", transcriptRoutes);
 app.use("/api/prd", prdRoutes);
 app.use("/api/search", searchRoutes);
 
-// Jalankan Server setelah memanggil connectDB()
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Global Error Handler
+app.use(errorHandler);
 
+const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {

@@ -13,6 +13,7 @@ import {
 import { Link, useParams } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
+import api from "../../services/api";
 import { getProjects } from "../../services/projectApi";
 import { fetchAudioTranscriptPreview, getAudioTranscriptAI, updateAudioTranscriptAI, getExportTranscriptUrl, getProjectDocumentSummaryAI } from "../../services/projectDetailApi";
 
@@ -76,6 +77,9 @@ const AudioTranscriptPage = () => {
     fetchAudioTranscriptPreview(projectId, documentId)
       .then(setPreview)
       .catch(console.error);
+
+    // Log recent access
+    api.post(`/files/${documentId}/recent`).catch(err => console.error("Failed to log recent access", err));
 
     setLoadingTranscript(true);
     getAudioTranscriptAI(documentId)

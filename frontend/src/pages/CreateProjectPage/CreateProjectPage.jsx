@@ -16,7 +16,7 @@ const CreateProjectPage = () => {
   const [members, setMembers] = useState([]);
   const [memberQuery, setMemberQuery] = useState("");
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
   const [toast, setToast] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
@@ -41,9 +41,11 @@ const CreateProjectPage = () => {
 
   const handleSaveProject = async () => {
     if (!projectName.trim()) {
-      setError("Project name is required.");
+      setErrors({ name: "Project name is required." });
       return;
     }
+
+    setErrors({});
 
     try {
       const res = await projectService.createProject({
@@ -59,7 +61,11 @@ const CreateProjectPage = () => {
       setToast("Project created successfully.");
       setTimeout(() => navigate(`/projects`), 1000);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create project.");
+      if (err.response?.data?.validationErrors) {
+        setErrors(err.response.data.validationErrors);
+      } else {
+        setErrors({ general: err.response?.data?.message || "Failed to create project." });
+      }
     }
   };
 
@@ -98,27 +104,34 @@ const CreateProjectPage = () => {
                 </span>
                 <input
                   className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                    error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+                    errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
                   }`}
                   onChange={(event) => {
                     setProjectName(event.target.value);
-                    setError("");
+                    setErrors((prev) => ({ ...prev, name: null }));
                   }}
                   placeholder="Enter a unique project name"
                   type="text"
                   value={projectName}
                 />
-                {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
+                {errors.name && <p className="mt-2 text-xs font-semibold text-red-600">{errors.name}</p>}
+                {errors.general && <p className="mt-2 text-xs font-semibold text-red-600">{errors.general}</p>}
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-xs font-bold text-nexus-text">Description <span className="font-medium text-slate-500">(Optional)</span></span>
                 <textarea
-                  className="min-h-32 w-full resize-none rounded-xl border border-nexus-border px-4 py-3 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
-                  onChange={(event) => setDescription(event.target.value)}
+                  className={`min-h-32 w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
+                    errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+                  }`}
+                  onChange={(event) => {
+                    setDescription(event.target.value);
+                    setErrors((prev) => ({ ...prev, description: null }));
+                  }}
                   placeholder="Add a brief description of the project goals..."
                   value={description}
                 />
+                {errors.description && <p className="mt-2 text-xs font-semibold text-red-600">{errors.description}</p>}
               </label>
 
               <div>

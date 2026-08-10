@@ -108,9 +108,11 @@ const DashboardPage = () => {
       );
       setEditingProject(null);
       setToast("Project updated successfully.");
+      return { success: true };
     } catch (err) {
       console.error(err);
-      setToast("Failed to update project.");
+      setToast(err.response?.data?.message || "Failed to update project.");
+      return { success: false, error: err };
     }
   };
 

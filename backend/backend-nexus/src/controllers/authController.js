@@ -42,7 +42,7 @@ exports.register = async (req, res) => {
     
   if (!isValidPassword(password)) {
     return res.status(400).json({ 
-      message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special characters" 
+      message: "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character." 
     });
   }
 
@@ -52,7 +52,7 @@ exports.register = async (req, res) => {
   try {
     const existing = await User.findOne({ email });
     if (existing)
-      return res.status(400).json({ message: "Email is already registered" });
+      return res.status(400).json({ message: "This email is already registered in our system." });
 
     const hashed = await bcrypt.hash(password, 10);
     
@@ -139,13 +139,13 @@ exports.login = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user || !user.passwordHash)
-      return res.status(400).json({ message: "Incorrect email or password" });
+      return res.status(400).json({ message: "Invalid email or password. Please check your credentials and try again." });
     if (!user.isVerified)
-      return res.status(403).json({ message: "Account has not been verified" });
+      return res.status(403).json({ message: "Your account has not been verified. Please complete the OTP verification." });
 
     const match = await bcrypt.compare(password, user.passwordHash);
     if (!match)
-      return res.status(400).json({ message: "Incorrect email or password" });
+      return res.status(400).json({ message: "Invalid email or password. Please check your credentials and try again." });
 
     const expiresIn = (rememberMe === true || rememberMe === 'true') ? '7d' : '1d';
     const token = jwt.sign(
@@ -299,8 +299,8 @@ exports.resendOtp = async (req, res) => {
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: 'Email not found' });
-    if (user.isVerified) return res.status(400).json({ message: 'Account is already verified' });
+    if (!user) return res.status(404).json({ message: 'This email is not registered in our system.' });
+    if (user.isVerified) return res.status(400).json({ message: 'This account is already verified.' });
 
     const existingOtp = await Otp.findOne({ email, type: 'signup' });
     if (existingOtp && existingOtp.cooldownUntil > new Date()) {
@@ -336,7 +336,7 @@ exports.setPassword = async (req, res) => {
   try {
     if (!isValidPassword(password)) {
       return res.status(400).json({
-        message: "Password must be at least 8 characters and include uppercase, lowercase, number, and special characters"
+        message: "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character."
       });
     }
 

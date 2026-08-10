@@ -117,6 +117,9 @@ const DocumentPreviewPage = () => {
 
     fetchProjectDocumentPreview(projectId, documentId).then(setPreview).catch(console.error);
     
+    // Log recent access
+    api.post(`/files/${documentId}/recent`).catch(err => console.error("Failed to log recent access", err));
+
     getProjectDocumentSummaryAI(documentId)
       .then(res => {
         if (res.success && res.summary) {

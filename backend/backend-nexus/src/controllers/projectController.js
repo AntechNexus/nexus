@@ -2,7 +2,7 @@ const Project = require("../models/Projects");
 const Folder = require("../models/Folder");
 const File = require("../models/File");
 
-exports.createProject = async (req, res) => {
+exports.createProject = async (req, res, next) => {
   try {
     const { name, description, createdBy, members } = req.body;
     const creatorId = req.user?.id || req.user?._id || createdBy;
@@ -10,7 +10,7 @@ exports.createProject = async (req, res) => {
     if (!creatorId) {
       return res.status(401).json({
         success: false,
-        message: "Unauthenticated user (Please include a JWT Token in the Header or createdBy in the Body)",
+        message: "Unauthenticated user. Please log in again.",
       });
     }
 
@@ -42,13 +42,7 @@ exports.createProject = async (req, res) => {
     await project.save();
     res.status(201).json({ success: true, data: project });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message: "You already have an active project with this name",
-      });
-    }
-    res.status(400).json({ success: false, message: error.message });
+    next(error);
   }
 };
 
@@ -172,7 +166,7 @@ exports.deleteProject = async (req, res) => {
 };
 
 // Update project (only owner)
-exports.updateProject = async (req, res) => {
+exports.updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
@@ -205,9 +199,6 @@ exports.updateProject = async (req, res) => {
       data: project,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: "You already have an active project with this name" });
-    }
-    res.status(500).json({ success: false, message: error.message });
+    next(error);
   }
 };
