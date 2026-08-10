@@ -3,6 +3,7 @@ const Project = require("../models/Projects");
 const Folder = require("../models/Folder");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
+const { recordFileAccess } = require("../services/fileServices");
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
@@ -172,6 +173,9 @@ exports.createFile = async (req, res) => {
 
     const savedFile = await newFile.save();
 
+    // Record recent file access
+    await recordFileAccess(createdBy, savedFile._id, projectId);
+
     // Trigger Embedding Generation asynchronously
     if (content) {
       const GEMINI_URL = process.env.GEMINI_SERVICE_URL || "http://localhost:5001";
@@ -297,6 +301,9 @@ exports.getFileById = async (req, res) => {
     if (!isMember) {
       return res.status(403).json({ message: "Access denied to file's project" });
     }
+
+    // Record recent file access
+    await recordFileAccess(userId, file._id, file.projectId);
 
     if (!file.content && file.fileType && file.localPath) {
       const fs = require('fs');
@@ -481,6 +488,9 @@ exports.updateFile = async (req, res) => {
     if (folderId !== undefined) file.folderId = folderId === "" ? null : folderId;
 
     const updatedFile = await file.save();
+
+    // Record recent file access
+    await recordFileAccess(userId, updatedFile._id, updatedFile.projectId);
     return res.status(200).json({
       message: "File successfully updated",
       data: updatedFile,
@@ -540,6 +550,9 @@ exports.createFileVersion = async (req, res) => {
     });
 
     const savedFile = await newVersionFile.save();
+
+    // Record recent file access
+    await recordFileAccess(userId, savedFile._id, savedFile.projectId);
     return res.status(201).json({
       message: "New file version created successfully",
       data: savedFile,
@@ -759,6 +772,9 @@ exports.downloadFile = async (req, res) => {
       return res.status(404).json({ message: "Physical file not found on disk" });
     }
 
+    // Record recent file access
+    await recordFileAccess(userId, file._id, file.projectId);
+
     res.download(file.localPath, file.originalName, (err) => {
       if (err) {
         console.error("Download error:", err);
@@ -772,3 +788,4 @@ exports.downloadFile = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+

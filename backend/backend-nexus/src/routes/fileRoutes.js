@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const fileController = require("../controllers/fileController");
+const recentFileController = require("../controllers/recentFileController");
 const { protect } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const fs = require('fs');
@@ -44,6 +45,7 @@ router.post("/", handleUpload, fileController.createFile);
 router.get("/", fileController.getFiles);
 router.get("/project/:projectId", fileController.getFilesByProject);
 router.get("/folder/:folderId", fileController.getFilesByFolder);
+router.get("/recent", recentFileController.getRecentFiles);
 router.get("/trash/all", fileController.getTrashFiles);
 router.delete("/trash/empty", fileController.emptyTrashFiles);
 router.get("/:id", fileController.getFileById);
