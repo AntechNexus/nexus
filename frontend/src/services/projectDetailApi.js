@@ -253,7 +253,12 @@ export const getProjectDocumentSummary = async (projectId) => {
 
 export const getProjectDocumentSummaryAI = async (fileId) => {
   try {
-    const response = await fetch(`http://localhost:5001/api/files/${fileId}/summary`);
+    const token = localStorage.getItem('nexus_token');
+    const response = await fetch(`http://localhost:5001/api/files/${fileId}/summary`, {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
     const data = await response.json();
     return data;
   } catch (error) {
@@ -264,8 +269,11 @@ export const getProjectDocumentSummaryAI = async (fileId) => {
 
 export const getAudioTranscriptAI = async (fileId) => {
   try {
+    const token = localStorage.getItem('nexus_token');
+    const headers = { "Authorization": `Bearer ${token}` };
+    
     // We first check backend-nexus for existing transcript
-    const resNexus = await fetch(`http://localhost:5000/api/transcripts/file/${fileId}`);
+    const resNexus = await fetch(`http://localhost:5000/api/transcripts/file/${fileId}`, { headers });
     const dataNexus = await resNexus.json();
     
     if (dataNexus.success && dataNexus.data) {
@@ -273,7 +281,7 @@ export const getAudioTranscriptAI = async (fileId) => {
     }
 
     // If not found, call backend-gemini to transcribe
-    const resGemini = await fetch(`http://localhost:5001/api/files/${fileId}/transcribe`);
+    const resGemini = await fetch(`http://localhost:5001/api/files/${fileId}/transcribe`, { headers });
     const dataGemini = await resGemini.json();
     return dataGemini;
   } catch (error) {
@@ -284,10 +292,12 @@ export const getAudioTranscriptAI = async (fileId) => {
 
 export const updateAudioTranscriptAI = async (transcriptId, updatedData) => {
   try {
+    const token = localStorage.getItem('nexus_token');
     const response = await fetch(`http://localhost:5000/api/transcripts/${transcriptId}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify(updatedData)
     });
