@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Bell, LogOut, Menu, Search, UserRound, Users } from "lucide-react";
+import { Bell, LogOut, Menu, Search, UserRound, Users, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { notificationService } from "../../services/notification.service";
