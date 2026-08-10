@@ -1,43 +1,22 @@
-# Nexus AI Product Management System
+# Nexus - Main Repository
 
-This repository contains the integrated architecture for Nexus AI, featuring a React frontend and dual Node.js backends.
+Welcome to **Nexus**, an integrated AI-powered workspace combining project management, document storage, and intelligent AI services (Chat, PRD Generator, and Audio Transcription).
 
-## Architecture
-- **Frontend** (Port 5173): React application using Vite and Tailwind CSS.
-- **Backend Nexus** (Port 5000): Primary Node.js API handling authentication, projects, and files.
-  - *Note for MacBook users: Port 5000 often conflicts with the built-in AirPlay Receiver. If you cannot start Backend Nexus on port 5000, please disable AirPlay Receiver in your Mac's Sharing Settings, or change the port.*
-- **Backend Gemini** (Port 5001): Dedicated Node.js AI service for Gemini API integration.
-- **MongoDB** (Port 27017): Database container.
+## Project Structure
+The project is divided into three main microservices:
+1. **[Frontend](./frontend/README.md)**: React (Vite) application for the user interface.
+2. **[Backend Nexus](./backend/backend-nexus/README.md)**: Main Node.js API for authentication, users, projects, and file management.
+3. **[Backend Gemini/AI](./backend/backend-gemini/README.md)**: Python/Node.js microservice handling AI integration (Elice API & Google Models) and heavy processing.
 
-## Getting Started with Docker
+## Quick Start (Docker)
+The easiest way to run the entire stack is using Docker Compose:
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/RefaMuhammad/nexus.git
-   cd nexus
-   ```
+```bash
+docker compose up -d --build
+```
 
-2. **Environment Variables:**
-   You must create your own `.env` files before running the application, as they are not committed to Git. We have provided `.env.example` templates for you to copy.
+Make sure you have configured all `.env` files in their respective directories before starting the containers.
 
-   - **Backend Nexus:**
-     ```bash
-     cp backend/backend-nexus/.env.example backend/backend-nexus/.env
-     ```
-     *(Then open it and fill in your `MONGO_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, `EMAIL_PASS`, etc.)*
-
-   - **Backend Gemini:**
-     ```bash
-     cp backend/backend-gemini/.env.example backend/backend-gemini/.env
-     ```
-     *(Then open it and fill in your `GEMINI_API_KEY`)*
-
-3. **Run with Docker Compose:**
-   ```bash
-   docker-compose up --build
-   ```
-
-4. **Access the Application:**
-   - Frontend: `http://localhost:5173`
-   - Nexus API: `http://localhost:5000`
-   - Gemini API: `http://localhost:5001`
+- Frontend runs on: `http://localhost:5173`
+- Backend Nexus runs on: `http://localhost:5000`
+- Backend AI runs on: `http://localhost:5001`

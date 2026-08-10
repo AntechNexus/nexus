@@ -1,16 +1,22 @@
-# React + Vite
+# Nexus Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the React client for Nexus, built using Vite, TailwindCSS, and Lucide React.
 
-Currently, two official plugins are available:
+## Features
+- **Dashboard & Project Management**: Create and manage workspaces.
+- **AI PRD Workspace**: Upload source files (PDF, Audio, DOCX) to automatically generate comprehensive Product Requirements Documents via AI.
+- **Audio Transcription**: Upload audio files for speech-to-text processing using Gemini Flash.
+- **Ask Nexus**: Chat interface allowing you to query your project's documents.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Environment Variables (`.env`)
+Create a `.env` file in this directory:
+```env
+VITE_NEXUS_API_URL=http://localhost:5000/api
+VITE_GEMINI_API_URL=http://localhost:5001/api
+```
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Running Locally
+```bash
+npm install
+npm run dev
+```
