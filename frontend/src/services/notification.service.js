@@ -5,6 +5,10 @@ export const notificationService = {
     const response = await api.get('/notifications');
     return response.data;
   },
+  createNotification: async (data) => {
+    const response = await api.post('/notifications', data);
+    return response.data;
+  },
   markAsRead: async (id) => {
     const response = await api.patch(`/notifications/${id}/read`);
     return response.data;
@@ -19,6 +23,10 @@ export const notificationService = {
   },
   deleteNotification: async (id) => {
     const response = await api.delete(`/notifications/${id}`);
+    return response.data;
+  },
+  clearReadNotifications: async () => {
+    const response = await api.delete('/notifications/read-all');
     return response.data;
   }
 };

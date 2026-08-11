@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OAuthSuccess from "./pages/OAuthSuccess/OAuthSuccess";
+import GlobalToast from "./components/dashboard/GlobalToast";
 
 const CreateProjectPage = React.lazy(() => import("./pages/CreateProjectPage/CreateProjectPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage/DashboardPage"));
@@ -15,6 +16,7 @@ const PasswordSetupPage = React.lazy(() => import("./pages/PasswordSetupPage/Pas
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage/ProjectsPage"));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage/RegisterPage"));
+const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage/SubscriptionsPage"));
 const VerifyOtpPage = React.lazy(() => import("./pages/VerifyOtpPage/VerifyOtpPage"));
 const ProjectDetailPage = React.lazy(() => import("./pages/ProjectDetailPage/ProjectDetailPage"));
 const TeamsPage = React.lazy(() => import("./pages/TeamsPage/TeamsPage"));
@@ -38,6 +40,7 @@ const ReservedRoute = ({ title }) => (
 const App = () => {
   return (
     <BrowserRouter>
+      <GlobalToast />
       <Suspense fallback={<main className="reserved-route-placeholder"><h1>Loading...</h1></main>}>
         <Routes>
           {/* Public Routes */}
@@ -62,6 +65,7 @@ const App = () => {
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/new" element={<CreateProjectPage />} />
             <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
