@@ -10,7 +10,6 @@ import {
   Folder,
   Home,
   Lightbulb,
-  Smile,
   Sparkles,
   X,
 } from "lucide-react";
@@ -192,13 +191,12 @@ const DocumentPreviewPage = () => {
                   {project.title}
                 </Link>
                 <ChevronRight size={14} />
-                <span>Document Preview</span>
+                <span className="max-w-[260px] truncate font-medium text-nexus-text">
+                  {document?.name || "Document Preview"}
+                </span>
               </nav>
 
-              <div className="mb-6 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                  <Smile size={22} />
-                </span>
+              <div className="mb-6">
                 <h1 className="text-2xl font-bold tracking-tight text-nexus-text">Document Preview</h1>
               </div>
 

@@ -43,6 +43,11 @@ const formatFileSize = (bytes = 0) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+const getUploadFileStyle = (name = "") => {
+  const extension = name.split(".").pop()?.toLowerCase();
+  return fileStyles[extension] || fileStyles.prd;
+};
+
 const ModalShell = ({ children, onClose, title }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -149,25 +154,30 @@ const AddFileModal = ({ onClose, onUpload }) => {
 
         {selectedFiles.length > 0 && (
           <div className="mt-6 flex flex-col gap-3">
-            {selectedFiles.map((file, index) => (
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4" key={index}>
-                <div className="flex items-center gap-3">
-                  <FileText className="text-nexus-primary" size={20} />
-                  <div>
-                    <span className="block text-sm font-semibold text-nexus-text">{file.name}</span>
-                    <span className="block text-xs font-medium text-slate-500">{formatFileSize(file.size)}</span>
+            {selectedFiles.map((file, index) => {
+              const { Icon, tone } = getUploadFileStyle(file.name);
+
+              return (
+                <div className="grid grid-cols-[32px_minmax(0,1fr)_36px] items-center gap-3 rounded-xl bg-slate-50 p-4" key={index}>
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${tone}`}>
+                    <Icon size={18} />
+                  </span>
+                  <div className="min-w-0">
+                    <span className="block break-words text-sm font-semibold leading-5 text-nexus-text">{file.name}</span>
+                    <span className="mt-0.5 block text-xs font-medium text-slate-500">{formatFileSize(file.size)}</span>
                   </div>
+                  <button
+                    aria-label={`Remove ${file.name}`}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                    onClick={() => removeFile(index)}
+                    type="button"
+                    disabled={isUploading}
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
-                <button
-                  className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
-                  onClick={() => removeFile(index)}
-                  type="button"
-                  disabled={isUploading}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

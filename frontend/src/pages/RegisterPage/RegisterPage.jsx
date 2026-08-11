@@ -90,7 +90,7 @@ const RegisterPage = () => {
       <div className="right-section">
         <div className="top-nav">
           <span>Already have an account? </span>
-          <Link to="/login" className="login-link">Log in</Link>
+          <Link to="/login" className="login-link">Sign in</Link>
         </div>
 
         <div className="form-wrapper">
