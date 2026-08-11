@@ -85,6 +85,13 @@ const formatUpdatedLabel = (dateValue) => {
   return `Updated ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 };
 
+/**
+ * API service function: normalizeProject
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const normalizeProject = (project) => {
   const documentSummary = getProjectDocumentSummary(project.id);
   const updatedAt = documentSummary.updatedAt || project.updatedAt || project.updated_at || project.createdAt || project.created_at;
@@ -102,11 +109,25 @@ export const normalizeProject = (project) => {
   };
 };
 
+/**
+ * API service function: getProjects
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getProjects = () => {
   const storedProjects = JSON.parse(localStorage.getItem(PROJECTS_STORAGE_KEY) || "[]");
   return storedProjects.map(normalizeProject);
 };
 
+/**
+ * API service function: saveProject
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const saveProject = (project) => {
   const currentProjects = getProjects();
   const nextProject = normalizeProject({
@@ -119,6 +140,13 @@ export const saveProject = (project) => {
   return nextProject;
 };
 
+/**
+ * API service function: updateProject
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const updateProject = (projectId, updates) => {
   const nextProjects = getProjects().map((project) =>
     project.id === projectId ? normalizeProject({ ...project, ...updates, updatedAt: new Date().toISOString() }) : project,
@@ -127,6 +155,13 @@ export const updateProject = (projectId, updates) => {
   return nextProjects;
 };
 
+/**
+ * API service function: moveProjectToTrash
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const moveProjectToTrash = (projectId) => {
   const nextProjects = getProjects().filter((project) => project.id !== projectId);
   localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(nextProjects));

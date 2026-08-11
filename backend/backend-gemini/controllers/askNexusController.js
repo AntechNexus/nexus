@@ -6,6 +6,12 @@ const Project = require("../models/Project");
 const mongoose = require("mongoose");
 
 let extractor = null;
+/**
+ * Initializes and retrieves the embedding extractor model (Xenova/bge-base-en-v1.5).
+ * Uses a singleton pattern so the model is only loaded once in memory.
+ * 
+ * @returns {Promise<Function>} The initialized feature-extraction pipeline.
+ */
 async function getExtractor() {
   if (!extractor) {
     extractor = await pipeline('feature-extraction', 'Xenova/bge-base-en-v1.5', { quantized: true });
@@ -13,6 +19,14 @@ async function getExtractor() {
   return extractor;
 }
 
+/**
+ * Computes the cosine similarity between two vectors.
+ * Useful for finding the similarity distance between a question embedding and document embeddings.
+ * 
+ * @param {number[]} vecA - First vector.
+ * @param {number[]} vecB - Second vector.
+ * @returns {number} Cosine similarity score (between -1 and 1).
+ */
 function cosineSimilarity(vecA, vecB) {
   let dotProduct = 0;
   let normA = 0;
@@ -26,6 +40,21 @@ function cosineSimilarity(vecA, vecB) {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+/**
+ * Handles generating an AI answer based on the uploaded project documents (RAG).
+ * 
+ * Flow:
+ * 1. Validates the user's project access.
+ * 2. Embeds the user's question into a vector using Transformers.js.
+ * 3. Fetches all document embeddings for the project and computes cosine similarity.
+ * 4. Extracts the top 8 most relevant document chunks to form the context.
+ * 5. Passes the context, conversation history, and question to the Gemini model.
+ * 6. Saves the generated answer to the ChatConversation history and returns it.
+ * 
+ * @param {Object} req - Express request object containing projectId and question.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the answer, source snippets, and conversationId.
+ */
 const askNexus = async (req, res) => {
   try {
     const { projectId, question, conversationId, projectName } = req.body;
@@ -148,6 +177,14 @@ const askNexus = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves all chat conversations belonging to the authenticated user.
+ * Can be filtered by a specific projectId via query params.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing an array of conversations.
+ */
 const getConversations = async (req, res) => {
   try {
     const { projectId } = req.query;
@@ -164,6 +201,13 @@ const getConversations = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves a specific chat conversation by its ID.
+ * 
+ * @param {Object} req - Express request object containing the conversation ID in params.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the conversation history.
+ */
 const getConversationById = async (req, res) => {
   try {
     const conv = await ChatConversation.findById(req.params.id);
@@ -174,6 +218,21 @@ const getConversationById = async (req, res) => {
   }
 };
 
+/**
+ * Regenerates the AI's last response in a conversation.
+ * 
+ * Flow:
+ * 1. Finds the conversation by ID.
+ * 2. Pops off the last AI response (if any) so it can be regenerated.
+ * 3. Gets the last user question and embeds it again.
+ * 4. Retrieves the top relevant context chunks using cosine similarity.
+ * 5. Calls the Gemini model again to get a fresh response.
+ * 6. Saves the new response to the conversation history.
+ * 
+ * @param {Object} req - Express request object containing conversationId.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the regenerated answer.
+ */
 const regenerateMessage = async (req, res) => {
   try {
     const { conversationId } = req.body;

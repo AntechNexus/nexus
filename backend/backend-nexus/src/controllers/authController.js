@@ -27,6 +27,13 @@ const formatBytes = (bytes) => {
 };
 
 // create
+/**
+ * Registers a new user and sends an OTP for verification.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.register = async (req, res) => {
   let { email, password, fullName } = req.body;
   
@@ -82,6 +89,13 @@ exports.register = async (req, res) => {
   }
 };
 
+/**
+ * Verifies the OTP sent to the user's email during registration.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.verifyOtp = async (req, res) => {
   let { email, code, onboarding } = req.body;
   
@@ -128,6 +142,13 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
+/**
+ * Authenticates a user and returns a JWT token.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.login = async (req, res) => {
   let { email, password, rememberMe } = req.body;
   
@@ -171,6 +192,13 @@ exports.googleCallback = (req, res) => {
 };
 
 // Fungsi forgotPassword
+/**
+ * Sends a password reset link/OTP to the user's email.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.forgotPassword = async (req, res) => {
   let { email } = req.body;
   if (!email || typeof email !== 'string')
@@ -204,6 +232,13 @@ exports.forgotPassword = async (req, res) => {
 };
 
 // Fungsi resetPassword
+/**
+ * Resets the user's password using the provided token/OTP.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.resetPassword = async (req, res) => {
   let { email, code, newPassword } = req.body;
 
@@ -243,6 +278,13 @@ exports.resetPassword = async (req, res) => {
 
 
 // View Profile
+/**
+ * Retrieves the currently authenticated user's profile.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getMe = async (req, res) => {
   try {
     // Ambil data utuh terlebih dahulu agar hasPassword terhitung valid
@@ -286,6 +328,13 @@ exports.getMe = async (req, res) => {
   }
 };
 
+/**
+ * Resends the OTP code to the user's email.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.resendOtp = async (req, res) => {
   let { email } = req.body;
   
@@ -325,6 +374,13 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
+/**
+ * Sets a password for users who registered via OAuth.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.setPassword = async (req, res) => {
   let { password } = req.body;
   
@@ -355,6 +411,13 @@ exports.setPassword = async (req, res) => {
 };
 
 // Edit Profile
+/**
+ * Updates the authenticated user's profile data.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.updateProfile = async (req, res) => {
   const { fullName, roleTitle, avatarUrl, role, industry, teamSize } = req.body;
 
@@ -418,6 +481,13 @@ exports.updateProfile = async (req, res) => {
 };
 
 // fungsi change password di profile
+/**
+ * Changes the authenticated user's password.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.changePassword = async (req, res) => {
   let { currentPassword, newPassword } = req.body;
 
@@ -466,6 +536,13 @@ exports.changePassword = async (req, res) => {
 };
 
 // delete
+/**
+ * Deletes the authenticated user's account.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.deleteAccount = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -480,6 +557,13 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves the user's total storage usage statistics.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getStorage = async (req, res) => {
   try {
     const userId = req.user.id;

@@ -108,6 +108,13 @@ async function decrementStorage(ownerId, amountBytes) {
 }
 
 // Create / Upload File Metadata and File
+/**
+ * Uploads and creates a new file record in the database.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createFile = async (req, res) => {
   try {
     const {
@@ -206,6 +213,13 @@ exports.createFile = async (req, res) => {
 };
 
 // Get List Files (Filtered by project, folder, status, category, search)
+/**
+ * Retrieves all files belonging to the authenticated user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFiles = async (req, res) => {
   try {
     const {
@@ -278,6 +292,13 @@ exports.getFiles = async (req, res) => {
 };
 
 // Get Single File by ID
+/**
+ * Retrieves details of a specific file by its ID.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFileById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -339,6 +360,13 @@ exports.getFileById = async (req, res) => {
 };
 
 // Get Files by Project ID
+/**
+ * Retrieves all files associated with a specific project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFilesByProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -390,6 +418,13 @@ exports.getFilesByProject = async (req, res) => {
 };
 
 // Get Files by Folder ID
+/**
+ * Retrieves all files located within a specific folder.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFilesByFolder = async (req, res) => {
   try {
     const { folderId } = req.params;
@@ -457,6 +492,13 @@ exports.getFilesByFolder = async (req, res) => {
 };
 
 // Update File Metadata (rename / move folder / updatedBy)
+/**
+ * Updates the metadata of a specific file.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.updateFile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -506,6 +548,13 @@ exports.updateFile = async (req, res) => {
 };
 
 // Create New Version of File
+/**
+ * Uploads a new version for an existing file.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createFileVersion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -568,6 +617,13 @@ exports.createFileVersion = async (req, res) => {
 };
 
 // Move to Trash (Soft delete)
+/**
+ * Moves a file to the trash (soft delete).
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.moveToTrash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -608,6 +664,13 @@ exports.moveToTrash = async (req, res) => {
 };
 
 // Restore File from Trash
+/**
+ * Restores a file from the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.restoreFromTrash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -648,6 +711,13 @@ exports.restoreFromTrash = async (req, res) => {
 };
 
 // Hard Delete / Mark status as 'deleted'
+/**
+ * Permanently deletes a file from the database and storage.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.deleteFile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -688,6 +758,13 @@ exports.deleteFile = async (req, res) => {
 };
 
 // GET /api/files/trash
+/**
+ * Retrieves all files that are currently in the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getTrashFiles = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -716,6 +793,13 @@ exports.getTrashFiles = async (req, res) => {
 };
 
 // DELETE /api/files/trash/empty
+/**
+ * Permanently deletes all files currently in the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.emptyTrashFiles = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
@@ -745,6 +829,13 @@ exports.emptyTrashFiles = async (req, res) => {
 };
 
 // Download File Endpoint
+/**
+ * Downloads the physical file associated with a file record.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.downloadFile = async (req, res) => {
   try {
     const { id } = req.params;
@@ -792,6 +883,13 @@ exports.downloadFile = async (req, res) => {
 };
 
 // Log Recent Access Endpoint
+/**
+ * Logs a file as recently accessed by the user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.logRecentAccess = async (req, res) => {
   try {
     const { id } = req.params;

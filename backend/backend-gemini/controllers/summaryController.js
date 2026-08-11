@@ -1,6 +1,19 @@
 const { OpenAI } = require("openai");
 const File = require("../models/File");
 
+/**
+ * Handles generating a short AI summary for a specific file.
+ * 
+ * Flow:
+ * 1. Finds the file by ID.
+ * 2. Extracts text from the file content or its associated transcript.
+ * 3. Sends the text to the AI model (Gemini) with a prompt to create short bullet points.
+ * 4. Cleans up the response to remove markdown blocks and returns it.
+ * 
+ * @param {Object} req - Express request object containing the file ID in params.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the success status and summary text.
+ */
 const handleSummary = async (req, res) => {
   try {
     const { id } = req.params;

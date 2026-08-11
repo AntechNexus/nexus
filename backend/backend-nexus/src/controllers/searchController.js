@@ -2,6 +2,13 @@ const Project = require('../models/Projects');
 const Folder = require('../models/Folder');
 const File = require('../models/File');
 
+/**
+ * Performs a global search across projects, folders, files, and PRDs.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.globalSearch = async (req, res) => {
   try {
     const { q } = req.query;

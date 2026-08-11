@@ -379,6 +379,18 @@ const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
   );
 };
 
+/**
+ * TeamsPage Component
+ * 
+ * The workspace settings and member management interface.
+ * Responsibilities:
+ * - Displays all users (members, viewers, admins) within a project.
+ * - Handles inviting new members via email search.
+ * - Manages Role-Based Access Control (RBAC) levels (e.g., owner vs member permissions).
+ * - Periodically polls (15s) for member status updates (e.g., pending to accepted).
+ * 
+ * @returns {JSX.Element} The rendered team management interface.
+ */
 const TeamsPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();

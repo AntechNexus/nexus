@@ -3,6 +3,13 @@ const Project = require("../models/Projects");
 const Notification = require("../models/Notification");
 
 // 1. GET /api/users/search?email=xxx (Protected)
+/**
+ * Searches for users by their email address.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.searchUsersByEmail = async (req, res) => {
   try {
     const query = req.query.q || req.query.email;
@@ -36,6 +43,13 @@ const checkProjectAccess = (project, userId) => {
 };
 
 // 2. GET /api/projects/:projectId/members (Protected)
+/**
+ * Retrieves all members of a specific project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getProjectMembers = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -67,6 +81,13 @@ exports.getProjectMembers = async (req, res) => {
 };
 
 // 3. POST /api/projects/:projectId/members (Protected)
+/**
+ * Adds a new member to a project or sends an invitation.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.addProjectMember = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -154,6 +175,13 @@ exports.addProjectMember = async (req, res) => {
 };
 
 // 4. DELETE /api/projects/:projectId/members/:userId (Protected)
+/**
+ * Removes a member from a project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.removeProjectMember = async (req, res) => {
   try {
     const { projectId, userId: targetUserId } = req.params;

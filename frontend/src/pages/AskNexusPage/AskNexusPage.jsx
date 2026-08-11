@@ -11,6 +11,18 @@ import { projectService } from "../../services/project.service";
 // Fallback removed to show empty state when no projects exist
 const promptIcons = [FileText, ListChecks, Users];
 
+/**
+ * AskNexusPage Component
+ * 
+ * The main interface for the Ask Nexus AI Copilot.
+ * Responsibilities:
+ * - Provides a chat-like interface to query AI about project context.
+ * - Handles conversation history selection and creation.
+ * - Displays AI responses with inline citations (source documents).
+ * - Integrates deeply with Retrieval-Augmented Generation (RAG) backend endpoints.
+ * 
+ * @returns {JSX.Element} The rendered AI chat copilot interface.
+ */
 const AskNexusPage = () => {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

@@ -2,6 +2,13 @@ const Transcript = require("../models/Transcript");
 
 // POST /api/transcripts
 // Create a transcript for a file — one transcript per file (fileId is unique)
+/**
+ * Creates a new transcript record from audio.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createTranscript = async (req, res) => {
   try {
     const { fileId, projectId, fullText, language, durationSeconds, segments } = req.body;
@@ -45,6 +52,13 @@ exports.createTranscript = async (req, res) => {
 
 // GET /api/transcripts/file/:fileId
 // Get the transcript for a specific file
+/**
+ * Retrieves the transcript associated with a specific file.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getTranscriptByFileId = async (req, res) => {
   try {
     const { fileId } = req.params;
@@ -67,6 +81,13 @@ exports.getTranscriptByFileId = async (req, res) => {
 
 // GET /api/transcripts/project/:projectId
 // Get all transcripts under a project
+/**
+ * Retrieves all transcripts associated with a specific project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getTranscriptsByProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -88,6 +109,13 @@ exports.getTranscriptsByProject = async (req, res) => {
 
 // GET /api/transcripts/:id
 // Get a single transcript by its _id
+/**
+ * Retrieves details of a specific transcript.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getTranscriptById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,6 +138,13 @@ exports.getTranscriptById = async (req, res) => {
 
 // PUT /api/transcripts/:id
 // Update a transcript — fullText, language, durationSeconds, segments
+/**
+ * Updates the content of an existing transcript.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.updateTranscript = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,6 +177,13 @@ exports.updateTranscript = async (req, res) => {
 
 // GET /api/transcripts/:id/export/txt
 // Export transcript as a .txt file download
+/**
+ * Exports a transcript to a downloadable .txt file.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.exportTranscriptToTxt = async (req, res) => {
   try {
     const { id } = req.params;
