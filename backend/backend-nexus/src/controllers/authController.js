@@ -1,10 +1,10 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const File = require("../models/File");
-const Project = require("../models/Projects");
-const Otp = require("../models/Otp");
-const { sendOtpEmail, sendResetLinkEmail } = require("../config/mailer");
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const File = require('../models/File');
+const Project = require('../models/Projects');
+const Otp = require('../models/Otp');
+const { sendOtpEmail, sendResetLinkEmail } = require('../config/mailer');
 
 const genOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -29,77 +29,71 @@ const formatBytes = (bytes) => {
 // create
 exports.register = async (req, res) => {
   let { email, password, fullName } = req.body;
-  
-  if (!email || typeof email !== 'string' || !password || typeof password !== 'string' || !fullName || typeof fullName !== 'string')
-    return res.status(400).json({ message: "Email, password, and full name are required" });
-    
+
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string' || !fullName || typeof fullName !== 'string') return res.status(400).json({ message: 'Email, password, and full name are required' });
+
   email = email.trim().toLowerCase();
   password = password.trim();
   fullName = fullName.trim();
-  
-  if (!isValidEmail(email))
-    return res.status(400).json({ message: "Please enter a valid email address" });
-    
+
+  if (!isValidEmail(email)) return res.status(400).json({ message: 'Please enter a valid email address' });
+
   if (!isValidPassword(password)) {
-    return res.status(400).json({ 
-      message: "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character." 
+    return res.status(400).json({
+      message: 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.',
     });
   }
 
-  if (fullName.length < 2 || fullName.length > 50)
-    return res.status(400).json({ message: "Full name must be between 2 and 50 characters" });
+  if (fullName.length < 2 || fullName.length > 50) return res.status(400).json({ message: 'Full name must be between 2 and 50 characters' });
 
   try {
     const existing = await User.findOne({ email });
-    if (existing)
-      return res.status(400).json({ message: "This email is already registered in our system." });
+    if (existing) return res.status(400).json({ message: 'This email is already registered in our system.' });
 
     const hashed = await bcrypt.hash(password, 10);
-    
+
     // Simpan pendaftaran dengan nama lengkap di profil
     await User.create({
       email,
       passwordHash: hashed,
       isVerified: false,
       profile: {
-        fullName: fullName
-      }
+        fullName: fullName,
+      },
     });
 
     const otp = genOtp();
     await Otp.create({
       email,
       code: otp,
-      type: "signup",
+      type: 'signup',
       cooldownUntil: new Date(Date.now() + 60 * 1000),
       expiresAt: new Date(Date.now() + 5 * 60000),
     });
     await sendOtpEmail(email, otp);
 
-    res.json({ message: "Registration successful. Please check your email for the OTP code" });
+    res.json({ message: 'Registration successful. Please check your email for the OTP code' });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
 exports.verifyOtp = async (req, res) => {
   let { email, code, onboarding } = req.body;
-  
-  if (!email || typeof email !== 'string' || !code || typeof code !== 'string')
-    return res.status(400).json({ message: "Email and OTP are required" });
-    
+
+  if (!email || typeof email !== 'string' || !code || typeof code !== 'string') return res.status(400).json({ message: 'Email and OTP are required' });
+
   email = email.trim().toLowerCase();
   code = code.trim();
 
   try {
     const record = await Otp.findOne({ email, code });
-    if (!record) return res.status(400).json({ message: "Invalid OTP code" });
-    if (record.expiresAt < new Date())
-      return res.status(400).json({ message: "OTP code has expired" });
+    if (!record) return res.status(400).json({ message: 'Invalid OTP code' });
+    if (record.expiresAt < new Date()) return res.status(400).json({ message: 'OTP code has expired' });
 
     // Cari user untuk di-update status verifikasi dan data onboarding-nya
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.isVerified = true;
 
@@ -109,63 +103,47 @@ exports.verifyOtp = async (req, res) => {
       user.onboarding.teamSize = typeof onboarding.teamSize === 'string' ? onboarding.teamSize.trim() : '';
       user.onboarding.industry = typeof onboarding.industry === 'string' ? onboarding.industry.trim() : '';
     }
-    
+
     // Set status onboarding telah selesai
     user.onboarding.isCompleted = true;
 
     await user.save();
     await Otp.deleteMany({ email });
 
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" },
-    );
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-    res.json({ message: "Verification successful", token });
+    res.json({ message: 'Verification successful', token });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
 exports.login = async (req, res) => {
   let { email, password, rememberMe } = req.body;
-  
-  if (!email || typeof email !== 'string' || !password || typeof password !== 'string')
-    return res.status(400).json({ message: "Email and password are required" });
-    
+
+  if (!email || typeof email !== 'string' || !password || typeof password !== 'string') return res.status(400).json({ message: 'Email and password are required' });
+
   email = email.trim().toLowerCase();
 
   try {
     const user = await User.findOne({ email });
-    if (!user || !user.passwordHash)
-      return res.status(400).json({ message: "Invalid email or password. Please check your credentials and try again." });
-    if (!user.isVerified)
-      return res.status(403).json({ message: "Your account has not been verified. Please complete the OTP verification." });
+    if (!user || !user.passwordHash) return res.status(400).json({ message: 'Invalid email or password. Please check your credentials and try again.' });
+    if (!user.isVerified) return res.status(403).json({ message: 'Your account has not been verified. Please complete the OTP verification.' });
 
     const match = await bcrypt.compare(password, user.passwordHash);
-    if (!match)
-      return res.status(400).json({ message: "Invalid email or password. Please check your credentials and try again." });
+    if (!match) return res.status(400).json({ message: 'Invalid email or password. Please check your credentials and try again.' });
 
-    const expiresIn = (rememberMe === true || rememberMe === 'true') ? '7d' : '1d';
-    const token = jwt.sign(
-      { id: user._id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn },
-    );
+    const expiresIn = rememberMe === true || rememberMe === 'true' ? '7d' : '1d';
+    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn });
     res.json({ token, user: { email: user.email } });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
 // google SSO
 exports.googleCallback = (req, res) => {
-  const token = jwt.sign(
-    { id: req.user._id, email: req.user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" },
-  );
+  const token = jwt.sign({ id: req.user._id, email: req.user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
   const hasPassword = !!req.user.passwordHash;
   res.redirect(`${process.env.CLIENT_URL}/oauth-success?token=${token}&hasPassword=${hasPassword}`);
 };
@@ -173,33 +151,38 @@ exports.googleCallback = (req, res) => {
 // Fungsi forgotPassword
 exports.forgotPassword = async (req, res) => {
   let { email } = req.body;
-  if (!email || typeof email !== 'string')
-    return res.status(400).json({ message: "Email is required" });
+  if (!email || typeof email !== 'string') return res.status(400).json({ message: 'Email is required' });
 
   email = email.trim().toLowerCase();
 
   try {
     const user = await User.findOne({ email });
-    // Opsi A: Jika email tidak ditemukan, tetap tampilkan pesan sukses (User Enumeration Protection)
+
+    // Validasi keberadaan akun
     if (!user) {
-      return res.json({ message: "If the email is registered, a password reset link has been sent" });
+      return res.status(404).json({
+        message: 'This email is not registered in our system.',
+      });
     }
 
+    // Bersihkan OTP reset password lama jika ada
     await Otp.deleteMany({ email, type: 'password_reset' });
 
     const otp = genOtp();
     await Otp.create({
       email,
       code: otp,
-      type: "password_reset",
+      type: 'password_reset',
       cooldownUntil: new Date(Date.now() + 60 * 1000),
       expiresAt: new Date(Date.now() + 5 * 60000),
     });
+
+    // Kirim email HANYA jika user terbukti ada di database
     await sendResetLinkEmail(email, otp);
 
-    res.json({ message: "If the email is registered, a password reset link has been sent" });
+    res.json({ message: 'Password reset OTP has been sent to your email address.' });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
@@ -208,7 +191,7 @@ exports.resetPassword = async (req, res) => {
   let { email, code, newPassword } = req.body;
 
   if (!email || typeof email !== 'string' || !code || typeof code !== 'string' || !newPassword || typeof newPassword !== 'string') {
-    return res.status(400).json({ message: "Email, OTP code, and new password are required" });
+    return res.status(400).json({ message: 'Email, OTP code, and new password are required' });
   }
 
   email = email.trim().toLowerCase();
@@ -217,17 +200,17 @@ exports.resetPassword = async (req, res) => {
 
   if (!isValidPassword(newPassword)) {
     return res.status(400).json({
-      message: "New password must be at least 8 characters and include uppercase, lowercase, number, and special characters"
+      message: 'New password must be at least 8 characters and include uppercase, lowercase, number, and special characters',
     });
   }
 
   try {
     const record = await Otp.findOne({ email, code, type: 'password_reset' });
-    if (!record) return res.status(400).json({ message: "Invalid or missing OTP code" });
-    if (record.expiresAt < new Date()) return res.status(400).json({ message: "OTP code has expired" });
+    if (!record) return res.status(400).json({ message: 'Invalid or missing OTP code' });
+    if (record.expiresAt < new Date()) return res.status(400).json({ message: 'OTP code has expired' });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.passwordHash = await bcrypt.hash(newPassword, 10);
     user.isVerified = true;
@@ -235,12 +218,11 @@ exports.resetPassword = async (req, res) => {
 
     await Otp.deleteMany({ email, type: 'password_reset' });
 
-    res.json({ message: "Password updated successfully. Please sign in" });
+    res.json({ message: 'Password updated successfully. Please sign in' });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
-
 
 // View Profile
 exports.getMe = async (req, res) => {
@@ -248,10 +230,10 @@ exports.getMe = async (req, res) => {
     // Ambil data utuh terlebih dahulu agar hasPassword terhitung valid
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     const userObj = user.toObject();
     const hasPassword = !!userObj.passwordHash;
-    
+
     // Hapus hash password sebelum dikirim demi alasan keamanan
     delete userObj.passwordHash;
 
@@ -273,13 +255,13 @@ exports.getMe = async (req, res) => {
           usedBytes: userObj.storage.usedBytes,
           limitBytes: userObj.storage.limitBytes,
           // limit dibulatkan dalam GB
-          limitGB: Math.round(userObj.storage.limitBytes / (1024 * 1024 * 1024)), 
+          limitGB: Math.round(userObj.storage.limitBytes / (1024 * 1024 * 1024)),
           usedFormatted: formatBytes(userObj.storage.usedBytes),
           limitFormatted: formatBytes(userObj.storage.limitBytes),
         },
         subscription: userObj.subscription,
-        createdAt: userObj.createdAt
-      }
+        createdAt: userObj.createdAt,
+      },
     });
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
@@ -288,14 +270,12 @@ exports.getMe = async (req, res) => {
 
 exports.resendOtp = async (req, res) => {
   let { email } = req.body;
-  
-  if (!email || typeof email !== 'string')
-    return res.status(400).json({ message: "Email is required" });
-    
+
+  if (!email || typeof email !== 'string') return res.status(400).json({ message: 'Email is required' });
+
   email = email.trim().toLowerCase();
-  
-  if (!isValidEmail(email))
-    return res.status(400).json({ message: "Please enter a valid email address" });
+
+  if (!isValidEmail(email)) return res.status(400).json({ message: 'Please enter a valid email address' });
 
   try {
     const user = await User.findOne({ email });
@@ -315,7 +295,7 @@ exports.resendOtp = async (req, res) => {
       code: otp,
       type: 'signup',
       cooldownUntil: new Date(Date.now() + 60 * 1000),
-      expiresAt: new Date(Date.now() + 5 * 60000)
+      expiresAt: new Date(Date.now() + 5 * 60000),
     });
     await sendOtpEmail(email, otp);
 
@@ -327,23 +307,21 @@ exports.resendOtp = async (req, res) => {
 
 exports.setPassword = async (req, res) => {
   let { password } = req.body;
-  
-  if (!password || typeof password !== 'string')
-    return res.status(400).json({ message: "Password is required" });
-    
+
+  if (!password || typeof password !== 'string') return res.status(400).json({ message: 'Password is required' });
+
   password = password.trim();
-  
+
   try {
     if (!isValidPassword(password)) {
       return res.status(400).json({
-        message: "Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character."
+        message: 'Password must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.',
       });
     }
 
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.passwordHash)
-      return res.status(400).json({ message: 'Account already has a password' });
+    if (user.passwordHash) return res.status(400).json({ message: 'Account already has a password' });
 
     user.passwordHash = await bcrypt.hash(password, 10);
     await user.save();
@@ -361,13 +339,13 @@ exports.updateProfile = async (req, res) => {
   // Validasi panjang nama jika disediakan (2-50 karakter - NEX-089)
   if (fullName !== undefined) {
     if (typeof fullName !== 'string' || fullName.trim().length < 2 || fullName.trim().length > 50) {
-      return res.status(400).json({ message: "Full name must be between 2 and 50 characters" });
+      return res.status(400).json({ message: 'Full name must be between 2 and 50 characters' });
     }
   }
 
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     // Inisialisasi jika profile belum terbentuk di DB
     if (!user.profile) {
@@ -377,7 +355,7 @@ exports.updateProfile = async (req, res) => {
     if (fullName !== undefined) {
       user.profile.fullName = fullName.trim();
     }
-    
+
     // Update role / roleTitle
     if (role !== undefined) {
       const trimmedRole = typeof role === 'string' ? role.trim() : '';
@@ -407,13 +385,13 @@ exports.updateProfile = async (req, res) => {
 
     await user.save();
     res.json({
-      message: "Profile updated successfully",
+      message: 'Profile updated successfully',
       profile: user.profile,
-      onboarding: user.onboarding
+      onboarding: user.onboarding,
     });
   } catch (err) {
-    console.error("[PROFILE UPDATE ERROR]:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    console.error('[PROFILE UPDATE ERROR]:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
@@ -422,7 +400,7 @@ exports.changePassword = async (req, res) => {
   let { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || typeof currentPassword !== 'string' || !newPassword || typeof newPassword !== 'string') {
-    return res.status(400).json({ message: "Current password and new password are required" });
+    return res.status(400).json({ message: 'Current password and new password are required' });
   }
 
   currentPassword = currentPassword.trim();
@@ -430,38 +408,38 @@ exports.changePassword = async (req, res) => {
 
   if (!isValidPassword(newPassword)) {
     return res.status(400).json({
-      message: "New password must be at least 8 characters and include uppercase, lowercase, number, and special characters"
+      message: 'New password must be at least 8 characters and include uppercase, lowercase, number, and special characters',
     });
   }
 
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
     // Cek jika akun SSO dan belum memiliki password
     if (!user.passwordHash) {
-      return res.status(400).json({ message: "Your account does not have a password yet. Please use Set Password first" });
+      return res.status(400).json({ message: 'Your account does not have a password yet. Please use Set Password first' });
     }
 
     // Verifikasi password saat ini
     const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isMatch) {
-      return res.status(400).json({ message: "Current password is incorrect" });
+      return res.status(400).json({ message: 'Current password is incorrect' });
     }
 
     // Mencegah penggunaan password yang sama dengan password saat ini
     const isSame = await bcrypt.compare(newPassword, user.passwordHash);
     if (isSame) {
-      return res.status(400).json({ message: "New password cannot be the same as your current password" });
+      return res.status(400).json({ message: 'New password cannot be the same as your current password' });
     }
 
     // Hash dan simpan password baru
     user.passwordHash = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    res.json({ message: "Password changed successfully" });
+    res.json({ message: 'Password changed successfully' });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
 
@@ -487,12 +465,9 @@ exports.getStorage = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     const projects = await Project.find({ createdBy: userId, isDeleted: false });
-    const projectIds = projects.map(p => p._id);
+    const projectIds = projects.map((p) => p._id);
 
-    const breakdownAgg = await File.aggregate([
-      { $match: { projectId: { $in: projectIds }, status: { $ne: 'deleted' } } },
-      { $group: { _id: '$category', totalSize: { $sum: '$sizeBytes' } } }
-    ]);
+    const breakdownAgg = await File.aggregate([{ $match: { projectId: { $in: projectIds }, status: { $ne: 'deleted' } } }, { $group: { _id: '$category', totalSize: { $sum: '$sizeBytes' } } }]);
 
     const breakdown = {
       document: 0,
@@ -503,7 +478,7 @@ exports.getStorage = async (req, res) => {
 
     let actualUsedBytes = 0;
 
-    breakdownAgg.forEach(item => {
+    breakdownAgg.forEach((item) => {
       if (item._id && breakdown[item._id] !== undefined) {
         breakdown[item._id] = item.totalSize;
         actualUsedBytes += item.totalSize;
@@ -529,7 +504,3 @@ exports.getStorage = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch storage info', error: error.message });
   }
 };
-
-
-
-
