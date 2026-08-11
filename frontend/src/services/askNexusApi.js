@@ -9,6 +9,13 @@ const defaultPrompts = [
   "What risks should we clarify before development?",
 ];
 
+/**
+ * API service function: fetchAskNexusPrompts
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchAskNexusPrompts = () => {
   return defaultPrompts;
 };
@@ -22,6 +29,13 @@ const getAuthHeaders = () => {
 };
 
 // Ask a new question
+/**
+ * API service function: askNexus
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const askNexus = async (payload) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/ask`, {
     method: "POST",
@@ -35,6 +49,13 @@ export const askNexus = async (payload) => {
   return res.json();
 };
 
+/**
+ * API service function: fetchAskNexusConversations
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchAskNexusConversations = async (projectId = null) => {
   const url = projectId ? `${GEMINI_API}/ask-nexus/conversations?projectId=${projectId}` : `${GEMINI_API}/ask-nexus/conversations`;
   const res = await fetch(url, { headers: getAuthHeaders() });
@@ -49,6 +70,13 @@ export const fetchAskNexusConversations = async (projectId = null) => {
   }));
 };
 
+/**
+ * API service function: fetchAskNexusConversation
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchAskNexusConversation = async (conversationId) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/conversations/${conversationId}`, { headers: getAuthHeaders() });
   if (!res.ok) {
@@ -58,6 +86,13 @@ export const fetchAskNexusConversation = async (conversationId) => {
   return result.data;
 };
 
+/**
+ * API service function: appendAskNexusMessage
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const appendAskNexusMessage = async (payload) => {
   // We can just call askNexus again with conversationId attached
   const res = await fetch(`${GEMINI_API}/ask-nexus/ask`, {
@@ -74,6 +109,13 @@ export const appendAskNexusMessage = async (payload) => {
   return fetchAskNexusConversation(result.conversationId);
 };
 
+/**
+ * API service function: regenerateAskNexusMessage
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const regenerateAskNexusMessage = async (conversationId) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/regenerate`, {
     method: "POST",

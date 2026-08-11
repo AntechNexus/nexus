@@ -9,6 +9,13 @@ const getAuthHeaders = () => {
 // ─── Nexus API calls ────────────────────────────────────────────────────────
 
 /** Fetch all projects where current user is owner or accepted member */
+/**
+ * API service function: fetchMyProjects
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchMyProjects = async () => {
   const res = await fetch(`${NEXUS_API}/projects`, {
     headers: { ...getAuthHeaders() },
@@ -28,6 +35,13 @@ export const fetchMyProjects = async () => {
 };
 
 /** Fetch all active files in a project */
+/**
+ * API service function: fetchProjectFiles
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchProjectFiles = async (projectId) => {
   const res = await fetch(`${NEXUS_API}/files/project/${projectId}`, {
     headers: { ...getAuthHeaders() },
@@ -50,6 +64,13 @@ export const fetchProjectFiles = async (projectId) => {
  * @param {File[]} localFiles - browser File objects
  * @param {string[]} nexusFileIds - array of existing nexus file _id strings
  * @returns {{ savedFileIds: string[] }}
+ */
+/**
+ * API service function: saveFilesToProject
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
  */
 export const saveFilesToProject = async (projectId, localFiles, nexusFileIds = []) => {
   const formData = new FormData();
@@ -74,6 +95,13 @@ export const saveFilesToProject = async (projectId, localFiles, nexusFileIds = [
  * Save the generated PRD to the project as DOCX + PDF in a new folder.
  * @param {{ rawMarkdown, projectId, prdName, sourceFileIds }} payload
  */
+/**
+ * API service function: savePrd
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const savePrd = async (payload) => {
   const res = await fetch(`${NEXUS_API}/prd/generate/save`, {
     method: "POST",
@@ -94,6 +122,13 @@ export const savePrd = async (payload) => {
  * Files must be browser File objects.
  * @param {File[]} files
  * @returns {{ cacheId: string, questions: object[] }}
+ */
+/**
+ * API service function: uploadAndClarify
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
  */
 export const uploadAndClarify = async (files) => {
   const formData = new FormData();
@@ -117,6 +152,13 @@ export const uploadAndClarify = async (files) => {
  * @param {object} answers - map of question id → answer
  * @param {object[]} questions - array of question objects
  * @returns {{ prd: string }} rawMarkdown
+ */
+/**
+ * API service function: generatePrd
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
  */
 export const generatePrd = async (cacheId, answers, questions) => {
   const res = await fetch(`${GEMINI_API}/generate-prd`, {

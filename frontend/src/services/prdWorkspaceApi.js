@@ -11,6 +11,13 @@ const readStoredJson = (key) => {
   }
 };
 
+/**
+ * API service function: savePrdWorkspaceSession
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const savePrdWorkspaceSession = (session) => {
   const nextSession = {
     ...readStoredJson(PRD_WORKSPACE_SESSION_KEY),
@@ -21,6 +28,13 @@ export const savePrdWorkspaceSession = (session) => {
   return nextSession;
 };
 
+/**
+ * API service function: fetchPrdWorkspaceSession
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchPrdWorkspaceSession = () => {
   const session = readStoredJson(PRD_WORKSPACE_SESSION_KEY);
   return {
@@ -31,6 +45,13 @@ export const fetchPrdWorkspaceSession = () => {
   };
 };
 
+/**
+ * API service function: fetchClarifyingQuestions
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchClarifyingQuestions = () => [
   {
     id: "personas",
@@ -57,6 +78,13 @@ export const fetchClarifyingQuestions = () => [
   },
 ];
 
+/**
+ * API service function: fetchClarificationSession
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchClarificationSession = () => ({
   id: "prototype-clarification-session",
   status: "needs_answers",
@@ -65,6 +93,13 @@ export const fetchClarificationSession = () => ({
   questions: fetchClarifyingQuestions(),
 });
 
+/**
+ * API service function: saveClarificationAnswers
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const saveClarificationAnswers = (answers) => {
   localStorage.setItem(
     PRD_CLARIFICATIONS_STORAGE_KEY,
@@ -80,6 +115,13 @@ export const saveClarificationAnswers = (answers) => {
   };
 };
 
+/**
+ * API service function: fetchGeneratedPrdDraft
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchGeneratedPrdDraft = () => {
   const session = fetchPrdWorkspaceSession();
 
@@ -104,6 +146,13 @@ export const fetchGeneratedPrdDraft = () => {
   };
 };
 
+/**
+ * API service function: saveGeneratedPrdToFiles
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const saveGeneratedPrdToFiles = (projectId = "global-site-localization") => {
   const document = {
     id: `generated-prd-${Date.now()}`,
@@ -122,6 +171,13 @@ export const saveGeneratedPrdToFiles = (projectId = "global-site-localization") 
   };
 };
 
+/**
+ * API service function: regeneratePrdDraft
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const regeneratePrdDraft = (instruction) => ({
   ok: true,
   instruction,

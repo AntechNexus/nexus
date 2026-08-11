@@ -6,6 +6,20 @@ const mammoth = require("mammoth");
 const xlsx = require("xlsx");
 const pdfParse = require("pdf-parse");
 
+/**
+ * Handles uploading and processing of multiple files to generate PRD clarification questions.
+ * 
+ * Flow:
+ * 1. Parses up to 10 uploaded files (PDF, DOCX, XLSX, TXT, MD, Audio) and extracts their raw text.
+ * 2. Runs a quick security check (prompt injection scan) using Gemini 3.6 Flash.
+ * 3. Sends the combined text to Gemini 3.1 Pro to identify missing info and generate clarifying questions.
+ * 4. Temporarily saves the concatenated text to the local disk as a cache file.
+ * 5. Returns the cache ID (file path) and the generated JSON list of questions to the client.
+ * 
+ * @param {Object} req - Express request object containing the uploaded files (`req.files`).
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the cacheId and clarifying questions.
+ */
 const handleUpload = async (req, res) => {
   try {
     const files = req.files;

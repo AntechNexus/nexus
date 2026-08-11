@@ -11,6 +11,17 @@ import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
 import { projectService } from "../../services/project.service";
 import { fetchRecentFiles } from "../../services/recentFilesApi";
 
+/**
+ * DashboardPage Component
+ * 
+ * The primary landing page for authenticated users. 
+ * Responsibilities:
+ * - Displays an overview of recent files and active projects.
+ * - Manages notification polling (via DashboardHeader).
+ * - Serves as the central hub for navigating the Nexus workspace.
+ * 
+ * @returns {JSX.Element} The rendered dashboard interface.
+ */
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

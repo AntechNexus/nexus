@@ -3,6 +3,13 @@ import api from './api';
 export const allowedDocumentTypes = ["pdf", "docx", "xlsx", "mp3", "m4a", "wav", "prd"];
 export const allowedDocumentExtensions = allowedDocumentTypes.map((type) => `.${type}`).join(",");
 
+/**
+ * API service function: getDocumentType
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getDocumentType = (fileName) => {
   if (!fileName) return "unknown";
   const ext = fileName.split('.').pop().toLowerCase();
@@ -16,6 +23,13 @@ export const getDocumentType = (fileName) => {
   return ext;
 };
 
+/**
+ * API service function: getDocumentTypeLabel
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getDocumentTypeLabel = (fileName) => {
   const ext = fileName?.split('.')?.pop()?.toLowerCase();
   if (["mp3", "wav", "m4a"].includes(ext)) return "Audio";
@@ -26,12 +40,26 @@ export const getDocumentTypeLabel = (fileName) => {
   return "Document";
 };
 
+/**
+ * API service function: formatBytes
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const formatBytes = (bytes = 0) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+/**
+ * API service function: fetchProjectDocuments
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchProjectDocuments = async (projectId) => {
   try {
     const [foldersRes, filesRes] = await Promise.all([
@@ -74,6 +102,13 @@ export const fetchProjectDocuments = async (projectId) => {
   }
 };
 
+/**
+ * API service function: fetchProjectDocumentPreview
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchProjectDocumentPreview = async (projectId, documentId) => {
   const documents = await fetchProjectDocuments(projectId);
   
@@ -112,11 +147,25 @@ export const fetchProjectDocumentPreview = async (projectId, documentId) => {
   };
 };
 
+/**
+ * API service function: isAudioTranscriptDocument
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const isAudioTranscriptDocument = (document) =>
   ["mp3", "mp4", "wav", "m4a", "audio"].includes(document?.type) || 
   document?.category === "audio" || 
   /\.(mp3|mp4|wav|m4a)$/i.test(document?.name || "");
 
+/**
+ * API service function: fetchAudioTranscriptPreview
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchAudioTranscriptPreview = async (projectId, documentId) => {
   const documents = await fetchProjectDocuments(projectId);
   const document =
@@ -153,6 +202,13 @@ export const fetchAudioTranscriptPreview = async (projectId, documentId) => {
   };
 };
 
+/**
+ * API service function: createProjectFolder
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const createProjectFolder = async (projectId, folder) => {
   try {
     await api.post(`/folders`, {
@@ -174,6 +230,13 @@ const getCategoryForType = (type) => {
   return "document";
 };
 
+/**
+ * API service function: uploadProjectDocument
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const uploadProjectDocument = async (projectId, document) => {
   try {
     const fileTypeRaw = getDocumentType(document.name);
@@ -204,11 +267,25 @@ export const uploadProjectDocument = async (projectId, document) => {
   }
 };
 
+/**
+ * API service function: isAllowedUploadFile
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const isAllowedUploadFile = (name = "") => {
   const extension = name.split(".").pop()?.toLowerCase();
   return allowedDocumentTypes.includes(extension);
 };
 
+/**
+ * API service function: renameProjectDocument
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const renameProjectDocument = async (projectId, item, newName) => {
   try {
     if (item.type === "folder") {
@@ -227,6 +304,13 @@ export const renameProjectDocument = async (projectId, item, newName) => {
   }
 };
 
+/**
+ * API service function: removeProjectDocument
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const removeProjectDocument = async (projectId, item) => {
   try {
     if (item.type === "folder") {
@@ -241,6 +325,13 @@ export const removeProjectDocument = async (projectId, item) => {
   }
 };
 
+/**
+ * API service function: moveProjectDocument
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const moveProjectDocument = async (projectId, item, targetFolderId) => {
   try {
     if (item.type === "folder") {
@@ -255,6 +346,13 @@ export const moveProjectDocument = async (projectId, item, targetFolderId) => {
   }
 };
 
+/**
+ * API service function: getProjectDocumentSummary
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getProjectDocumentSummary = async (projectId) => {
   const documents = await fetchProjectDocuments(projectId);
   const fileCount = documents.filter((document) => document.type !== "folder").length;
@@ -270,6 +368,13 @@ export const getProjectDocumentSummary = async (projectId) => {
   };
 };
 
+/**
+ * API service function: getProjectDocumentSummaryAI
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getProjectDocumentSummaryAI = async (fileId) => {
   try {
     const token = localStorage.getItem('nexus_token');
@@ -286,6 +391,13 @@ export const getProjectDocumentSummaryAI = async (fileId) => {
   }
 };
 
+/**
+ * API service function: getAudioTranscriptAI
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getAudioTranscriptAI = async (fileId) => {
   try {
     const token = localStorage.getItem('nexus_token');
@@ -309,6 +421,13 @@ export const getAudioTranscriptAI = async (fileId) => {
   }
 };
 
+/**
+ * API service function: updateAudioTranscriptAI
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const updateAudioTranscriptAI = async (transcriptId, updatedData) => {
   try {
     const token = localStorage.getItem('nexus_token');
@@ -328,6 +447,13 @@ export const updateAudioTranscriptAI = async (transcriptId, updatedData) => {
   }
 };
 
+/**
+ * API service function: getExportTranscriptUrl
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getExportTranscriptUrl = (transcriptId) => {
   return `http://localhost:5000/api/transcripts/${transcriptId}/export/txt`;
 };

@@ -4,6 +4,13 @@ const Project = require("../models/Projects");
 // GET /api/notifications
 // Get all notifications for the logged-in user (recipientId = req.user.id)
 // Supports query filters: ?status= and ?isRead=
+/**
+ * Retrieves all notifications for the authenticated user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getMyNotifications = async (req, res) => {
   try {
     const recipientId = req.user?.id || req.user?._id;
@@ -43,6 +50,13 @@ exports.getMyNotifications = async (req, res) => {
 
 // GET /api/notifications/:id
 // Get a single notification by ID — must belong to the logged-in user
+/**
+ * Retrieves a specific notification by its ID.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getNotificationById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -69,6 +83,13 @@ exports.getNotificationById = async (req, res) => {
 // POST /api/notifications
 // Create a new notification
 // senderId is optional (null = System-generated)
+/**
+ * Creates a new notification for a user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createNotification = async (req, res) => {
   try {
     const { recipientId, senderId, type, title, message, projectId } = req.body;
@@ -106,6 +127,13 @@ exports.createNotification = async (req, res) => {
 // PATCH /api/notifications/:id/read
 // Mark a notification as read — called by FE when user clicks the notification
 // Sets isRead: true, readAt: now, status: "read", updatedBy: req.user.id
+/**
+ * Marks a specific notification as read.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.markAsRead = async (req, res) => {
   try {
     const { id } = req.params;
@@ -148,6 +176,13 @@ exports.markAsRead = async (req, res) => {
 
 // PATCH /api/notifications/:id/respond
 // Respond to a collaboration_invite notification with 'accepted' or 'rejected'
+/**
+ * Handles the user's response to an invitation notification.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.respondToNotification = async (req, res) => {
   try {
     const { id } = req.params;
@@ -220,6 +255,13 @@ exports.respondToNotification = async (req, res) => {
 // DELETE /api/notifications/:id
 // Soft delete — sets deletedAt: now
 // MongoDB TTL index will auto-purge the document permanently after 1 day
+/**
+ * Deletes a specific notification.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;

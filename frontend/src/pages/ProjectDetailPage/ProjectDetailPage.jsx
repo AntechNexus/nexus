@@ -308,6 +308,18 @@ const RemoveModal = ({ item, onClose, onRemove }) => (
   </ModalShell>
 );
 
+/**
+ * ProjectDetailPage Component
+ * 
+ * The main workspace for a specific project.
+ * Responsibilities:
+ * - Displays and manages folders, documents, and PRDs associated with a project.
+ * - Handles drag-and-drop file uploads and HTML5 file movement across folders.
+ * - Communicates with multiple APIs (Project Detail API, Folder API, AI transcript API).
+ * - Implements auto-refresh polling (15s) for collaborative updates.
+ * 
+ * @returns {JSX.Element} The rendered project workspace.
+ */
 const ProjectDetailPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();

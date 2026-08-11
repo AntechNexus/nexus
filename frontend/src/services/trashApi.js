@@ -1,6 +1,13 @@
 import api from "./api";
 import { getDocumentType, getDocumentTypeLabel, formatBytes } from "./projectDetailApi";
 
+/**
+ * API service function: getTrashItems
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const getTrashItems = async () => {
   try {
     const [foldersRes, filesRes] = await Promise.all([
@@ -48,6 +55,13 @@ export const getTrashItems = async () => {
   }
 };
 
+/**
+ * API service function: restoreItemFromTrash
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const restoreItemFromTrash = async (item) => {
   try {
     if (item.type === "folder") {
@@ -62,6 +76,13 @@ export const restoreItemFromTrash = async (item) => {
   }
 };
 
+/**
+ * API service function: removeTrashItem
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const removeTrashItem = async (item) => {
   try {
     if (item.type === "folder") {
@@ -77,6 +98,13 @@ export const removeTrashItem = async (item) => {
   }
 };
 
+/**
+ * API service function: emptyTrash
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const emptyTrash = async () => {
   try {
     await Promise.all([
@@ -91,6 +119,13 @@ export const emptyTrash = async () => {
   }
 };
 
+/**
+ * API service function: formatDeletedAt
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const formatDeletedAt = (dateValue) => {
   if (!dateValue) return "Just now";
   const date = new Date(dateValue);

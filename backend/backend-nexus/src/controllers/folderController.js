@@ -4,6 +4,13 @@ const Project = require("../models/Projects");
 const User = require("../models/User");
 
 // Helper function untuk mencari semua ID folder dan sub-folder secara rekursif
+/**
+ * Recursively retrieves all sub-folder IDs for a given folder.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 const getAllSubFolderIds = async (folderId) => {
   let folderIds = [folderId];
   let currentParents = [folderId];
@@ -18,6 +25,13 @@ const getAllSubFolderIds = async (folderId) => {
   return folderIds;
 };
 
+/**
+ * Creates a new folder within a project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createFolder = async (req, res) => {
   try {
     const { projectId, parentFolderId, name, color, createdBy } = req.body;
@@ -76,6 +90,13 @@ exports.createFolder = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves all folders accessible by the user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getAllFolders = async (req, res) => {
   try {
     const { status = "active" } = req.query;
@@ -102,6 +123,13 @@ exports.getAllFolders = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves all folders associated with a specific project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFoldersByProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -138,6 +166,13 @@ exports.getFoldersByProject = async (req, res) => {
   }
 };
 
+/**
+ * Retrieves details of a specific folder.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getFolderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -167,6 +202,13 @@ exports.getFolderById = async (req, res) => {
 };
 
 // Move Folder to Trash (Cascades to subfolders & files)
+/**
+ * Moves a file to the trash (soft delete).
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.moveToTrash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -214,6 +256,13 @@ exports.moveToTrash = async (req, res) => {
 };
 
 // Restore Folder from Trash (Cascades to subfolders & files)
+/**
+ * Restores a folder from the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.restoreFolder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -260,6 +309,13 @@ exports.restoreFolder = async (req, res) => {
 };
 
 // Permanently Delete Folder (Cascades to subfolders & files)
+/**
+ * Permanently deletes a folder.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.deleteFolder = async (req, res) => {
   try {
     const { id } = req.params;
@@ -317,6 +373,13 @@ exports.deleteFolder = async (req, res) => {
 };
 
 // GET /api/folders/trash
+/**
+ * Retrieves all folders currently in the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getTrashFolders = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -345,6 +408,13 @@ exports.getTrashFolders = async (req, res) => {
 };
 
 // DELETE /api/folders/trash/empty
+/**
+ * Permanently deletes all folders currently in the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.emptyTrashFolders = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -366,6 +436,13 @@ exports.emptyTrashFolders = async (req, res) => {
 };
 
 // PATCH /api/folders/:id/move
+/**
+ * Moves a folder to a new parent folder or root directory.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.moveFolder = async (req, res) => {
   try {
     const { id } = req.params;

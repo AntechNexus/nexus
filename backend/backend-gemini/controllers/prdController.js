@@ -1,6 +1,20 @@
 const { OpenAI } = require("openai");
 const fs = require("fs").promises;
 
+/**
+ * Handles the generation of a Product Requirement Document (PRD) using AI.
+ * 
+ * Flow:
+ * 1. Reads the user's answers to the clarifying questions.
+ * 2. Retrieves the original file context from the temporary cache file on disk.
+ * 3. Constructs a strict prompt with a required PRD Markdown template.
+ * 4. Calls Gemini 3.1 Pro to generate the PRD based on the context and user answers.
+ * 5. Returns the generated Markdown string to the frontend.
+ * 
+ * @param {Object} req - Express request object containing cacheId, questions, and answers in the body.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the generated PRD Markdown string.
+ */
 const handleGeneratePrd = async (req, res) => {
   try {
     const { cacheId, answers, questions } = req.body;

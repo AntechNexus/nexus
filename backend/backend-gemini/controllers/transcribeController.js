@@ -4,6 +4,20 @@ const Transcript = require("../models/Transcript");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+/**
+ * Handles transcribing audio/video files using Google Gemini API.
+ * 
+ * Flow:
+ * 1. Checks if a transcript already exists in the database.
+ * 2. Uploads the file to Google Files API.
+ * 3. Polls the API until processing is complete.
+ * 4. Calls Gemini 3.5 Flash to generate a structured JSON transcript with segments.
+ * 5. Saves the transcript and deletes the file from Google Files API.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response containing the transcript.
+ */
 const handleTranscribe = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,6 +156,13 @@ Note on 'segments':
   }
 };
 
+/**
+ * Placeholder for updating a transcript. Actual logic resides in backend-nexus.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response indicating method not allowed.
+ */
 const updateTranscript = async (req, res) => {
   return res.status(405).json({ detail: "Use backend-nexus for updating transcripts." });
 };

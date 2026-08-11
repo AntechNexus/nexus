@@ -2,6 +2,13 @@ const Project = require("../models/Projects");
 const Folder = require("../models/Folder");
 const File = require("../models/File");
 
+/**
+ * Creates a new project for the authenticated user.
+ * 
+ * @param {Object} req - Express request object containing name and description.
+ * @param {Object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ */
 exports.createProject = async (req, res, next) => {
   try {
     const { name, description, createdBy, members } = req.body;
@@ -46,7 +53,13 @@ exports.createProject = async (req, res, next) => {
   }
 };
 
-// Get all active projects (Excludes soft-deleted ones)
+/**
+ * Retrieves all active projects that the authenticated user owns or is a member of.
+ * Excludes soft-deleted projects. Also attaches the file count for each project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 exports.getProjects = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -84,7 +97,12 @@ exports.getProjects = async (req, res) => {
   }
 };
 
-// Get Single Project by ID
+/**
+ * Retrieves a single project by its ID, ensuring the user has access.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 exports.getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -118,7 +136,13 @@ exports.getProjectById = async (req, res) => {
   }
 };
 
-// Delete Project (Soft Delete — cascades to Folders and Files)
+/**
+ * Soft deletes a project (only the owner can do this).
+ * Cascades the soft delete to all associated folders and files.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
 exports.deleteProject = async (req, res) => {
   try {
     const { id } = req.params;
@@ -165,7 +189,13 @@ exports.deleteProject = async (req, res) => {
   }
 };
 
-// Update project (only owner)
+/**
+ * Updates a project's details (name, description). Restricted to the project owner.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} next - Express next middleware function.
+ */
 exports.updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;

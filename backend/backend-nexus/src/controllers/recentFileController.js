@@ -1,5 +1,12 @@
 const RecentFile = require('../models/RecentFile');
 
+/**
+ * Retrieves a list of files recently accessed by the user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getRecentFiles = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;

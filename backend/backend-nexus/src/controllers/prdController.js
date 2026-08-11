@@ -9,6 +9,13 @@ const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer } = re
 const PDFDocument = require("pdfkit");
 
 // Create PRD Data Collection
+/**
+ * Creates a new Product Requirement Document (PRD) manually.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.createPRD = async (req, res) => {
   try {
     const {
@@ -71,6 +78,13 @@ exports.createPRD = async (req, res) => {
 };
 
 // Get List of PRDs (with Project Filter)
+/**
+ * Retrieves all PRDs accessible by the user.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getPRDs = async (req, res) => {
   try {
     const { projectId, status = "active", page = 1, limit = 20 } = req.query;
@@ -129,6 +143,13 @@ exports.getPRDs = async (req, res) => {
 };
 
 // Get Single PRD by ID
+/**
+ * Retrieves details of a specific PRD.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getPRDById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -173,6 +194,13 @@ exports.getPRDById = async (req, res) => {
 };
 
 // Update PRD
+/**
+ * Updates the content or metadata of a PRD.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.updatePRD = async (req, res) => {
   try {
     const { id } = req.params;
@@ -227,6 +255,13 @@ exports.updatePRD = async (req, res) => {
 };
 
 // Delete PRD (Hard Delete)
+/**
+ * Permanently deletes a PRD.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.deletePRD = async (req, res) => {
   try {
     const { id } = req.params;
@@ -273,6 +308,13 @@ exports.deletePRD = async (req, res) => {
 };
 
 // Move PRD to Trash
+/**
+ * Moves a file to the trash (soft delete).
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.moveToTrash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -320,6 +362,13 @@ exports.moveToTrash = async (req, res) => {
 };
 
 // Restore PRD from Trash
+/**
+ * Restores a file from the trash.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.restoreFromTrash = async (req, res) => {
   try {
     const { id } = req.params;
@@ -367,6 +416,13 @@ exports.restoreFromTrash = async (req, res) => {
 };
 
 // Get PRDs by Project ID
+/**
+ * Retrieves all PRDs associated with a specific project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.getPRDsByProject = async (req, res) => {
   try {
     const { projectId } = req.params;
@@ -426,6 +482,13 @@ exports.getPRDsByProject = async (req, res) => {
 
 // POST /api/prd/generate/save-files
 // Save uploaded local files to the project, trigger transcription for audio files
+/**
+ * Saves generated context files directly into a project.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.saveFilesToProject = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;
@@ -513,6 +576,13 @@ exports.saveFilesToProject = async (req, res) => {
 
 // POST /api/prd/generate/save
 // Generate DOCX + PDF from raw Markdown, create a folder in the project, save PRD record
+/**
+ * Saves an AI-generated PRD into the database.
+ * 
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @param {Function} [next] - Express next middleware function.
+ */
 exports.saveGeneratedPrd = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;

@@ -10,6 +10,13 @@ const getInitials = (name = "") =>
     .join("")
     .toUpperCase() || "NU";
 
+/**
+ * API service function: fetchRecentFiles
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
 export const fetchRecentFiles = async (limit = 10) => {
   try {
     const res = await api.get(`/files/recent?limit=${limit}`);
