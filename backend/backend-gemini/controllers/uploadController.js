@@ -40,7 +40,8 @@ const handleUpload = async (req, res) => {
 
       try {
         if (ext.endsWith(".pdf") || file.mimetype === "application/pdf") {
-            const data = await pdfParse(buffer);
+            const parseFunc = typeof pdfParse === "function" ? pdfParse : pdfParse.default;
+            const data = await parseFunc(buffer);
             text = data.text;
         } else if (ext.endsWith(".docx") || file.mimetype.includes("wordprocessingml")) {
             const result = await mammoth.extractRawText({ buffer });
