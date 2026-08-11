@@ -53,6 +53,76 @@ export const formatBytes = (bytes = 0) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
+export const formatModifiedDateTime = (date) =>
+  new Date(date).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+
+const toPrdSlug = (value = "Project") => {
+  const slug = String(value)
+    .trim()
+    .replace(/\.[^/.]+$/, "")
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return slug || "Project";
+};
+
+const hasPrdVersion = (name = "") => /^PRD_.+_V\d+(?:\.[a-z0-9]+)?$/i.test(name);
+
+const getFileExtension = (name = "") => {
+  const match = String(name).match(/(\.[a-z0-9]+)$/i);
+  return match ? match[1].toLowerCase() : "";
+};
+
+const parseLegacyPrdProjectName = (name = "") => {
+  const baseName = String(name)
+    .replace(/^\d+-/, "")
+    .replace(/\.[^/.]+$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (hasPrdVersion(baseName)) return null;
+
+  const folderMatch = baseName.match(/^PRD\s*[\u2013\u2014-]\s*(?:PRD\s*[\u2013\u2014-]\s*)?(.+?)\s*[\u2013\u2014-]\s*\d{4}-\d{2}-\d{2}$/i);
+  if (folderMatch) return folderMatch[1];
+
+  const dashedFileMatch = baseName.match(/^PRD\s*[\u2013\u2014-]\s*(.+)$/i);
+  if (dashedFileMatch) return dashedFileMatch[1];
+
+  const underscoredFileMatch = baseName.match(/^PRD_+(.+)$/i);
+  if (underscoredFileMatch) return underscoredFileMatch[1].replace(/_+/g, " ");
+
+  return null;
+};
+
+const isPrdDisplayName = (name = "") => /^PRD_.+_V\d+/i.test(name);
+
+export const getNormalizedDisplayFileName = (file = {}, parentFolderName = "") => {
+  const rawName = file.originalName || file.fileName || "Untitled File";
+  const extension = getFileExtension(rawName) || getFileExtension(file.fileName);
+  const legacyParentProjectName = parseLegacyPrdProjectName(parentFolderName);
+  const normalizedParentName = isPrdDisplayName(parentFolderName)
+    ? parentFolderName
+    : legacyParentProjectName
+      ? `PRD_${toPrdSlug(legacyParentProjectName)}_V1`
+      : "";
+
+  if (hasPrdVersion(rawName)) return rawName;
+  if (normalizedParentName && parseLegacyPrdProjectName(rawName)) {
+    return `${normalizedParentName}${extension}`;
+  }
+
+  const legacyProjectName = parseLegacyPrdProjectName(rawName);
+  if (legacyProjectName) return `PRD_${toPrdSlug(legacyProjectName)}_V1${extension}`;
+
+  return rawName;
+};
+
 /**
  * API service function: fetchProjectDocuments
  * Coordinates HTTP requests to the backend for this feature.
@@ -66,27 +136,44 @@ export const fetchProjectDocuments = async (projectId) => {
       api.get(`/folders/project/${projectId}?status=active`),
       api.get(`/files/project/${projectId}?status=active&limit=1000`)
     ]);
-    
-    const folders = foldersRes.data.data.map(f => ({
+
+    const folderVersions = new Map();
+    const legacyPrdFolders = foldersRes.data.data
+      .filter((folder) => parseLegacyPrdProjectName(folder.name))
+      .sort((firstFolder, secondFolder) => new Date(firstFolder.createdAt || firstFolder.updatedAt) - new Date(secondFolder.createdAt || secondFolder.updatedAt));
+
+    legacyPrdFolders.forEach((folder, index) => {
+      const projectName = parseLegacyPrdProjectName(folder.name);
+      folderVersions.set(folder._id, `PRD_${toPrdSlug(projectName)}_V${index + 1}`);
+    });
+
+    const folderNameById = new Map();
+    const folders = foldersRes.data.data.map(f => {
+      const displayName = folderVersions.get(f._id) || f.name;
+      folderNameById.set(f._id, displayName);
+
+      return {
       id: f._id,
-      name: f.name,
+      name: displayName,
       type: "folder",
       typeLabel: "Folder",
-      lastModified: new Date(f.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      lastModified: formatModifiedDateTime(f.updatedAt),
       updatedAt: f.updatedAt,
       modifiedBy: f.updatedBy?.profile?.fullName || f.createdBy?.profile?.fullName || "User",
       size: "--",
       parentId: f.parentFolderId || null
-    }));
+      };
+    });
 
     const files = filesRes.data.data.map(f => {
-      const type = getDocumentType(f.fileName);
+      const displayName = getNormalizedDisplayFileName(f, folderNameById.get(f.folderId));
+      const type = getDocumentType(displayName);
       return {
         id: f._id,
-        name: f.fileName,
+        name: displayName,
         type: type,
-        typeLabel: getDocumentTypeLabel(f.fileName),
-        lastModified: new Date(f.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+        typeLabel: getDocumentTypeLabel(displayName),
+        lastModified: formatModifiedDateTime(f.updatedAt),
         updatedAt: f.updatedAt,
         modifiedBy: f.updatedBy?.profile?.fullName || f.createdBy?.profile?.fullName || "User",
         size: formatBytes(f.sizeBytes) || "0 B",
@@ -116,12 +203,14 @@ export const fetchProjectDocumentPreview = async (projectId, documentId) => {
   try {
     const res = await api.get(`/files/${documentId}`);
     const f = res.data.data;
+    const navigationDocument = documents.find((item) => item.id === documentId);
+    const displayName = navigationDocument?.name || getNormalizedDisplayFileName(f);
     document = {
       id: f._id,
-      name: f.fileName,
-      type: getDocumentType(f.fileName),
-      typeLabel: getDocumentTypeLabel(f.fileName),
-      lastModified: new Date(f.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+      name: displayName,
+      type: getDocumentType(displayName),
+      typeLabel: getDocumentTypeLabel(displayName),
+      lastModified: formatModifiedDateTime(f.updatedAt),
       updatedAt: f.updatedAt,
       modifiedBy: f.updatedBy?.profile?.fullName || f.createdBy?.profile?.fullName || "User",
       size: formatBytes(f.sizeBytes) || "0 B",

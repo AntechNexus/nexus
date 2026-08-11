@@ -45,7 +45,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateEmail(formData.email)) {
-      setErrors({ email: 'Please enter a complete company email, for example jane@company.com.' });
+      setErrors({ email: 'Please enter a valid email address, for example jane@email.com.' });
       return;
     }
     if (passwordCriteria.some((criterion) => !criterion.test(formData.password))) {
@@ -112,7 +112,7 @@ const RegisterPage = () => {
           </button>
 
           <div className="divider">
-            <span>OR CONTINUE WITH WORK EMAIL</span>
+            <span>OR CONTINUE WITH EMAIL</span>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
@@ -133,13 +133,13 @@ const RegisterPage = () => {
 
             <div className="input-group">
               <fieldset className={errors.email ? 'fieldset-error' : undefined}>
-                <legend>Company email</legend>
+                <legend>Email address</legend>
                 <input
                   aria-describedby={errors.email ? 'signup-email-error' : undefined}
                   aria-invalid={Boolean(errors.email)}
                   type="email"
                   name="email"
-                  placeholder="jane@company.com"
+                  placeholder="jane@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
@@ -147,7 +147,7 @@ const RegisterPage = () => {
                 />
               </fieldset>
               {errors.email && <small className="form-error" id="signup-email-error">{errors.email}</small>}
-              <small className="helper-text">For example 'you@companyname.com'</small>
+              <small className="helper-text">For example: jane@email.com</small>
             </div>
 
             <div className="input-group">

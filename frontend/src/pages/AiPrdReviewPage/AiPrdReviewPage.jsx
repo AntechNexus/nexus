@@ -110,10 +110,9 @@ const AiPrdReviewPage = () => {
     if (!processedMarkdown || !projectId) return;
     setSaveLoading(true);
     try {
-      const result = await prdApi.savePrd({
+      await prdApi.savePrd({
         rawMarkdown: processedMarkdown,
         projectId,
-        prdName: projectName ? `PRD - ${projectName}` : "Generated PRD",
         sourceFileIds: allFileIds,
       });
       setSaved(true);

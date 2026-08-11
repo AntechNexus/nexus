@@ -235,7 +235,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                               <Icon size={16} />
                             </div>
                             <div className="min-w-0 flex-1">
-                              <div className="truncate text-sm font-medium text-slate-800">{file.originalName}</div>
+                              <div className="truncate text-sm font-medium text-slate-800">{file.originalName || file.fileName}</div>
                             </div>
                           </button>
                         );

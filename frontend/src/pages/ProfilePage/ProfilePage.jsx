@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import StorageCard from "../../components/dashboard/StorageCard";
 import authService from "../../services/auth.service";
 
 const industryOptions = [
@@ -161,8 +162,8 @@ const ProfilePage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="nexus-page-shell">
-          <div className="mb-8">
+        <main className="nexus-page-shell gap-5">
+          <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-400">
               <Link className="transition hover:text-nexus-primary" to="/settings">Settings</Link>
               <ChevronRight size={15} />
@@ -171,8 +172,8 @@ const ProfilePage = () => {
             <h1 className="nexus-page-title">Manage Profile</h1>
           </div>
 
-          <div className="grid grid-cols-12 items-start gap-6">
-            <section className="col-span-12 space-y-6 lg:col-span-4">
+          <div className="grid grid-cols-12 items-start gap-x-6 gap-y-5">
+            <section className="col-span-12 lg:col-span-4">
               <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-nexus-border">
                 <div className="h-32 bg-gradient-to-br from-nexus-primary to-nexus-action" />
                 <div className="-mt-16 flex flex-col items-center px-6 pb-8 text-center">
@@ -229,9 +230,10 @@ const ProfilePage = () => {
                   </Link>
                 </div>
               </div>
+
             </section>
 
-            <section className="col-span-12 space-y-6 lg:col-span-8">
+            <section className="col-span-12 lg:col-span-8">
               <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border lg:p-8">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <h2 className="flex items-center gap-2 text-xl font-semibold text-nexus-text">
@@ -261,6 +263,13 @@ const ProfilePage = () => {
                 </div>
               </div>
 
+            </section>
+
+            <section className="col-span-12 lg:col-span-4">
+              <StorageCard />
+            </section>
+
+            <section className="col-span-12 lg:col-span-8">
               <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border lg:p-8">
                 <h2 className="mb-8 flex items-center gap-2 text-xl font-semibold text-nexus-text">
                   <Shield className="text-nexus-primary" size={22} /> Security

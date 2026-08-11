@@ -67,7 +67,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
   return (
     <div key={item.id}>
       {item.type === "folder" ? (
-        <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition">
+        <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition" title={item.name}>
           {content}
         </div>
       ) : (
@@ -75,6 +75,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
           className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold transition hover:bg-blue-50 hover:text-nexus-primary ${
             active ? "border-l-4 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-slate-700"
           }`}
+          title={item.name}
           to={isAudioTranscriptDocument(item) ? `/projects/${projectId}/transcripts/${item.id}` : `/projects/${projectId}/documents/${item.id}`}
         >
           {content}

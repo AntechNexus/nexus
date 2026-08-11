@@ -20,9 +20,10 @@ exports.getRecentFiles = async (req, res) => {
       .limit(5)
       .populate({
         path: 'fileId',
-        select: 'fileName fileType sizeBytes status createdBy updatedBy',
+        select: 'fileName originalName fileType sizeBytes status folderId createdBy updatedBy',
         match: { status: 'active' },
         populate: [
+          { path: 'folderId', select: 'name' },
           { path: 'createdBy', select: 'profile email' },
           { path: 'updatedBy', select: 'profile email' },
         ],

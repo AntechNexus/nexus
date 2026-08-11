@@ -11,7 +11,6 @@ import {
   X,
   FileText,
 } from "lucide-react";
-import StorageCard from "./StorageCard";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 
 const primaryNav = [
@@ -133,8 +132,6 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
           );
         })}
       </nav>
-
-      {!collapsed && <div className="mb-6 mt-8"><StorageCard /></div>}
 
       <nav aria-label="Workspace settings" className="border-t border-nexus-border pt-5">
         {secondaryNav.map((item) => {
