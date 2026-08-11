@@ -292,10 +292,10 @@ const AiPrdWorkspacePage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-8 lg:px-8">
+        <main className="nexus-page-shell">
           <section className="mx-auto w-full max-w-5xl space-y-9">
             <div className="text-center">
-              <h1 className="text-3xl font-extrabold tracking-tight text-nexus-text sm:text-4xl">
+              <h1 className="nexus-page-title">
                 Create New Product Requirements Document (PRD)
               </h1>
               <p className="mt-3 text-sm text-nexus-muted">
@@ -306,7 +306,7 @@ const AiPrdWorkspacePage = () => {
             {/* Project selector */}
             <div className="mx-auto w-full max-w-xl">
               <label className="block">
-                <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.16em] text-slate-600">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
                   Select Project
                 </span>
                 <span className="relative block">
@@ -431,7 +431,7 @@ const AiPrdWorkspacePage = () => {
             {/* File list */}
             <section className="space-y-4">
               <div className="flex flex-col justify-between gap-3 px-1 sm:flex-row sm:items-center">
-                <h2 className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-600">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
                   Source Files ({totalFileCount}/{MAX_FILES})
                 </h2>
                 <button

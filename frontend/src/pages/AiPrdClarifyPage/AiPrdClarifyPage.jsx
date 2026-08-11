@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
@@ -23,13 +23,8 @@ const stepItems = [
 const AiPrdClarifyPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state;
-
-  if (!state?.cacheId && !state?.questions) {
-    navigate("/ai-prd-workspace", { replace: true });
-    return null;
-  }
-
+  const state = location.state ?? {};
+  const hasPrdState = Boolean(state.cacheId || state.questions);
   const { cacheId, questions = [], projectId, projectName, allFileIds = [], baseVersion = 0 } = state;
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -38,6 +33,16 @@ const AiPrdClarifyPage = () => {
   const [answers, setAnswers] = useState({});
   const [generating, setGenerating] = useState(false);
   const [generatingStep, setGeneratingStep] = useState(0);
+
+  useEffect(() => {
+    if (!hasPrdState) {
+      navigate("/ai-prd-workspace", { replace: true });
+    }
+  }, [hasPrdState, navigate]);
+
+  if (!hasPrdState) {
+    return null;
+  }
 
   const unansweredMandatory = questions.filter((q) => {
     if (!q.isMandatory) return false;
@@ -115,7 +120,7 @@ const AiPrdClarifyPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-8 lg:px-8">
+        <main className="nexus-page-shell">
           <section className="mx-auto w-full max-w-5xl space-y-8">
             <div className="space-y-4">
               <nav className="flex flex-wrap items-center gap-2 text-xs font-semibold">
@@ -127,11 +132,11 @@ const AiPrdClarifyPage = () => {
                 <span>/</span>
                 <span className="text-nexus-primary">Generate PRD</span>
                 <span>/</span>
-                <span className="font-bold text-nexus-primary">Clarify Question</span>
+                <span className="font-semibold text-nexus-primary">Clarify Question</span>
               </nav>
 
               <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                <h1 className="text-2xl font-bold tracking-tight text-nexus-text sm:text-3xl">Nexus AI Needs a Few Details</h1>
+                <h1 className="nexus-page-title">Nexus AI Needs a Few Details</h1>
                 <span className="w-fit rounded-full border border-nexus-border bg-white px-4 py-2 text-xs font-semibold text-nexus-muted">
                   {remainingQuestions} clarifying questions remaining
                 </span>
@@ -173,7 +178,7 @@ const AiPrdClarifyPage = () => {
                 <div className="flex flex-col items-center gap-6 bg-white p-16 text-center">
                   <Loader2 className="animate-spin text-nexus-primary" size={48} />
                   <div>
-                    <p className="text-lg font-extrabold text-nexus-text">Generating your PRD...</p>
+                    <p className="text-lg font-semibold text-nexus-text">Generating your PRD...</p>
                     <p className="mt-2 text-sm text-nexus-muted">{GENERATING_STEPS[generatingStep]}</p>
                   </div>
                   <div className="flex gap-2">
@@ -189,7 +194,7 @@ const AiPrdClarifyPage = () => {
                 </div>
               ) : questions.length === 0 ? (
                 <div className="p-16 text-center">
-                  <p className="text-base font-bold text-nexus-text">
+                  <p className="text-base font-semibold text-nexus-text">
                     Your documents are clear and complete!
                   </p>
                   <p className="mt-2 text-sm text-nexus-muted">
@@ -203,7 +208,7 @@ const AiPrdClarifyPage = () => {
                       <div className="mb-4 flex items-start gap-4">
                         <span className="text-xl font-bold text-nexus-primary">{index + 1}.</span>
                         <div>
-                          <h2 className="text-lg font-bold text-nexus-text">
+                          <h2 className="text-lg font-semibold text-nexus-text">
                             {question.question}
                             {question.isMandatory && (
                               <span className="ml-2 text-red-500">*</span>

@@ -220,7 +220,7 @@ const AudioTranscriptPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-[#f9f9fa] px-4 py-4 lg:px-8">
+        <main className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-[#f9f9fa] p-4 font-sans lg:p-8">
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <Link className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-nexus-primary transition hover:text-nexus-action" to={`/projects/${projectId}`}>
               <ArrowLeft size={17} /> Back to project
@@ -237,7 +237,7 @@ const AudioTranscriptPage = () => {
             <aside className="flex min-h-[360px] flex-col overflow-hidden rounded-xl border border-nexus-border bg-white shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
               <header className="flex items-center gap-2 border-b border-nexus-border px-5 py-4">
                 <Sparkles className="text-nexus-primary" size={19} />
-                <h1 className="text-lg font-bold text-nexus-text">AI Summary</h1>
+                <h1 className="text-lg font-semibold text-nexus-text">AI Summary</h1>
               </header>
               <div className="flex-1 overflow-y-auto p-5">
                 {!aiSummary ? (
@@ -263,7 +263,7 @@ const AudioTranscriptPage = () => {
 
             <article className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-nexus-border bg-white shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
               <header className="border-b border-nexus-border px-5 py-5 lg:px-6">
-                <h1 className="text-2xl font-bold tracking-tight text-nexus-text lg:text-3xl">{title}</h1>
+                <h1 className="nexus-page-title">{title}</h1>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-nexus-muted">
                     <span className="inline-flex items-center gap-1.5">

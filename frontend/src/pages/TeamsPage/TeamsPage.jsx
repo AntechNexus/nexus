@@ -578,10 +578,10 @@ const TeamsPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-nexus-text sm:text-4xl">Team Management</h1>
+              <h1 className="nexus-page-title">Team Management</h1>
               <p className="mt-2 text-sm text-nexus-muted sm:text-base">
                 Manage member permissions and project access across your workspace.
               </p>
@@ -629,7 +629,7 @@ const TeamsPage = () => {
                         <Globe2 size={20} />
                       </span>
                       <div>
-                        <h2 className="text-sm font-bold text-nexus-text">{project.title}</h2>
+                        <h2 className="text-sm font-semibold text-nexus-text">{project.title}</h2>
                         <p className="text-xs font-medium text-nexus-muted">{project.updatedLabel}</p>
                       </div>
                     </div>

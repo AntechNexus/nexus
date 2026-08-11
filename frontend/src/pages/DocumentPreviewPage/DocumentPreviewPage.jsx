@@ -58,7 +58,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
           {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </span>
       )}
-      <Icon className={active ? "text-nexus-primary shrink-0" : iconTone[item.type] || "text-slate-600 shrink-0"} size={15} />
+      <Icon className={`${iconTone[item.type] || "text-slate-600"} shrink-0`} size={15} />
       <span className="truncate">{truncateName(item.name)}</span>
       {active && <span className="ml-auto h-2 w-2 rounded-full bg-nexus-primary shrink-0" />}
     </div>
@@ -145,6 +145,8 @@ const DocumentPreviewPage = () => {
   }
 
   const document = preview.document;
+  const DocumentIcon = getIcon(document?.type);
+  const documentIconTone = iconTone[document?.type] || "text-slate-600";
 
   return (
     <div className="min-h-screen bg-nexus-bg font-sans text-nexus-text">
@@ -202,7 +204,7 @@ const DocumentPreviewPage = () => {
 
               <div className="max-w-4xl rounded-xl border border-nexus-border bg-white shadow-sm flex flex-col h-[750px]">
                 <header className="flex items-center gap-3 border-b border-nexus-border px-5 py-4">
-                  <FileText className="text-nexus-primary" size={18} />
+                  <DocumentIcon className={documentIconTone} size={18} />
                   <h2 className="font-bold text-nexus-text">{document?.name || "Document Not Found"}</h2>
                 </header>
                 <div className="p-0 flex-1 overflow-hidden bg-slate-50 rounded-b-xl flex flex-col relative">

@@ -1,9 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Bell, LogOut, Menu, Search, UserRound, Users, FileText } from "lucide-react";
+import { Bell, FileAudio, FileSpreadsheet, FileText, LogOut, Menu, Search, UserRound, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { notificationService } from "../../services/notification.service";
 import { searchService } from "../../services/search.service";
+
+const fileTypeStyles = {
+  audio: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
+  doc: { Icon: FileText, tone: "bg-blue-50 text-nexus-primary" },
+  docx: { Icon: FileText, tone: "bg-blue-50 text-nexus-primary" },
+  document: { Icon: FileText, tone: "bg-blue-50 text-nexus-primary" },
+  m4a: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
+  mp3: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
+  mp4: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
+  pdf: { Icon: FileText, tone: "bg-red-50 text-red-600" },
+  prd: { Icon: FileText, tone: "bg-violet-50 text-violet-700" },
+  spreadsheet: { Icon: FileSpreadsheet, tone: "bg-emerald-50 text-emerald-600" },
+  wav: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
+  xls: { Icon: FileSpreadsheet, tone: "bg-emerald-50 text-emerald-600" },
+  xlsx: { Icon: FileSpreadsheet, tone: "bg-emerald-50 text-emerald-600" },
+};
+
+const getFileTypeStyle = (file) => {
+  const fileType = String(file.fileType || file.type || "").toLowerCase();
+  const extension = String(file.originalName || file.name || "").split(".").pop()?.toLowerCase();
+
+  return fileTypeStyles[fileType] || fileTypeStyles[extension] || fileTypeStyles.document;
+};
 
 const DashboardHeader = ({ onOpenSidebar }) => {
   const navigate = useNavigate();
@@ -194,24 +217,29 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                   {searchResults.files?.length > 0 && (
                     <div className="mb-2">
                       <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Files</div>
-                      {searchResults.files.map((file) => (
-                        <button
-                          key={file._id}
-                          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-slate-50 focus:bg-slate-50"
-                          onClick={() => {
-                            setSearchOpen(false);
-                            const isAudio = ['mp3', 'wav', 'm4a'].includes(file.fileType);
-                            navigate(`/projects/${file.projectId}/${isAudio ? 'transcripts' : 'documents'}/${file._id}`);
-                          }}
-                        >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-50 text-emerald-600">
-                            <FileText size={16} />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-medium text-slate-800">{file.originalName}</div>
-                          </div>
-                        </button>
-                      ))}
+                      {searchResults.files.map((file) => {
+                        const { Icon, tone } = getFileTypeStyle(file);
+
+                        return (
+                          <button
+                            key={file._id}
+                            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-slate-50 focus:bg-slate-50"
+                            onClick={() => {
+                              setSearchOpen(false);
+                              const fileType = String(file.fileType || "").toLowerCase();
+                              const isAudio = ["mp3", "wav", "m4a", "mp4", "audio"].includes(fileType);
+                              navigate(`/projects/${file.projectId}/${isAudio ? "transcripts" : "documents"}/${file._id}`);
+                            }}
+                          >
+                            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${tone}`}>
+                              <Icon size={16} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-sm font-medium text-slate-800">{file.originalName}</div>
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

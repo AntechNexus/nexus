@@ -15,6 +15,7 @@ const PasswordSetupPage = React.lazy(() => import("./pages/PasswordSetupPage/Pas
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage/ProjectsPage"));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage/RegisterPage"));
+const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage/SubscriptionsPage"));
 const VerifyOtpPage = React.lazy(() => import("./pages/VerifyOtpPage/VerifyOtpPage"));
 const ProjectDetailPage = React.lazy(() => import("./pages/ProjectDetailPage/ProjectDetailPage"));
 const TeamsPage = React.lazy(() => import("./pages/TeamsPage/TeamsPage"));
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/new" element={<CreateProjectPage />} />
             <Route path="/projects/:projectId" element={<ProjectDetailPage />} />

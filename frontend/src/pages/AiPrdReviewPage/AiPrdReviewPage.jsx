@@ -152,6 +152,8 @@ const AiPrdReviewPage = () => {
 
   if (!rawMarkdown) return null;
 
+  const canRegenerate = regenInstruction.trim().length > 0;
+
   return (
     <div className="min-h-screen bg-nexus-bg font-sans text-nexus-text">
       <DashboardSidebar
@@ -162,7 +164,7 @@ const AiPrdReviewPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col px-4 py-8 lg:px-8">
+        <main className="nexus-page-shell min-h-[calc(100vh-64px)]">
           <section className="mx-auto w-full max-w-7xl space-y-8">
             <div className="space-y-6">
               <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold">
@@ -174,7 +176,7 @@ const AiPrdReviewPage = () => {
                 <span className="text-slate-300">&gt;</span>
                 <span className="text-nexus-primary">Generate PRD</span>
                 <span className="text-slate-300">&gt;</span>
-                <span className="font-extrabold text-nexus-text">Review PRD</span>
+                <span className="font-semibold text-nexus-text">Review PRD</span>
               </nav>
 
               <div className="relative flex items-center justify-between px-8 sm:px-24">
@@ -214,7 +216,7 @@ const AiPrdReviewPage = () => {
             <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
               <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:overflow-x-hidden custom-scrollbar">
                 <section>
-                  <h2 className="mb-4 px-2 text-xs font-extrabold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
+                  <h2 className="mb-4 px-2 text-xs font-semibold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
                   <nav className="space-y-1">
                     {outline.map((item, index) => (
                       <button
@@ -280,9 +282,9 @@ const AiPrdReviewPage = () => {
                       remarkPlugins={[remarkGfm]} 
                       rehypePlugins={[rehypeSlug]}
                       components={{
-                        h1: ({node, ...props}) => <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text mt-6 mb-6" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-nexus-text mt-10 mb-4 border-b border-nexus-border pb-2" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="text-lg font-bold text-nexus-text mt-6 mb-3" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="mt-6 mb-6 text-3xl font-semibold tracking-tight text-nexus-text" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="mt-10 mb-4 border-b border-nexus-border pb-2 text-xl font-semibold text-nexus-text" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="mt-6 mb-3 text-lg font-semibold text-nexus-text" {...props} />,
                         p: ({node, ...props}) => <p className="text-base text-slate-600 leading-8 mb-5 text-justify" {...props} />,
                         ul: ({node, ...props}) => <ul className="list-disc pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
@@ -308,7 +310,7 @@ const AiPrdReviewPage = () => {
           <section aria-modal="true" className="w-full max-w-lg rounded-2xl border border-nexus-border bg-white p-8 shadow-2xl" role="dialog">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-nexus-text">Regenerate this PRD?</h2>
+                <h2 className="nexus-section-title">Regenerate this PRD?</h2>
                 <p className="mt-2 text-sm leading-6 text-nexus-muted">
                   NEXUS will create a new PRD draft using the current uploaded documents and clarification answers.
                   Any unsaved edits in the current draft may be replaced.
@@ -348,7 +350,8 @@ const AiPrdReviewPage = () => {
                 Cancel
               </button>
               <button
-                className="rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-nexus-action"
+                className="rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:hover:bg-slate-200"
+                disabled={!canRegenerate}
                 onClick={confirmRegenerate}
                 type="button"
               >

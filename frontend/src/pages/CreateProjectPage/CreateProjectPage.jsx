@@ -79,14 +79,14 @@ const CreateProjectPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col px-4 py-8 lg:px-8">
+        <main className="nexus-page-shell">
           <div className="mx-auto w-full max-w-3xl text-center">
             <div className="mb-3 flex items-center justify-center gap-2 text-xs font-bold text-slate-500">
               <Link className="transition hover:text-nexus-primary" to="/projects">Projects</Link>
               <ChevronRight size={14} />
               <span className="text-nexus-text">Create New Project</span>
             </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text sm:text-5xl">Create New Project</h1>
+            <h1 className="nexus-page-title">Create New Project</h1>
             <p className="mt-3 text-sm text-slate-500">Add the basic information needed to create your project workspace.</p>
           </div>
 

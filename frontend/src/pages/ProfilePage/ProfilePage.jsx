@@ -161,14 +161,14 @@ const ProfilePage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto w-full max-w-[1440px] p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="mb-8">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-400">
               <Link className="transition hover:text-nexus-primary" to="/settings">Settings</Link>
               <ChevronRight size={15} />
               <span className="text-nexus-text">User Profile</span>
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight text-nexus-text">Manage Profile</h1>
+            <h1 className="nexus-page-title">Manage Profile</h1>
           </div>
 
           <div className="grid grid-cols-12 items-start gap-6">
@@ -177,7 +177,7 @@ const ProfilePage = () => {
                 <div className="h-32 bg-gradient-to-br from-nexus-primary to-nexus-action" />
                 <div className="-mt-16 flex flex-col items-center px-6 pb-8 text-center">
                   <div className="relative group">
-                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-50 text-4xl font-extrabold text-nexus-primary shadow-md">
+                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-50 text-4xl font-semibold text-nexus-primary shadow-md">
                       {avatarUrl && avatarUrl !== "null" && !imgError ? (
                         <img 
                           src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5000${avatarUrl}`} 
@@ -221,23 +221,12 @@ const ProfilePage = () => {
                   </div>
                   <h2 className="mt-4 text-xl font-semibold text-nexus-text">{fullName}</h2>
                   <p className="text-sm text-slate-500">{role}</p>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border">
-                <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-nexus-text">Platform Status</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Account Type</span>
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-nexus-primary">Enterprise Pro</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Translation Quota</span>
-                    <span className="text-sm font-bold text-nexus-text">82% Used</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                    <div className="h-full w-[82%] rounded-full bg-nexus-primary" />
-                  </div>
+                  <Link
+                    className="mt-3 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-nexus-primary transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
+                    to="/subscriptions"
+                  >
+                    Starter Plan
+                  </Link>
                 </div>
               </div>
             </section>

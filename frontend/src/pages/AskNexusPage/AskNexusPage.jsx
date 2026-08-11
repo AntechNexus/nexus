@@ -94,13 +94,13 @@ const AskNexusPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <section className="mx-auto w-full max-w-6xl space-y-7">
             <div className="max-w-3xl">
               <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-nexus-primary">
                 <Bot size={26} />
               </span>
-              <h1 className="text-3xl font-extrabold tracking-tight text-nexus-text sm:text-4xl">
+              <h1 className="nexus-page-title">
                 Ask Nexus
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-nexus-muted">
@@ -120,7 +120,7 @@ const AskNexusPage = () => {
               <section className="space-y-5">
                 <div className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
                   <label className="block">
-                    <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                       Target Project
                     </span>
                     <select
@@ -155,7 +155,7 @@ const AskNexusPage = () => {
                     disabled={projects.length === 0}
                   />
                   <div className="flex shrink-0 items-center justify-between gap-3 border-t border-nexus-border bg-white px-4 py-3 sm:px-5">
-                    <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                    <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                       Context: <span className="text-nexus-primary">{selectedProject?.name || selectedProject?.title || "None"}</span>
                     </span>
                     <button
@@ -210,7 +210,7 @@ const AskNexusPage = () => {
                 )}
 
                 <section className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
-                  <h2 className="mb-3 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Conversations</h2>
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Recent Conversations</h2>
                   <div className="space-y-1">
                     {conversations.length === 0 ? (
                       <p className="py-2 text-sm text-slate-400">No recent conversations.</p>
@@ -233,7 +233,7 @@ const AskNexusPage = () => {
                   <div className="flex gap-3">
                     <ShieldCheck className="shrink-0 text-nexus-primary" size={22} />
                     <div>
-                      <h2 className="text-sm font-extrabold text-nexus-text">Privacy Notice</h2>
+                      <h2 className="text-sm font-semibold text-nexus-text">Privacy Notice</h2>
                       <p className="mt-1 text-sm leading-6 text-nexus-muted">
                         NEXUS only uses documents you have permission to access.
                       </p>
