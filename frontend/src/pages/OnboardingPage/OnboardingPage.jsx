@@ -134,7 +134,7 @@ const OnboardingPage = () => {
       <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-6xl flex-col items-center">
         <Link
           aria-label="Back to Nexus landing page"
-          className="inline-flex items-center gap-2 rounded-lg text-sm font-extrabold uppercase text-[#0032c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0032c4] focus-visible:ring-offset-4"
+          className="inline-flex items-center gap-2 rounded-lg text-sm font-bold uppercase text-[#0032c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0032c4] focus-visible:ring-offset-4"
           to="/"
         >
           <img alt="Nexus logo" className="h-7 w-7 rounded-md object-contain" src={nexusLogo} />
@@ -146,8 +146,8 @@ const OnboardingPage = () => {
 
           {step === 1 ? (
             <div className="p-6 sm:p-9">
-              <p className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-[#294de3]">Step 1 of 2</p>
-              <h1 className="mt-3 text-center text-2xl font-extrabold text-slate-950">Tell us about yourself</h1>
+              <p className="text-center text-xs font-bold uppercase tracking-[0.08em] text-[#294de3]">Step 1 of 2</p>
+              <h1 className="mt-3 text-center text-2xl font-bold text-slate-950">Tell us about yourself</h1>
               <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
                 Help us tailor your experience. Choose the role that best describes what you do.
               </p>
@@ -215,10 +215,10 @@ const OnboardingPage = () => {
           ) : (
             <form className="p-6 sm:p-9" onSubmit={saveAndContinue}>
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[11px] font-bold text-[#294de3]">Step 2 of 2</p>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-500">Personal Info</span>
+                <p className="text-xs font-bold text-[#294de3]">Step 2 of 2</p>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">Personal Info</span>
               </div>
-              <h1 className="mt-8 text-center text-2xl font-extrabold text-slate-950">Personalize your experience</h1>
+              <h1 className="mt-8 text-center text-2xl font-bold text-slate-950">Personalize your experience</h1>
               <p className="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-slate-500">
                 Help us understand how you&apos;ll use NEXUS to provide the best tools for your projects.
               </p>

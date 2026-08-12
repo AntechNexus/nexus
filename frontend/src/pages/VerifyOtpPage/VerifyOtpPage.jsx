@@ -119,9 +119,6 @@ const VerifyOtpPage = () => {
           <p className="terms-text">
             Didn&apos;t receive it? <button className="auth-inline-button" type="button" onClick={handleResend}>Resend Code</button>
           </p>
-          <p className="terms-text">
-            Having trouble? <a href="#support">Contact Support</a>
-          </p>
         </div>
       </section>
     </main>

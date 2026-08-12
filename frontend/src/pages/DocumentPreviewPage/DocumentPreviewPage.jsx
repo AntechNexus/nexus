@@ -201,7 +201,7 @@ const DocumentPreviewPage = () => {
 
           <section className="grid flex-1 overflow-hidden lg:grid-cols-[220px_minmax(420px,1fr)_280px]">
             <aside className="border-b border-nexus-border bg-slate-50/80 p-4 lg:border-b-0 lg:border-r">
-              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{project.title}</p>
+              <p className="mb-4 text-xs font-bold uppercase leading-5 tracking-[0.12em] text-slate-600">{project.title}</p>
               <nav className="space-y-1" aria-label="Project files">
                 {preview.navigationItems
                   .filter((item) => !item.parentId)
@@ -307,11 +307,11 @@ const DocumentPreviewPage = () => {
               </div>
               <div className="space-y-7 px-5 py-5">
                 <section>
-                  <h3 className="mb-2 text-xs font-bold uppercase tracking-widest text-slate-500">Document Status</h3>
+                  <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Document Status</h3>
                   <p className="text-sm font-semibold text-nexus-text">{aiSummary.status}</p>
                 </section>
                 <section>
-                  <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-500">Key Insights</h3>
+                  <h3 className="mb-4 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Key Insights</h3>
                   <ul className="space-y-4">
                     {aiSummary.insights.length > 0 ? (
                       aiSummary.insights.map((insight, index) => (
@@ -326,7 +326,7 @@ const DocumentPreviewPage = () => {
                   </ul>
                 </section>
                 <section className="rounded-xl bg-slate-50 p-4 text-sm">
-                  <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-slate-500">Metadata</h3>
+                  <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Metadata</h3>
                   <div className="space-y-2 text-slate-700">
                     <p><span className="font-semibold">Type:</span> {document?.typeLabel || "--"}</p>
                     <p><span className="font-semibold">Modified:</span> {document?.lastModified || "--"}</p>

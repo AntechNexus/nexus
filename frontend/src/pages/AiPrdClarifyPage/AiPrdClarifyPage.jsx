@@ -16,7 +16,7 @@ const GENERATING_STEPS = [
 
 const stepItems = [
   { id: "upload", label: "Upload Documents", state: "complete" },
-  { id: "clarify", label: "Clarify Question", state: "active" },
+  { id: "clarify", label: "Clarify Requirements", state: "active" },
   { id: "review", label: "Review PRD", state: "pending" },
 ];
 
@@ -151,7 +151,7 @@ const AiPrdClarifyPage = () => {
                 <span>/</span>
                 <span className="text-nexus-primary">Generate PRD</span>
                 <span>/</span>
-                <span className="font-semibold text-nexus-primary">Clarify Question</span>
+                <span className="font-semibold text-nexus-primary">Clarify Requirements</span>
               </nav>
 
               <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -167,7 +167,7 @@ const AiPrdClarifyPage = () => {
                 <React.Fragment key={step.id}>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-extrabold ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
                         step.state === "pending"
                           ? "bg-slate-200 text-nexus-muted"
                           : "bg-nexus-primary text-white"
@@ -332,7 +332,7 @@ const AiPrdClarifyPage = () => {
                     </button>
                   </div>
                   <button
-                    className="inline-flex items-center justify-center gap-3 rounded-xl bg-nexus-primary px-8 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-blue-900/10 transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                    className="inline-flex items-center justify-center gap-3 rounded-xl bg-nexus-primary px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-900/10 transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                     disabled={!canGeneratePrd}
                     onClick={submitAnswers}
                     type="button"

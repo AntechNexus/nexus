@@ -207,7 +207,7 @@ const AskNexusChatPage = () => {
                 <MessageSquare size={16} /> New Chat
               </button>
               <div className="rounded-xl border border-blue-100 bg-blue-50 p-3">
-                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-nexus-primary">Project Context</p>
+                <p className="text-xs font-bold uppercase tracking-[0.12em] text-nexus-primary">Project Context</p>
                 <p className="mt-1 truncate text-sm font-bold text-nexus-text">
                   {projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}
                 </p>
@@ -215,7 +215,7 @@ const AskNexusChatPage = () => {
               </div>
             </div>
             <div className="max-h-52 overflow-y-auto overflow-x-hidden border-b border-nexus-border p-3">
-              <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Projects</p>
+              <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Projects</p>
               <div className="space-y-1">
                 {projects.map((project) => {
                   const active = project.id === conversation.projectId;
@@ -247,7 +247,7 @@ const AskNexusChatPage = () => {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-3">
-              <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Chats</p>
+              <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Recent Chats</p>
               <div className="space-y-1">
                 {projectConversations.map((item) => (
                   <div key={item._id || item.id} className="group flex w-full items-center justify-between gap-1 rounded-xl pr-2 text-left transition hover:bg-white">
@@ -349,7 +349,7 @@ const AskNexusChatPage = () => {
                         </div>
                         {!isUser && citations.length > 0 && (
                           <div className="mt-5 space-y-2">
-                            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Sources</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Sources</p>
                             <div className="flex flex-wrap gap-2">
                               {citations.map((citation) => {
                                 const isDeleted = citation.fileStatus === "trash" || citation.fileStatus === "deleted";

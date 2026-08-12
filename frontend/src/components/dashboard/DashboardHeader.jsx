@@ -189,7 +189,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                 <div className="flex flex-col gap-1">
                   {searchResults.projects?.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Projects</div>
+                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Projects</div>
                       {searchResults.projects.map((p) => (
                         <button
                           key={p._id}
@@ -211,7 +211,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                   )}
                   {searchResults.folders?.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Folders</div>
+                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Folders</div>
                       {searchResults.folders.map((f) => (
                         <button
                           key={f._id}
@@ -233,7 +233,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                   )}
                   {searchResults.files?.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-500">Files</div>
+                      <div className="px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Files</div>
                       {searchResults.files.map((file) => {
                         const { Icon, tone } = getFileTypeStyle(file);
 

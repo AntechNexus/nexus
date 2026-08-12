@@ -127,7 +127,7 @@ const ProjectsPage = () => {
               <p className="mt-2 text-sm text-nexus-muted">Manage your technical document translation and archival workflows.</p>
             </div>
             <button
-              className="inline-flex items-center gap-2 rounded-xl bg-nexus-primary px-4 py-2.5 text-sm font-extrabold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
+              className="inline-flex items-center gap-2 rounded-xl bg-nexus-primary px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
               onClick={() => navigate("/projects/new")}
               type="button"
             >

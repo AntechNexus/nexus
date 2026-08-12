@@ -207,13 +207,13 @@ const CreateProjectPage = () => {
               <div className="border-t border-nexus-border pt-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <button
-                    className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-extrabold text-red-600 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
+                    className="rounded-xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
                     onClick={() => navigate("/projects")}
                     type="button"
                   >
                     Cancel Project
                   </button>
-                  <button className="rounded-xl bg-nexus-primary px-8 py-3 text-sm font-extrabold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2" type="submit">
+                  <button className="rounded-xl bg-nexus-primary px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2" type="submit">
                     Save Project
                   </button>
                 </div>

@@ -141,7 +141,7 @@ const AskNexusPage = () => {
               <section className="space-y-5">
                 <div className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
                   <label className="block">
-                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Target Project
                     </span>
                     <select
@@ -176,7 +176,7 @@ const AskNexusPage = () => {
                     disabled={projects.length === 0}
                   />
                   <div className="flex shrink-0 items-center justify-between gap-3 border-t border-nexus-border bg-white px-4 py-3 sm:px-5">
-                    <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    <span className="max-w-[calc(100%-4rem)] truncate rounded-full border border-nexus-border bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Context: <span className="text-nexus-primary">{selectedProject?.name || selectedProject?.title || "None"}</span>
                     </span>
                     <button
@@ -231,7 +231,7 @@ const AskNexusPage = () => {
                 )}
 
                 <section className="rounded-2xl border border-nexus-border bg-white p-5 shadow-sm">
-                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Recent Conversations</h2>
+                  <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Recent Conversations</h2>
                   <div className="space-y-1">
                     {conversations.length === 0 ? (
                       <p className="py-2 text-sm text-slate-400">No recent conversations.</p>

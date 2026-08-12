@@ -270,7 +270,7 @@ const AiPrdWorkspacePage = () => {
             {/* Project selector */}
             <div className="mx-auto w-full max-w-xl">
               <label className="block">
-                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                   Select Project
                 </span>
                 <span className="relative block">
@@ -310,7 +310,7 @@ const AiPrdWorkspacePage = () => {
               <p className="font-bold text-nexus-text">Want to use a PRD template?</p>
               <p className="mt-1 leading-6">
                 Upload or select a file whose filename contains{" "}
-                <span className="font-extrabold text-nexus-primary">Template PRD</span>.
+                <span className="font-bold text-nexus-primary">Template PRD</span>.
                 Nexus AI will use it as the preferred PRD structure.
               </p>
             </div>
@@ -318,17 +318,17 @@ const AiPrdWorkspacePage = () => {
             {/* Step indicator */}
             <div className="relative flex items-start justify-between px-4 sm:px-14">
               <div className="absolute left-4 right-4 top-5 h-px bg-nexus-border sm:left-14 sm:right-14" />
-              {[["1", "Upload Documents", true], ["2", "Clarify Questions", false], ["3", "Review PRD", false]].map(
+              {[["1", "Upload Documents", true], ["2", "Clarify Requirements", false], ["3", "Review PRD", false]].map(
                 ([num, label, active]) => (
                   <div className="relative z-10 flex flex-col items-center gap-2 text-center" key={num}>
                     <span
-                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-extrabold shadow-sm ${
+                      className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold shadow-sm ${
                         active ? "bg-nexus-primary text-white" : "border border-nexus-border bg-white text-nexus-muted"
                       }`}
                     >
                       {num}
                     </span>
-                    <span className={`text-xs font-extrabold ${active ? "text-nexus-primary" : "text-nexus-muted"}`}>
+                    <span className={`text-xs font-bold ${active ? "text-nexus-primary" : "text-nexus-muted"}`}>
                       {label}
                     </span>
                   </div>
@@ -393,7 +393,7 @@ const AiPrdWorkspacePage = () => {
                       ([type, style]) => {
                         const Icon = style.Icon;
                         return (
-                          <span className="flex flex-col items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider" key={type}>
+                          <span className="flex flex-col items-center gap-1 text-xs font-bold uppercase tracking-[0.12em]" key={type}>
                             <Icon size={25} />
                             {style.label}
                           </span>
@@ -406,11 +406,11 @@ const AiPrdWorkspacePage = () => {
                 {/* Source files list */}
                 <section className="mt-6">
                   <div className="flex flex-col justify-between gap-3 px-1 sm:flex-row sm:items-center">
-                    <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
+                    <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Source Files ({totalFileCount}/{MAX_FILES})
                     </h2>
                     <button
-                      className="inline-flex w-fit items-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2 text-xs font-extrabold text-nexus-primary shadow-sm transition hover:border-nexus-primary hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:pointer-events-none disabled:opacity-50"
+                      className="inline-flex w-fit items-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2 text-xs font-bold text-nexus-primary shadow-sm transition hover:border-nexus-primary hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:pointer-events-none disabled:opacity-50"
                       disabled={!uploadEnabled || existingFilesLoading}
                       onClick={() => setExistingFilePickerOpen(true)}
                       type="button"
@@ -441,7 +441,7 @@ const AiPrdWorkspacePage = () => {
                                 <p className="mb-1 text-xs font-bold text-nexus-primary">PRD template detected</p>
                               )}
                               {file.isNexus && (
-                                <p className="text-[10px] font-semibold text-nexus-muted uppercase tracking-wide">From Nexus</p>
+                                <p className="text-xs font-semibold text-nexus-muted uppercase tracking-wide">From Nexus</p>
                               )}
                               <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
                                 <div className="h-full w-full rounded-full bg-nexus-primary" />
@@ -469,7 +469,7 @@ const AiPrdWorkspacePage = () => {
 
             <div className="flex justify-end pt-4">
               <button
-                className="inline-flex items-center gap-3 rounded-xl bg-nexus-primary px-8 py-4 text-sm font-extrabold text-white shadow-lg shadow-blue-900/10 transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
+                className="inline-flex items-center gap-3 rounded-xl bg-nexus-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-blue-900/10 transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45"
                 disabled={!nextEnabled}
                 onClick={continueToClarify}
                 type="button"

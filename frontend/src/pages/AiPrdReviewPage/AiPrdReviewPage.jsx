@@ -3,7 +3,7 @@ import {
   Check,
   CheckCircle2,
   FileText,
-  History,
+  FilePenLine,
   RefreshCw,
   Save,
   ShieldAlert,
@@ -22,7 +22,7 @@ import { resetPrdSession, startRegeneratePrdJob, getActiveRegenerateJob } from "
 import * as prdApi from "../../services/prdApi";
 
 const suggestionChips = [
-  "Make it more detailed",
+  "Add more detail",
   "Make it more concise",
   "Improve acceptance criteria",
 ];
@@ -244,8 +244,8 @@ const AiPrdReviewPage = () => {
                 <div className="absolute left-10 right-10 top-4 h-px bg-nexus-primary" />
                 {[
                   ["Upload Documents", true],
-                  ["Clarify Question", true],
-                  ["DOCUMENT READY", false],
+                  ["Clarify Requirements", true],
+                  ["Review PRD", false],
                 ].map(([label, complete], index) => (
                   <div className="relative z-10 flex flex-col items-center gap-2 bg-nexus-bg px-2 text-center" key={label}>
                     <span className={`flex items-center justify-center rounded-full ${index === 2 ? "h-10 w-10 border-2 border-nexus-primary bg-white ring-4 ring-blue-100" : "h-8 w-8 bg-nexus-primary text-white"}`}>
@@ -267,7 +267,7 @@ const AiPrdReviewPage = () => {
                       <p className="mt-1 text-xs font-bold uppercase tracking-wide text-nexus-muted">{version}</p>
                     </div>
                   </div>
-                  <span className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-nexus-primary">
+                  <span className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold uppercase tracking-wide text-nexus-primary">
                     {version}
                   </span>
                 </div>
@@ -277,7 +277,7 @@ const AiPrdReviewPage = () => {
             <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
               <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:overflow-x-hidden custom-scrollbar">
                 <section>
-                  <h2 className="mb-4 px-2 text-xs font-semibold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
+                  <h2 className="mb-4 px-2 text-xs font-semibold uppercase tracking-[0.12em] text-nexus-muted">Document Outline</h2>
                   <nav className="space-y-1">
                     {outline.map((item, index) => (
                       <button
@@ -296,7 +296,7 @@ const AiPrdReviewPage = () => {
                 <section className="rounded-xl border border-nexus-border bg-white p-4">
                   <div className="mb-2 flex items-center gap-2 text-nexus-ai">
                     <ShieldAlert size={17} />
-                    <span className="text-xs font-extrabold uppercase tracking-wide">Preview PRD</span>
+                    <span className="text-xs font-bold uppercase tracking-wide">Preview PRD</span>
                   </div>
                   <p className="text-sm leading-6 text-nexus-muted">
                     This document was synthesized from uploaded source materials, clarification answers, and system architecture notes. Please review the details carefully.
@@ -307,10 +307,10 @@ const AiPrdReviewPage = () => {
               <section className="overflow-hidden rounded-2xl border border-nexus-border bg-white shadow-sm flex flex-col">
                 
                 {/* Header actions block (not floating absolute) */}
-                <div className="flex justify-end p-6 border-b border-nexus-border bg-slate-50/50">
-                  <div className="flex items-center gap-4 rounded-full border border-nexus-border bg-white px-5 py-2.5 shadow-sm">
+                <div className="flex justify-end border-b border-nexus-border bg-slate-50/50 px-6 py-4">
+                  <div className="flex items-center gap-3 rounded-full border border-nexus-border bg-white px-4 py-2 shadow-sm">
                     <button
-                      className="inline-flex items-center gap-2 rounded-full bg-nexus-primary px-4 py-2 text-xs font-extrabold text-white transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-full bg-nexus-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:opacity-50"
                       onClick={handleSavePrd}
                       disabled={saveLoading || saved || regenLoading}
                       type="button"
@@ -325,16 +325,16 @@ const AiPrdReviewPage = () => {
                       disabled={saveLoading || saved || regenLoading}
                       type="button"
                     >
-                      <History size={16} /> Re-generate Section
+                      <FilePenLine size={16} /> Revise Draft
                     </button>
                   </div>
                 </div>
 
-                <article className="mx-auto w-full p-8 sm:p-12">
-                  <header className="border-b border-nexus-border pb-8 mb-8">
+                <article className="mx-auto w-full px-8 pb-8 pt-6 sm:px-12 sm:pb-12 sm:pt-8">
+                  <header className="mb-6 border-b border-nexus-border pb-6">
                     <div className="mb-2 flex items-center gap-2 text-nexus-primary">
                       <FileText size={19} />
-                      <span className="text-xs font-extrabold uppercase tracking-[0.16em]">Draft Product Requirement</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em]">Draft Product Requirement</span>
                     </div>
                   </header>
 
@@ -371,20 +371,20 @@ const AiPrdReviewPage = () => {
           <section aria-modal="true" className="w-full max-w-lg rounded-2xl border border-nexus-border bg-white p-8 shadow-2xl" role="dialog">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="nexus-section-title">Regenerate this PRD?</h2>
+                <h2 className="nexus-section-title">Revise this PRD draft?</h2>
                 <p className="mt-2 text-sm leading-6 text-nexus-muted">
-                  NEXUS will create a new PRD draft using the current uploaded documents and clarification answers.
-                  Any unsaved edits in the current draft may be replaced.
+                  NEXUS will create a new draft using the same uploaded documents and clarification answers, plus your instructions below.
+                  Your current draft will be replaced on this page until you save it.
                 </p>
               </div>
-              <button aria-label="Close regenerate modal" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => setRegenOpen(false)} type="button">
+              <button aria-label="Close revise draft modal" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => setRegenOpen(false)} type="button">
                 <X size={20} />
               </button>
             </div>
             <label className="block">
-              <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-nexus-text">What would you like NEXUS to improve?</span>
+              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-nexus-text">What should NEXUS change in this draft?</span>
               <textarea
-                className="min-h-28 w-full resize-none rounded-xl border border-nexus-border p-4 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+                className="min-h-28 w-full resize-none rounded-xl border border-nexus-border p-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
                 onChange={(event) => setRegenInstruction(event.target.value)}
                 placeholder="For example: make the requirements more detailed, simplify the executive summary, or add clearer acceptance criteria."
                 value={regenInstruction}
@@ -411,12 +411,13 @@ const AiPrdReviewPage = () => {
                 Cancel
               </button>
               <button
-                className="rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:hover:bg-slate-200"
+                className="inline-flex items-center gap-2 rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:hover:bg-slate-200"
                 disabled={!canRegenerate}
                 onClick={confirmRegenerate}
                 type="button"
               >
-                Regenerate PRD
+                <FilePenLine size={16} />
+                Generate Revised Draft
               </button>
             </div>
           </section>

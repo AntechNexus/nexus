@@ -183,7 +183,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
             <span className="block text-sm text-nexus-muted">or browse files</span>
           </span>
           <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, WAV, PRD</span>
-          <span className="text-xs text-nexus-muted">Maximum 75 MB total per upload</span>
+          <span className="text-xs text-nexus-muted">Maximum 75 MB per files.</span>
         </button>
         {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600 border border-red-200 leading-relaxed">{error}</p>}
 
@@ -719,7 +719,7 @@ const ProjectDetailPage = () => {
             ) : (
               <div className="overflow-x-auto pb-24">
                 <table className="min-w-[980px] w-full text-left text-sm">
-                  <thead className="sticky top-0 z-10 bg-white text-xs uppercase tracking-wider text-nexus-muted">
+                  <thead className="sticky top-0 z-10 bg-white text-xs uppercase tracking-[0.12em] text-nexus-muted">
                     <tr className="border-b border-nexus-border">
                       <th className="px-8 py-4 font-bold">Name</th>
                       <th className="px-6 py-4 font-bold">Type</th>

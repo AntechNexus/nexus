@@ -267,7 +267,7 @@ const RecentFilesTable = ({ files }) => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${getAvatarTone(
+                            className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${getAvatarTone(
                               file.modifiedBy,
                             )}`}
                           >

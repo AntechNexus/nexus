@@ -117,7 +117,7 @@ const StorageCard = ({ compact = false }) => {
               <span className={`text-2xl font-bold ${pctUsed >= 90 ? "text-red-500" : "text-nexus-text"}`}>
                 {pctUsed}%
               </span>
-              <span className="text-[10px] font-semibold uppercase text-nexus-muted">Used</span>
+              <span className="text-xs font-semibold uppercase text-nexus-muted">Used</span>
             </div>
           </div>
         </div>

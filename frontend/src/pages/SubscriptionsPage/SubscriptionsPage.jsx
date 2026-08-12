@@ -104,7 +104,7 @@ const SubscriptionsPage = () => {
         <main className="nexus-page-shell gap-6">
           <section className="max-w-2xl">
             <div className="max-w-2xl">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-nexus-primary">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.12em] text-nexus-primary">
                 Flexible plans for individuals and teams
               </span>
               <h1 className="nexus-page-title">Subscription Plans</h1>
@@ -128,7 +128,7 @@ const SubscriptionsPage = () => {
               </button>
               <span className={`flex items-center gap-2 text-sm font-semibold ${yearly ? "text-nexus-text" : "text-nexus-muted"}`}>
                 Yearly
-                <span className="rounded-full bg-nexus-ai px-2 py-0.5 text-[10px] font-semibold text-white">Save 20%</span>
+                <span className="rounded-full bg-nexus-ai px-2 py-0.5 text-xs font-semibold text-white">Save 20%</span>
               </span>
             </div>
           </section>

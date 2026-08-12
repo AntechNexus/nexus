@@ -11,7 +11,6 @@ import {
   FolderKanban,
   HelpCircle,
   SearchCheck,
-  Share2,
   Sparkles,
   UploadCloud,
 } from "lucide-react";
@@ -34,7 +33,7 @@ const workflowSteps = [
   {
     id: 3,
     icon: Sparkles,
-    title: "Clarify Question",
+    title: "Clarify Requirements",
     description: "Nexus extracts context and asks smart follow-up questions.",
     accent: "text-[#ec4899]",
   },
@@ -125,7 +124,7 @@ const LandingPage = () => {
         >
           <div className="mx-auto max-w-[1440px]">
             <div className="mx-auto mb-16 max-w-4xl text-center">
-              <h2 className="text-balance text-[34px] font-extrabold leading-tight text-text-main sm:text-[44px]">
+              <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
                 How Nexus Works
               </h2>
               <p className="mx-auto mt-5 max-w-[820px] text-base leading-7 text-[#4d6383]">
@@ -158,7 +157,7 @@ const LandingPage = () => {
                         className={`h-8 w-8 stroke-[2.4] ${step.accent}`}
                       />
                     </div>
-                    <h3 className="mb-4 text-lg font-extrabold text-text-main">
+                    <h3 className="mb-4 text-lg font-bold text-text-main">
                       {step.title}
                     </h3>
                     <p className="max-w-[230px] text-sm leading-6 text-[#4d6383]">
@@ -171,12 +170,9 @@ const LandingPage = () => {
           </div>
         </section>
 
-        <section
-          id="features"
-          className="mx-auto max-w-[1440px] px-7 pb-20 pt-6 sm:px-10 lg:px-11 lg:pb-24"
-        >
+        <section className="mx-auto max-w-[1440px] px-7 pb-20 pt-6 sm:px-10 lg:px-11 lg:pb-24">
           <div className="mx-auto mb-12 max-w-4xl text-center">
-            <h2 className="text-balance text-[32px] font-extrabold leading-tight text-text-main sm:text-[42px]">
+            <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
               Why Teams Choose Nexus
             </h2>
           </div>
@@ -196,7 +192,7 @@ const LandingPage = () => {
                     <Icon aria-hidden="true" className="h-8 w-8 stroke-[2.2]" />
                   </div>
                   <div>
-                    <h3 className="mb-3 text-lg font-extrabold text-text-main">
+                    <h3 className="mb-3 text-lg font-bold text-text-main">
                       {benefit.title}
                     </h3>
                     <p className="max-w-xl text-base leading-7 text-[#4d6383]">
@@ -208,8 +204,8 @@ const LandingPage = () => {
             })}
           </div>
 
-          <div className="mx-auto mb-12 mt-20 max-w-4xl text-center">
-            <h2 className="text-balance text-[32px] font-extrabold leading-tight text-text-main sm:text-[42px]">
+          <div id="features" className="mx-auto mb-12 mt-20 max-w-4xl scroll-mt-24 text-center">
+            <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
               Everything You Need to Build Better
             </h2>
             <p className="mx-auto mt-5 max-w-[720px] text-base leading-7 text-[#4d6383]">
@@ -232,7 +228,7 @@ const LandingPage = () => {
                   >
                     <Icon aria-hidden="true" className="h-6 w-6 stroke-[2.2]" />
                   </div>
-                  <h3 className="mb-4 text-base font-extrabold text-text-main">
+                  <h3 className="mb-4 text-base font-bold text-text-main">
                     {feature.title}
                   </h3>
                   <p className="max-w-[250px] text-sm leading-6 text-[#4d6383]">
@@ -246,7 +242,7 @@ const LandingPage = () => {
           <div className="mt-20 rounded-[28px] bg-primary-action px-7 py-14 text-white shadow-2xl shadow-primary/10 sm:px-12 lg:px-16">
             <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-[580px]">
-                <h2 className="text-balance text-[38px] font-extrabold leading-tight sm:text-[48px]">
+                <h2 className="text-balance text-4xl font-bold leading-tight sm:text-5xl">
                   Ready to turn
                   <br />
                   complexity into clarity?
@@ -259,14 +255,14 @@ const LandingPage = () => {
               <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
                 <a
                   href="/signup"
-                  className="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-white px-8 text-base font-extrabold text-primary transition hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-action"
+                  className="inline-flex min-h-14 items-center justify-center gap-3 rounded-xl bg-white px-8 text-base font-bold text-primary transition hover:bg-primary-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-action"
                 >
                   Create Free Workspace
                   <ArrowRight aria-hidden="true" className="h-5 w-5" />
                 </a>
                 <a
                   href="#how-it-works"
-                  className="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 px-8 text-base font-extrabold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-action"
+                  className="inline-flex min-h-14 items-center justify-center rounded-xl border border-white/30 px-8 text-base font-bold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary-action"
                 >
                   Learn More
                 </a>
@@ -279,30 +275,15 @@ const LandingPage = () => {
       <footer className="border-t border-outline-soft bg-surface px-7 py-8 sm:px-10 lg:px-11">
         <div className="mx-auto max-w-[1440px]">
           <div className="max-w-sm">
-            <p className="text-lg font-extrabold text-text-main">NEXUS</p>
+            <p className="text-lg font-bold text-text-main">NEXUS</p>
             <p className="mt-3 text-sm leading-6 text-[#263958]">
               The intelligence layer for high-performance product teams.
               Document better, build faster.
             </p>
           </div>
         </div>
-        <div className="mx-auto mt-6 flex max-w-[1440px] flex-col gap-4 border-t border-outline-soft pt-5 text-[11px] text-text-variant/60 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto mt-6 flex max-w-[1440px] flex-col gap-4 border-t border-outline-soft pt-5 text-xs text-text-variant/60 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; 2026 NEXUS Technical Systems. All rights reserved.</p>
-          <div className="flex gap-5">
-            <a
-              href="#top"
-              className="transition hover:text-primary focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              Language
-            </a>
-            <a
-              href="#top"
-              className="inline-flex items-center gap-1 transition hover:text-primary focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <Share2 aria-hidden="true" className="h-3.5 w-3.5" />
-              Share
-            </a>
-          </div>
         </div>
       </footer>
     </div>

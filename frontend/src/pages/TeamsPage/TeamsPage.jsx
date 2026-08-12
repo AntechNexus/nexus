@@ -51,14 +51,14 @@ const ProjectAvatarStack = ({ members }) => (
   <div className="flex -space-x-2">
     {members.slice(0, 3).map((member) => (
       <span
-        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${member.tone}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold ${member.tone}`}
         key={member.id}
       >
         {initials(member.name)}
       </span>
     ))}
     {members.length > 3 && (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-bold text-slate-600">
         +{members.length - 3}
       </span>
     )}
@@ -281,7 +281,7 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
           </label>
           {error && <p className="-mt-2 text-sm font-semibold text-red-600">{error}</p>}
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-nexus-muted">Search Results</p>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">Search Results</p>
             {searchResults.length === 0 && searchQuery.length >= 3 && (
               <p className="text-sm text-slate-500">No users found.</p>
             )}
@@ -671,7 +671,7 @@ const TeamsPage = () => {
                   {isOpen && (
                     <div className="border-t border-nexus-border bg-slate-50/60 p-4 sm:p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <p className="text-xs font-bold uppercase tracking-widest text-nexus-muted">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">
                           Team Members ({project.members.length})
                         </p>
                         {isCurrentUserOwner && (
@@ -705,7 +705,7 @@ const TeamsPage = () => {
                               </div>
                               <div className="flex shrink-0 items-center gap-4">
                                 {isOwner && (
-                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-nexus-primary">
+                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold uppercase tracking-wide text-nexus-primary">
                                     Owner
                                   </span>
                                 )}

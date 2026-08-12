@@ -79,7 +79,7 @@ const ProjectCard = ({ currentUser, menuOpen, onMenuAction, onNavigate, onSelect
       <div className="flex -space-x-1.5">
         {project.members.map((member) => (
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-full border border-white text-[10px] font-bold ${member.tone}`}
+            className={`flex h-7 w-7 items-center justify-center rounded-full border border-white text-xs font-bold ${member.tone}`}
             key={member.name}
             title={member.name}
           >
@@ -87,7 +87,7 @@ const ProjectCard = ({ currentUser, menuOpen, onMenuAction, onNavigate, onSelect
           </span>
         ))}
       </div>
-      <div className="text-right text-[10px] font-semibold text-slate-500">
+      <div className="text-right text-xs font-semibold text-slate-500">
         <span className="flex items-center justify-end gap-1">
           <FileText size={12} /> {project.fileCount ?? 0} Files
         </span>

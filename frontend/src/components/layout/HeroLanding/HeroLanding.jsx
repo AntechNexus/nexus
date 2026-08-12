@@ -35,12 +35,12 @@ const HeroLanding = () => {
     <section id="top" className="relative mx-auto max-w-[1440px] px-6 pb-16 pt-[104px] sm:px-10 lg:px-11 lg:pb-20">
       <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-ai-accent/10 px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ai-accent">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-ai-accent/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-ai-accent">
             <Sparkles aria-hidden="true" className="h-3.5 w-3.5 fill-ai-accent" />
             AI Document Management &amp; PRD Generation
           </div>
 
-          <h1 className="max-w-[640px] text-balance text-[42px] font-extrabold leading-[1.02] tracking-[-0.01em] text-[#0b1533] sm:text-[56px] lg:text-[58px]">
+          <h1 className="max-w-[640px] text-balance text-4xl font-bold leading-[1.02] text-[#0b1533] sm:text-5xl lg:text-6xl">
             Turn documents into clear <span className="text-primary">PRDs</span> in{" "}
             <span className="relative whitespace-nowrap">
               minutes
@@ -50,7 +50,7 @@ const HeroLanding = () => {
             </span>
           </h1>
 
-          <p className="mt-6 max-w-[590px] text-[16px] leading-8 text-[#51647f]">
+          <p className="mt-6 max-w-[590px] text-base leading-8 text-[#51647f]">
             Nexus uses AI to analyze your documents, clarify gaps, and generate developer-ready PRDs so your team can build the right product, faster.
           </p>
 
@@ -71,7 +71,7 @@ const HeroLanding = () => {
             </a>
           </div>
 
-          <div className="mt-10 grid max-w-[620px] gap-4 text-[12px] text-[#51647f] sm:grid-cols-3">
+          <div className="mt-10 grid max-w-[620px] gap-4 text-xs text-[#51647f] sm:grid-cols-3">
             <TrustBadge icon={ShieldCheck} title="Enterprise-grade security" copy="Your data is protected" />
             <TrustBadge icon={UsersRound} title="Built for teams" copy="Collaborate with ease" />
             <TrustBadge icon={Lock} title="You own your data" copy="We never train on yours" />
@@ -99,7 +99,7 @@ const HeroLanding = () => {
                 className={`absolute z-10 flex h-[82px] w-[72px] flex-col items-center justify-center gap-1.5 rounded-xl border border-outline-soft bg-white shadow-[0_14px_34px_rgba(26,28,29,0.08)] ${item.className}`}
               >
                 <Icon aria-hidden="true" className="h-6 w-6" />
-                <span className="text-[11px] font-extrabold">{item.label}</span>
+                <span className="text-xs font-bold">{item.label}</span>
               </div>
             );
           })}
@@ -109,7 +109,7 @@ const HeroLanding = () => {
       <div className="mt-14 overflow-hidden rounded-[24px] border border-outline-soft bg-white shadow-[0_30px_70px_rgba(26,28,29,0.13)]">
         <div className="flex items-center justify-between border-b border-outline-soft bg-white px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
-            <span className="text-xl font-extrabold text-primary">Nexus</span>
+            <span className="text-xl font-bold text-primary">Nexus</span>
           </div>
           <div className="flex items-center gap-3 text-[#6b7c93]">
             <Circle aria-hidden="true" className="h-2.5 w-2.5 fill-[#ff6b6b] text-[#ff6b6b]" />
@@ -120,7 +120,7 @@ const HeroLanding = () => {
 
         <div className="grid bg-[#fbfbfc] lg:grid-cols-[220px_1fr]">
           <aside className="hidden border-r border-outline-soft bg-white p-5 lg:block">
-            <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.18em] text-text-muted">Workspace</p>
+            <p className="mb-5 text-xs font-bold uppercase tracking-[0.12em] text-text-muted">Workspace</p>
             {["Projects", "Documents", "PRDs", "Clarifications", "Templates", "Settings"].map((item, index) => (
               <div
                 key={item}
@@ -134,14 +134,14 @@ const HeroLanding = () => {
 
           <div className="p-4 sm:p-6 lg:p-7">
             <div className="grid gap-3 rounded-2xl border border-outline-soft bg-white p-4 sm:grid-cols-4">
-              {["Select Project", "Upload Documents", "Clarify Question", "Review PRD"].map((step, index) => (
+              {["Select Project", "Upload Documents", "Clarify Requirements", "Review PRD"].map((step, index) => (
                 <div key={step} className="flex items-start gap-3">
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-extrabold ${index <= 2 ? "bg-primary text-white" : "bg-surface-soft text-text-muted"}`}>
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${index <= 2 ? "bg-primary text-white" : "bg-surface-soft text-text-muted"}`}>
                     {index + 1}
                   </span>
                   <div>
                     <p className="text-sm font-bold text-[#1d2a42]">{step}</p>
-                    <p className="mt-1 text-[11px] leading-4 text-[#64748b]">
+                    <p className="mt-1 text-xs leading-4 text-[#64748b]">
                       {index === 0 ? "Acme Mobile App" : index === 1 ? "4 files uploaded" : index === 2 ? "3 open questions" : "Ready to export"}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ const HeroLanding = () => {
                           </span>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-semibold text-[#1d2a42]">{file.name}</p>
-                            <p className="text-[11px] text-[#64748b]">{file.meta}</p>
+                            <p className="text-xs text-[#64748b]">{file.meta}</p>
                           </div>
                         </div>
                         <CheckCircle2 aria-hidden="true" className="h-4 w-4 text-emerald-500" />
@@ -185,7 +185,7 @@ const HeroLanding = () => {
                         <Circle aria-hidden="true" className="mt-1 h-3 w-3 text-outline-strong" />
                         <p className="text-sm font-semibold text-[#1d2a42]">{question}</p>
                       </div>
-                      <button className="text-[12px] font-bold text-primary">Add details...</button>
+                      <button className="text-xs font-bold text-primary">Add details...</button>
                     </div>
                   ))}
                   <button className="w-full rounded-xl bg-primary-action px-4 py-3 text-sm font-bold text-white">Submit Answers</button>
@@ -223,8 +223,8 @@ const TrustBadge = ({ icon: Icon, title, copy }) => (
 const PreviewPanel = ({ title, badge, children }) => (
   <section className="rounded-2xl border border-outline-soft bg-[#fbfbfc] p-4">
     <div className="mb-4 flex items-center justify-between">
-      <h3 className="text-sm font-extrabold text-[#1d2a42]">{title}</h3>
-      {badge ? <span className="rounded-full bg-ai-accent/10 px-2.5 py-1 text-[11px] font-bold text-ai-accent">{badge}</span> : null}
+      <h3 className="text-sm font-bold text-[#1d2a42]">{title}</h3>
+      {badge ? <span className="rounded-full bg-ai-accent/10 px-2.5 py-1 text-xs font-bold text-ai-accent">{badge}</span> : null}
     </div>
     {children}
   </section>
@@ -232,7 +232,7 @@ const PreviewPanel = ({ title, badge, children }) => (
 
 const InsightGroup = ({ title, items, type }) => (
   <div>
-    <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#64748b]">{title}</p>
+    <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#64748b]">{title}</p>
     <div className="space-y-2">
       {items.map((item) => (
         <div key={item} className="flex items-center justify-between text-sm text-[#33445f]">

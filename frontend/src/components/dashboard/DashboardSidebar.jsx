@@ -80,7 +80,7 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
             <img alt="" aria-hidden="true" className="h-7 w-7 object-contain" src={nexusLogo} />
           </div>
           <Link
-            className={`text-2xl font-extrabold tracking-tight text-nexus-primary transition ${collapsed ? "lg:hidden" : ""}`}
+            className={`text-2xl font-bold tracking-tight text-nexus-primary transition ${collapsed ? "lg:hidden" : ""}`}
             to="/dashboard"
           >
             NEXUS

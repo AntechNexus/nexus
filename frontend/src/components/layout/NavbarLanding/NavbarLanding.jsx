@@ -11,12 +11,12 @@ const NavbarLanding = () => {
         <div className="flex items-center gap-12">
           <a
             href="#top"
-            className="inline-flex items-center gap-2.5 text-[20px] font-extrabold leading-none text-primary outline-none transition-colors focus-visible:rounded focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            className="inline-flex items-center gap-2.5 text-xl font-bold leading-none text-primary outline-none transition-colors focus-visible:rounded focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           >
             <img alt="Nexus logo" className="h-8 w-8 rounded-md object-contain" src={nexusLogo} />
             NEXUS
           </a>
-          <div className="hidden items-center gap-8 text-[13px] font-medium text-text-variant md:flex">
+          <div className="hidden items-center gap-8 text-sm font-medium text-text-variant md:flex">
             <a className="transition-colors hover:text-primary focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2" href="#top">
               Product
             </a>
@@ -28,7 +28,7 @@ const NavbarLanding = () => {
             </a>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-[13px] font-medium">
+        <div className="flex items-center gap-4 text-sm font-medium">
           <a
             className="hidden rounded-xl px-5 py-2.5 text-text-variant transition-colors hover:bg-surface-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 sm:inline-flex"
             href="/login"
