@@ -214,7 +214,7 @@ const AskNexusChatPage = () => {
                 <p className="mt-0.5 text-xs text-nexus-muted">Current project documents only</p>
               </div>
             </div>
-            <div className="max-h-52 overflow-y-auto border-b border-nexus-border p-3">
+            <div className="max-h-52 overflow-y-auto overflow-x-hidden border-b border-nexus-border p-3">
               <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Projects</p>
               <div className="space-y-1">
                 {projects.map((project) => {
@@ -246,7 +246,7 @@ const AskNexusChatPage = () => {
                 })}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-3">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden p-3">
               <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Chats</p>
               <div className="space-y-1">
                 {projectConversations.map((item) => (
