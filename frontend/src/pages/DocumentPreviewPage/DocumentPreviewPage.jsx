@@ -282,12 +282,16 @@ const DocumentPreviewPage = () => {
             </article>
 
             <aside className="border-t border-nexus-border bg-white lg:border-l lg:border-t-0">
-              <a href={document?.fileUrl || "#"} download={document?.name} target="_blank" rel="noreferrer" className="flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold text-nexus-text transition hover:bg-slate-50">
+              <button 
+                onClick={handleDownload}
+                className="flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold text-nexus-text transition hover:bg-slate-50"
+                type="button"
+              >
                 <span className="flex items-center gap-2">
                   <Download size={16} /> Download
                 </span>
                 <ChevronRight size={16} />
-              </a>
+              </button>
               <div className="border-b border-nexus-border px-5 py-4">
                 <div className="flex items-center justify-between">
                   <h2 className="flex items-center gap-2 text-base font-bold text-nexus-text">
