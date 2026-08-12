@@ -27,13 +27,14 @@
       fileName: {
         type: String,
         required: true,
-        maxlength: [75, "File name cannot exceed 75 characters"],
+        maxlength: [255, "File name cannot exceed 255 characters"],
         index: true,
       },
       originalName: {
         type: String,
-        required: true,
-        maxlength: [75, "Original file name cannot exceed 75 characters"],
+        required: [true, "Original file name is required"],
+        trim: true,
+        maxlength: [255, "Original file name cannot exceed 255 characters"],
       },
       fileType: {
         type: String,
