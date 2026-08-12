@@ -46,7 +46,7 @@ async function getUniqueFileName(projectId, folderId, originalName) {
     const existingFile = await File.findOne({ 
       projectId, 
       folderId: folderId || null, 
-      fileName, 
+      originalName: fileName, 
       status: { $ne: 'deleted' } 
     });
     if (!existingFile) {
@@ -173,7 +173,7 @@ exports.createFile = async (req, res) => {
       folderId: folderId || null,
       createdBy,
       fileName,
-      originalName,
+      originalName: fileName,
       fileType,
       category,
       sizeBytes,

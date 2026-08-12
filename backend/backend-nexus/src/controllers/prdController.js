@@ -537,9 +537,28 @@ exports.saveFilesToProject = async (req, res) => {
         return res.status(400).json({ message: `Storage limit exceeded. Cannot save file: ${file.originalname}` });
       }
 
-      // Generate unique filename
+      // Check for originalName deduplication
+      let finalOriginalName = file.originalname;
+      let counter = 1;
+      const lastDotIndex = finalOriginalName.lastIndexOf('.');
+      const nameExt = lastDotIndex !== -1 ? finalOriginalName.substring(lastDotIndex) : '';
+      const baseName = lastDotIndex !== -1 ? finalOriginalName.substring(0, lastDotIndex) : finalOriginalName;
+
+      while (true) {
+        const existingFile = await File.findOne({ 
+          projectId, 
+          folderId: null, 
+          originalName: finalOriginalName, 
+          status: { $ne: 'deleted' } 
+        });
+        if (!existingFile) break;
+        finalOriginalName = `${baseName} (${counter})${nameExt}`;
+        counter++;
+      }
+
+      // Generate unique filename for storage
       const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-      const fileName = `${uniqueSuffix}-${file.originalname}`;
+      const fileName = `${uniqueSuffix}-${finalOriginalName}`;
       const uploadDir = path.join(__dirname, "../../uploads");
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
       const localPath = path.join(uploadDir, fileName);
@@ -550,7 +569,7 @@ exports.saveFilesToProject = async (req, res) => {
         folderId: null,
         createdBy: userId,
         fileName,
-        originalName: file.originalname,
+        originalName: finalOriginalName,
         fileType: ext,
         category,
         sizeBytes: file.size,
