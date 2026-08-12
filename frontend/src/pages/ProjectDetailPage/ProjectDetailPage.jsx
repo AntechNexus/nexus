@@ -84,12 +84,18 @@ const AddFileModal = ({ onClose, onUpload }) => {
     
     const validFiles = [];
     const invalidTypeFiles = [];
+    const emptyFiles = [];
     let nextTotalBytes = selectedFiles.reduce((total, file) => total + file.size, 0);
     let exceedsTotalLimit = false;
 
     Array.from(files).forEach((file) => {
       if (!isAllowedUploadFile(file.name)) {
         invalidTypeFiles.push(file.name);
+        return;
+      }
+
+      if (file.size === 0) {
+        emptyFiles.push(file.name);
         return;
       }
 
@@ -102,10 +108,13 @@ const AddFileModal = ({ onClose, onUpload }) => {
       nextTotalBytes += file.size;
     });
 
-    if (invalidTypeFiles.length > 0 || exceedsTotalLimit) {
+    if (invalidTypeFiles.length > 0 || exceedsTotalLimit || emptyFiles.length > 0) {
       const messages = [];
       if (invalidTypeFiles.length > 0) {
         messages.push("Unsupported file type skipped. Upload only PDF, DOCX, XLSX, MP3, M4A, WAV, or PRD files.");
+      }
+      if (emptyFiles.length > 0) {
+        messages.push("Empty files (0 bytes) are not allowed.");
       }
       if (exceedsTotalLimit) {
         messages.push("Total upload size cannot exceed 75 MB.");
