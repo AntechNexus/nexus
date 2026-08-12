@@ -57,10 +57,12 @@ export const startClarifyJob = async ({ projectId, projectName, localFiles, nexu
 
     let savedFileIds = [...nexusFileIds];
 
+    let nextVersion = 1;
     // 1. Save to Nexus (this triggers auto-transcribe in backend)
     if (rawLocalFileObjs.length > 0 || nexusFileIds.length > 0) {
       const saveResult = await saveFilesToProject(projectId, rawLocalFileObjs, nexusFileIds);
       savedFileIds = saveResult.savedFileIds || savedFileIds;
+      if (saveResult.nextVersion) nextVersion = saveResult.nextVersion;
     }
 
     // 2. Prepare files for Gemini
@@ -92,25 +94,13 @@ export const startClarifyJob = async ({ projectId, projectName, localFiles, nexu
       questions = aiResult.questions || [];
     }
 
-    // Base PRD Version calculation
-    let baseVersion = 0;
-    const allSelectedFiles = [...localFiles, ...nexusFiles.map((f) => ({ name: f.name }))];
-    
-    allSelectedFiles.forEach(f => {
-      const match = f.name.match(/PRD.*V(\d+)/i) || f.name.match(/V(\d+)\.0/i) || f.name.match(/V(\d+)/i);
-      if (match) {
-        const v = parseInt(match[1]);
-        if (v > baseVersion) baseVersion = v;
-      }
-    });
-
     const clarifyData = {
       cacheId,
       questions,
       projectId,
       projectName,
       allFileIds: savedFileIds,
-      baseVersion,
+      baseVersion: nextVersion - 1, // Store as baseVersion so startGenerateJob adds 1
     };
 
     // Save to localStorage

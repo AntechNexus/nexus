@@ -576,7 +576,13 @@ exports.saveFilesToProject = async (req, res) => {
       });
     }
 
-    return res.status(200).json({ success: true, savedFileIds });
+    const latestPrd = await PRD.findOne({ projectId })
+      .sort({ version: -1 })
+      .select("version")
+      .lean();
+    const nextVersion = (latestPrd?.version || 0) + 1;
+
+    return res.status(200).json({ success: true, savedFileIds, nextVersion });
   } catch (error) {
     console.error("saveFilesToProject error:", error);
     return res.status(500).json({ message: "Failed to save files to project", error: error.message });
