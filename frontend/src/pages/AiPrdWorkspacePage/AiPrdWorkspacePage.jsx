@@ -231,8 +231,10 @@ const AiPrdWorkspacePage = () => {
 
   useEffect(() => {
     const handleJobCompleted = (e) => {
-      if (e.detail.actionPath && submitting) {
+      if (e.detail.actionPath && submitting && e.detail.type === "success") {
         navigate(e.detail.actionPath, { replace: true });
+      } else if (e.detail.type === "error") {
+        setSubmitting(false);
       }
     };
     window.addEventListener("prdJobCompleted", handleJobCompleted);

@@ -347,8 +347,8 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                                   e.stopPropagation();
                                   if (isUnread) handleMarkAsRead(notification._id);
                                   setNotificationsOpen(false);
-                                  // Navigating to workspace will auto-redirect based on localStorage state
-                                  navigate("/ai-prd-workspace");
+                                  // Navigating to actionPath directly instead of workspace
+                                  navigate(notification.actionPath || "/ai-prd-workspace");
                                 }}
                                 type="button"
                               >

@@ -37,6 +37,7 @@ const notifyUser = async (message, type, actionPath, projectId) => {
         title: "AI PRD Job Completed",
         message,
         projectId: projectId || null,
+        actionPath: actionPath || null,
       });
     } catch (e) {
       console.error("Failed to create notification:", e);

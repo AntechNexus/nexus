@@ -36,8 +36,21 @@ const AiPrdClarifyPage = () => {
     if (stored) return JSON.parse(stored);
     return {};
   });
-  const [generating, setGenerating] = useState(false);
+  const [generating, setGenerating] = useState(() => localStorage.getItem("prd_generate_status") === "running");
   const [generatingStep, setGeneratingStep] = useState(0);
+
+  useEffect(() => {
+    const handleJobCompleted = (e) => {
+      if (e.detail?.type === "success" && e.detail?.actionPath === "/ai-prd-workspace/review") {
+        setGenerating(false);
+        navigate("/ai-prd-workspace/review");
+      } else if (e.detail?.type === "error") {
+        setGenerating(false);
+      }
+    };
+    window.addEventListener("prdJobCompleted", handleJobCompleted);
+    return () => window.removeEventListener("prdJobCompleted", handleJobCompleted);
+  }, [navigate]);
 
   useEffect(() => {
     if (!hasPrdState) {

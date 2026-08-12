@@ -53,7 +53,7 @@ exports.getNotificationById = async (req, res) => {
 // POST /api/notifications
 exports.createNotification = async (req, res) => {
   try {
-    const { recipientId, senderId, type, title, message, projectId } = req.body;
+    const { recipientId, senderId, type, title, message, projectId, actionPath } = req.body;
     const createdBy = req.user?.id || req.user?._id;
 
     if (!createdBy) return res.status(401).json({ success: false, message: "Unauthenticated user" });
@@ -67,6 +67,7 @@ exports.createNotification = async (req, res) => {
       title,
       message,
       projectId: projectId || null,
+      actionPath: actionPath || null,
       createdBy,
     });
 

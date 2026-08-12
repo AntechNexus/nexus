@@ -130,7 +130,7 @@ Note on 'segments':
         ];
       }
 
-      const newTranscript = new Transcript({
+      const transcriptData = {
         fileId: file._id,
         projectId: file.projectId,
         fullText: parsedData.fullText || "No full text provided.",
@@ -138,9 +138,14 @@ Note on 'segments':
         durationSeconds: parsedData.durationSeconds || 0,
         segments,
         createdBy: file.createdBy,
-      });
+      };
 
-      await newTranscript.save();
+      const newTranscript = await Transcript.findOneAndUpdate(
+        { fileId: file._id },
+        { $set: transcriptData },
+        { upsert: true, new: true, runValidators: true }
+      );
+
       console.log(`[Transcribe] Transcript saved successfully.`);
       return res.json({ transcript: newTranscript });
 
