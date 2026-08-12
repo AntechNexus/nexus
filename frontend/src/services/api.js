@@ -30,6 +30,8 @@ api.interceptors.response.use(
       ) {
         localStorage.removeItem('nexus_token');
         window.location.href = '/login';
+      } else if (error.response.status === 403 && error.config.method === 'get') {
+        window.location.href = '/403';
       }
     }
     return Promise.reject(error);
