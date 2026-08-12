@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users, Loader2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
@@ -25,9 +25,11 @@ const promptIcons = [FileText, ListChecks, Users];
  */
 const AskNexusPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialProjectId = location.state?.projectId || "";
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState(initialProjectId);
   const [_projects, set_Projects] = useState([]);
   const [question, setQuestion] = useState("");
   const [prompts, setPrompts] = useState([]);
@@ -55,7 +57,11 @@ const AskNexusPage = () => {
         fileCount: p.fileCount || 0,
       }));
       setProjects(mapped);
-      setSelectedProjectId(mapped[0]?.id || "");
+      if (initialProjectId && mapped.some(p => (p._id || p.id) === initialProjectId)) {
+        setSelectedProjectId(initialProjectId);
+      } else {
+        setSelectedProjectId(mapped[0]?.id || "");
+      }
     }).catch(console.error).finally(() => setIsLoading(false));
   }, []);
 

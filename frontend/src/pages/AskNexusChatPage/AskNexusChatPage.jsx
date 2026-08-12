@@ -147,7 +147,7 @@ const AskNexusChatPage = () => {
             <div className="border-b border-nexus-border p-4">
               <button
                 className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2.5 text-sm font-bold text-nexus-text transition hover:bg-blue-50 hover:text-nexus-primary"
-                onClick={() => navigate("/ask-nexus")}
+                onClick={() => navigate("/ask-nexus", { state: { projectId: conversation?.projectId } })}
                 type="button"
               >
                 <MessageSquare size={16} /> New Chat
@@ -177,7 +177,7 @@ const AskNexusChatPage = () => {
                         if (firstConversation) {
                           navigate(`/ask-nexus/chat/${firstConversation._id || firstConversation.id}`);
                         } else {
-                          navigate("/ask-nexus");
+                          navigate("/ask-nexus", { state: { projectId: project.id } });
                         }
                       }}
                       type="button"
@@ -220,7 +220,7 @@ const AskNexusChatPage = () => {
                 <button
                   aria-label="Back to Ask Nexus"
                   className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-nexus-primary"
-                  onClick={() => navigate("/ask-nexus")}
+                  onClick={() => navigate("/ask-nexus", { state: { projectId: conversation?.projectId } })}
                   type="button"
                 >
                   <ArrowLeft size={19} />
@@ -244,12 +244,19 @@ const AskNexusChatPage = () => {
                   const isUser = (message.sender || message.role) === "user";
                   const isLastMessage = index === (conversation.messages || []).length - 1;
                   const messageText = message.messageText || message.content;
-                  const citations = message.citations || (message.sources || []).map((source) => ({
+                  let citations = message.citations || (message.sources || []).map((source) => ({
                     fileName: typeof source === "string" ? source : source.fileName,
                     fileId: typeof source === "string" ? null : source.fileId,
                     snippet: source.textSnippet || "",
                     timestamp: "",
                   }));
+
+                  const seenFileNames = new Set();
+                  citations = citations.filter(citation => {
+                    if (seenFileNames.has(citation.fileName)) return false;
+                    seenFileNames.add(citation.fileName);
+                    return true;
+                  });
 
                   const getRouteType = (fileName) => /\.(mp3|wav|m4a|ogg)$/i.test(fileName || "") ? "transcripts" : "documents";
 
