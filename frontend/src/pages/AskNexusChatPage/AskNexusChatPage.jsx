@@ -250,21 +250,21 @@ const AskNexusChatPage = () => {
               <p className="mb-2 px-2 text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Recent Chats</p>
               <div className="space-y-1">
                 {projectConversations.map((item) => (
-                  <div key={item._id || item.id} className="group relative flex w-full items-start justify-between gap-2 rounded-xl text-left transition hover:bg-white">
+                  <div key={item._id || item.id} className="group flex w-full items-center justify-between gap-1 rounded-xl pr-2 text-left transition hover:bg-white">
                     <button
-                      className={`flex flex-1 items-start justify-between gap-2 rounded-xl px-3 py-3 text-left transition ${
+                      className={`flex flex-1 min-w-0 items-start justify-between gap-2 rounded-xl px-3 py-3 text-left transition ${
                         (item._id || item.id) === (conversation._id || conversation.id) ? "border-l-4 border-nexus-primary bg-blue-50" : ""
                       }`}
                       onClick={() => navigate(`/ask-nexus/chat/${item._id || item.id}`)}
                       type="button"
                     >
-                      <span className="min-w-0 pr-6">
+                      <span className="min-w-0">
                         <span className="block truncate text-sm font-bold text-nexus-text">{item.title}</span>
                         <span className="mt-1 block text-xs text-nexus-muted">{item.updatedLabel || "Just now"}</span>
                       </span>
                     </button>
                     <button
-                      className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex h-8 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
+                      className="hidden group-hover:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
                       onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(item._id || item.id); }}
                       type="button"
                       title="Delete Conversation"

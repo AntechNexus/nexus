@@ -236,18 +236,18 @@ const AskNexusPage = () => {
                     {conversations.length === 0 ? (
                       <p className="py-2 text-sm text-slate-400">No recent conversations.</p>
                     ) : (
-                      conversations.map((conversation) => (
-                        <div key={conversation._id || conversation.id} className="group relative flex w-full items-start justify-between gap-2 rounded-xl text-left transition hover:bg-slate-50">
+                      conversations.slice(0, 5).map((conversation) => (
+                        <div key={conversation._id || conversation.id} className="group flex w-full items-center justify-between gap-1 rounded-xl pr-2 text-left transition hover:bg-slate-50">
                           <button
-                            className="flex flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                            className="flex flex-1 min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
                             onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
                             type="button"
                           >
-                            <MessageSquare size={17} /> 
-                            <span className="truncate pr-6">{conversation.title}</span>
+                            <MessageSquare className="shrink-0" size={17} /> 
+                            <span className="truncate">{conversation.title}</span>
                           </button>
                           <button
-                            className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex h-8 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
+                            className="hidden group-hover:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
                             onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(conversation._id || conversation.id); }}
                             type="button"
                             title="Delete Conversation"
