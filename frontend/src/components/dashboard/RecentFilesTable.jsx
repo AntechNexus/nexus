@@ -4,7 +4,7 @@ import {
   FileAudio,
   FileSpreadsheet,
   FileText,
-  MoreVertical,
+  FolderOpen,
   SlidersHorizontal,
   SortAsc,
 } from "lucide-react";
@@ -204,74 +204,86 @@ const RecentFilesTable = ({ files }) => {
         </div>
       </div>
       <div className="overflow-hidden rounded-xl border border-nexus-border bg-white shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
-        <div className="overflow-x-auto">
-          <table className="min-w-[940px] w-full text-left text-sm">
-            <thead className="bg-[#f8fafc] text-xs text-slate-500">
-              <tr>
-                <th className="px-6 py-4 font-semibold">File Name</th>
-                <th className="px-6 py-4 font-semibold">Project</th>
-                <th className="px-6 py-4 font-semibold">Type</th>
-                <th className="px-6 py-4 font-semibold">Last Modified</th>
-                <th className="px-6 py-4 font-semibold">Modified By</th>
-                <th className="px-6 py-4 font-semibold">Size</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-nexus-border">
-              {visibleFiles.map((file) => {
-                const typeStyle = fileTypeStyles[file.typeLabel] ?? fileTypeStyles.DOCX;
-                const Icon = typeStyle.Icon;
+        {visibleFiles.length === 0 ? (
+          <div className="flex min-h-[220px] flex-col items-center justify-center px-6 py-10 text-center">
+            <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-nexus-primary">
+              <FolderOpen size={26} />
+            </span>
+            <h3 className="text-base font-semibold text-nexus-text">No recent files yet</h3>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-nexus-muted">
+              Files you open or upload will appear here so you can quickly jump back to your latest work.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-[940px] w-full text-left text-sm">
+              <thead className="bg-[#f8fafc] text-xs text-slate-500">
+                <tr>
+                  <th className="px-6 py-4 font-semibold">File Name</th>
+                  <th className="px-6 py-4 font-semibold">Project</th>
+                  <th className="px-6 py-4 font-semibold">Type</th>
+                  <th className="px-6 py-4 font-semibold">Last Modified</th>
+                  <th className="px-6 py-4 font-semibold">Modified By</th>
+                  <th className="px-6 py-4 font-semibold">Size</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-nexus-border">
+                {visibleFiles.map((file) => {
+                  const typeStyle = fileTypeStyles[file.typeLabel] ?? fileTypeStyles.Document;
+                  const Icon = typeStyle.Icon;
 
-                return (
-                  <tr
-                    className={`cursor-pointer transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nexus-primary ${
-                      selectedFileId === file.id ? "bg-blue-50/60" : ""
-                    }`}
-                    key={file.id}
-                    onClick={() => setSelectedFileId(file.id)}
-                    onDoubleClick={() => openPreview(file)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") openPreview(file);
-                      if (event.key === " ") {
-                        event.preventDefault();
-                        setSelectedFileId(file.id);
-                      }
-                    }}
-                    tabIndex={0}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${typeStyle.icon}`}>
-                          <Icon size={17} />
+                  return (
+                    <tr
+                      className={`cursor-pointer transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-nexus-primary ${
+                        selectedFileId === file.id ? "bg-blue-50/60" : ""
+                      }`}
+                      key={file.id}
+                      onClick={() => setSelectedFileId(file.id)}
+                      onDoubleClick={() => openPreview(file)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") openPreview(file);
+                        if (event.key === " ") {
+                          event.preventDefault();
+                          setSelectedFileId(file.id);
+                        }
+                      }}
+                      tabIndex={0}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${typeStyle.icon}`}>
+                            <Icon size={17} />
+                          </span>
+                          <span className="font-medium text-nexus-text">{file.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 font-semibold text-nexus-primary">{file.project}</td>
+                      <td className="px-6 py-4">
+                        <span className={`rounded-md px-2 py-1 text-xs font-bold ${typeStyle.badge}`}>
+                          {file.typeLabel}
                         </span>
-                        <span className="font-medium text-nexus-text">{file.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-nexus-primary">{file.project}</td>
-                    <td className="px-6 py-4">
-                      <span className={`rounded-md px-2 py-1 text-xs font-bold ${typeStyle.badge}`}>
-                        {file.typeLabel}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-nexus-text">{file.lastModified}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${getAvatarTone(
-                            file.modifiedBy,
-                          )}`}
-                        >
-                          {file.modifiedByInitials}
-                        </span>
-                        <span className="text-nexus-text">{file.modifiedBy}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-nexus-muted">{file.size}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td className="px-6 py-4 text-nexus-text">{file.lastModified}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold ${getAvatarTone(
+                              file.modifiedBy,
+                            )}`}
+                          >
+                            {file.modifiedByInitials}
+                          </span>
+                          <span className="text-nexus-text">{file.modifiedBy}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-nexus-muted">{file.size}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
       <p className="sr-only">
         Current sort mode: {activeSortLabel}. Filter is {selectedType}.

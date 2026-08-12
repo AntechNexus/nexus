@@ -3,7 +3,6 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardToast from "../../components/dashboard/DashboardToast";
 import { resetPrdSession, startGeneratePrdJob, getActiveGenerateJob } from "../../services/prdBackgroundService";
 

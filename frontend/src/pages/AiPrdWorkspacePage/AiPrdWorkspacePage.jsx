@@ -342,19 +342,21 @@ const AiPrdWorkspacePage = () => {
                   Please wait while Nexus AI processes your documents. You can safely navigate to other pages, and you will be notified when the job completes.
                 </p>
               </div>
-            </section>
+            ) : (
+              <>
 
-            {/* File list */}
-            <section className="space-y-4">
-              <div className="flex flex-col justify-between gap-3 px-1 sm:flex-row sm:items-center">
-                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">
-                  Source Files ({totalFileCount}/{MAX_FILES})
-                </h2>
-                <button
-                  className="inline-flex w-fit items-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2 text-xs font-extrabold text-nexus-primary shadow-sm transition hover:border-nexus-primary hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:pointer-events-none disabled:opacity-50"
-                  disabled={!uploadEnabled || existingFilesLoading}
-                  onClick={() => setExistingFilePickerOpen(true)}
-                  type="button"
+                {/* Drop zone */}
+                <section
+                  className={`flex min-h-[280px] flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition ${
+                    uploadEnabled
+                      ? dragActive
+                        ? "border-nexus-primary bg-blue-50"
+                        : "border-slate-300 bg-white hover:bg-slate-50"
+                      : "pointer-events-none border-slate-200 bg-white/70 opacity-60"
+                  }`}
+                  onDragLeave={() => setDragActive(false)}
+                  onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+                  onDrop={(e) => { e.preventDefault(); setDragActive(false); addLocalFiles(e.dataTransfer.files); }}
                 >
                   <input
                     accept={acceptedExtensions.join(",")}
