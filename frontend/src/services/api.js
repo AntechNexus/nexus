@@ -1,4 +1,5 @@
 import axios from 'axios';
+import tokenService from './token.service';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -6,7 +7,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('nexus_token');
+    const token = tokenService.getToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -28,7 +29,7 @@ api.interceptors.response.use(
         error.response.status === 401 || 
         (error.response.status === 404 && error.config.url === '/auth/me')
       ) {
-        localStorage.removeItem('nexus_token');
+        tokenService.clearToken();
         window.location.href = '/login';
       } else if (error.response.status === 403 && error.config.method === 'get') {
         window.location.href = '/403';

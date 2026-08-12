@@ -1,3 +1,5 @@
+import tokenService from "./token.service";
+
 const GEMINI_API = import.meta.env.VITE_GEMINI_API_URL || "http://localhost:5001/api";
 
 // Mocked prompts for the UI
@@ -21,7 +23,7 @@ export const fetchAskNexusPrompts = () => {
 };
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("nexus_token");
+  const token = tokenService.getToken();
   return {
     "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),

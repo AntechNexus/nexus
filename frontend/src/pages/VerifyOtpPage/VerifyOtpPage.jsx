@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import tokenService from "../../services/token.service";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
 import "../LoginPage/LoginPage.css";
@@ -43,12 +44,12 @@ const VerifyOtpPage = () => {
     setStatus("loading");
     try {
       const code = otp.join("");
-      localStorage.removeItem("nexus_token");
+      tokenService.clearToken();
       const response = await authService.verifyOtp(email, code);
       if (!response.token) {
         throw new Error("Verification succeeded but no session token was returned.");
       }
-      localStorage.setItem("nexus_token", response.token);
+      tokenService.setToken(response.token, true);
       setStatus("success");
       navigate("/onboarding", { replace: true, state: { email, fullName } });
     } catch (err) {

@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 import { notificationService } from "../../services/notification.service";
 import { searchService } from "../../services/search.service";
+import authService from "../../services/auth.service";
+import tokenService from "../../services/token.service";
 
 const fileTypeStyles = {
   audio: { Icon: FileAudio, tone: "bg-pink-50 text-nexus-ai" },
@@ -93,9 +95,8 @@ const DashboardHeader = ({ onOpenSidebar }) => {
   }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem("nexus_token");
+    tokenService.clearToken();
     setProfileOpen(false);
-    localStorage.removeItem("nexus_token");
     navigate("/login");
   };
 

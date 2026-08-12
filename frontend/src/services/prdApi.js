@@ -1,8 +1,10 @@
+import tokenService from "./token.service";
+
 const NEXUS_API = import.meta.env.VITE_NEXUS_API_URL || "http://localhost:5000/api";
 const GEMINI_API = import.meta.env.VITE_GEMINI_API_URL || "http://localhost:5001/api";
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem("nexus_token");
+  const token = tokenService.getToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 

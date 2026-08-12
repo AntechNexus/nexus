@@ -18,6 +18,7 @@ import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import api from "../../services/api";
 import { fetchProjectDocumentPreview, getProjectDocumentSummaryAI, isAudioTranscriptDocument } from "../../services/projectDetailApi";
+import tokenService from "../../services/token.service";
 
 const iconTone = {
   folder: "text-slate-600",
@@ -106,6 +107,38 @@ const DocumentPreviewPage = () => {
   const [project, setProject] = useState({ id: projectId, title: "Loading..." });
   const [preview, setPreview] = useState(null);
   const [aiSummary, setAiSummary] = useState({ status: "Generating AI Summary...", insights: [] });
+
+  const handleDownload = (e) => {
+    e.preventDefault();
+    if (!preview || !preview.document || !preview.document.id) return;
+    const token = tokenService.getToken();
+    const baseUrl = import.meta.env.VITE_NEXUS_API_URL || "http://localhost:5000/api";
+    
+    fetch(`${baseUrl}/files/${preview.document.id}/download`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("Download failed");
+      const disposition = res.headers.get("Content-Disposition");
+      let filename = preview.document.name;
+      if (disposition && disposition.includes('filename=')) {
+        const matches = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (matches && matches[1]) filename = matches[1].replace(/['"]/g, '');
+      }
+      return res.blob().then(blob => ({ blob, filename }));
+    })
+    .then(({ blob, filename }) => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(console.error);
+  };
 
   useEffect(() => {
     api.get(`/projects/${projectId}`).then(res => {

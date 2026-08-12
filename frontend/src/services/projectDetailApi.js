@@ -1,4 +1,5 @@
 import api from './api';
+import tokenService from './token.service';
 
 export const allowedDocumentTypes = ["pdf", "docx", "xlsx", "mp3", "m4a", "wav", "prd"];
 export const allowedDocumentExtensions = allowedDocumentTypes.map((type) => `.${type}`).join(",");
@@ -466,7 +467,7 @@ export const getProjectDocumentSummary = async (projectId) => {
  */
 export const getProjectDocumentSummaryAI = async (fileId) => {
   try {
-    const token = localStorage.getItem('nexus_token');
+    const token = tokenService.getToken();
     const response = await fetch(`http://localhost:5001/api/files/${fileId}/summary`, {
       headers: {
         "Authorization": `Bearer ${token}`
@@ -489,7 +490,7 @@ export const getProjectDocumentSummaryAI = async (fileId) => {
  */
 export const getAudioTranscriptAI = async (fileId) => {
   try {
-    const token = localStorage.getItem('nexus_token');
+    const token = tokenService.getToken();
     const headers = { "Authorization": `Bearer ${token}` };
     
     // We first check backend-nexus for existing transcript
@@ -519,7 +520,7 @@ export const getAudioTranscriptAI = async (fileId) => {
  */
 export const updateAudioTranscriptAI = async (transcriptId, updatedData) => {
   try {
-    const token = localStorage.getItem('nexus_token');
+    const token = tokenService.getToken();
     const response = await fetch(`http://localhost:5000/api/transcripts/${transcriptId}`, {
       method: "PUT",
       headers: {

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import tokenService from '../../services/token.service';
 
 const OAuthSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -10,7 +11,7 @@ const OAuthSuccess = () => {
     const hasPassword = searchParams.get('hasPassword');
 
     if (token) {
-      localStorage.setItem('nexus_token', token);
+      tokenService.setToken(token, true); // OAuth usually gets long lived sessions
       
       if (hasPassword === 'false') {
         navigate('/auth/setup-password', { replace: true });

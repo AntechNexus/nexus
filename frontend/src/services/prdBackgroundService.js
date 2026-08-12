@@ -1,5 +1,6 @@
 import { saveFilesToProject, uploadAndClarify, generatePrd } from "./prdApi";
 import { notificationService } from "./notification.service";
+import tokenService from "./token.service";
 
 const jobs = {
   clarify: { status: "idle", projectId: null },
@@ -65,7 +66,7 @@ export const startClarifyJob = async ({ projectId, projectName, localFiles, nexu
 
     if (filesToSendToGemini.length === 0 && nexusFiles.length > 0) {
       const NEXUS_API = import.meta.env.VITE_NEXUS_API_URL || "http://localhost:5000/api";
-      const token = localStorage.getItem("nexus_token");
+      const token = tokenService.getToken();
       const blobs = await Promise.all(
         nexusFiles.map(async (nf) => {
           const r = await fetch(`${NEXUS_API}/files/${nf.id || nf.uid}/download`, {

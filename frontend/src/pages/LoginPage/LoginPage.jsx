@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
+import tokenService from "../../services/token.service";
 import "./LoginPage.css";
 
 const LoginPage = () => {
@@ -17,7 +18,7 @@ const LoginPage = () => {
   const [status, setStatus] = useState("idle");
 
   useEffect(() => {
-    if (localStorage.getItem("nexus_token")) {
+    if (tokenService.getToken()) {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
@@ -60,10 +61,10 @@ const LoginPage = () => {
     setStatus("loading");
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await authService.login(formData.email, formData.password, formData.remember);
       
       // Simpan token
-      localStorage.setItem("nexus_token", response.token);
+      tokenService.setToken(response.token, formData.remember);
       
       // Ambil profile untuk cek onboarding
       const profileRes = await authService.getProfile();
@@ -124,7 +125,7 @@ const LoginPage = () => {
           )}
 
           <button type="button" className="auth-google-button" onClick={() => {
-            localStorage.removeItem("nexus_token");
+            tokenService.clearToken();
             window.location.href = "http://localhost:5000/api/auth/google";
           }}>
             <img

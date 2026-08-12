@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import tokenService from '../../services/token.service';
 import nexusLogo from '../../assets/icons/Logo-nexus.png'; 
 import authService from '../../services/auth.service';
 import './RegisterPage.css';
@@ -17,7 +18,7 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem('nexus_token')) {
+    if (tokenService.getToken()) {
       navigate('/dashboard', { replace: true });
     }
   }, [navigate]);
@@ -34,7 +35,7 @@ const RegisterPage = () => {
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
   const clearStaleAuth = () => {
-    localStorage.removeItem("nexus_token");
+    tokenService.clearToken();
   };
 
   const handleChange = (e) => {

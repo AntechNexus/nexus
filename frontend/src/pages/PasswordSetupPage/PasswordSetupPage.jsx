@@ -3,6 +3,7 @@ import { Check, Eye, EyeOff } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
+import tokenService from "../../services/token.service";
 import "../LoginPage/LoginPage.css";
 
 const PasswordSetupPage = () => {
@@ -83,7 +84,7 @@ const PasswordSetupPage = () => {
         navigate("/login", { replace: true });
       } else {
         await authService.setPassword(password);
-        localStorage.removeItem("nexus_token");
+        tokenService.clearToken();
         navigate("/login", { replace: true, state: { onboardingCompleted: true } });
       }
     } catch (err) {
