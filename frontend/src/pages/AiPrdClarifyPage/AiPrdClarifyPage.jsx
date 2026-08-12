@@ -3,8 +3,9 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardToast from "../../components/dashboard/DashboardToast";
-import { generatePrd } from "../../services/prdApi";
+import { resetPrdSession, startGeneratePrdJob, getActiveGenerateJob } from "../../services/prdBackgroundService";
 
 const GENERATING_STEPS = [
   "Reading your documents...",
@@ -30,7 +31,12 @@ const AiPrdClarifyPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState("");
-  const [answers, setAnswers] = useState({});
+  const [answers, setAnswers] = useState(() => {
+    if (initialState?.answers) return initialState.answers;
+    const stored = localStorage.getItem("prd_clarify_answers");
+    if (stored) return JSON.parse(stored);
+    return {};
+  });
   const [generating, setGenerating] = useState(false);
   const [generatingStep, setGeneratingStep] = useState(0);
 
@@ -53,7 +59,6 @@ const AiPrdClarifyPage = () => {
     return false;
   });
   
-  // This is used for the header badge "X clarifying questions remaining"
   const remainingQuestions = questions.filter((q) => {
     const ans = answers[q.id];
     if (!ans) return true;
@@ -84,29 +89,19 @@ const AiPrdClarifyPage = () => {
     setGenerating(true);
     setGeneratingStep(0);
 
-    const stepInterval = setInterval(() => {
-      setGeneratingStep((s) => (s < GENERATING_STEPS.length - 1 ? s + 1 : s));
-    }, 2500);
-
     try {
-      const result = await generatePrd(cacheId, answers, questions);
-      clearInterval(stepInterval);
-      navigate("/ai-prd-workspace/review", {
-        state: {
-          rawMarkdown: result.prd,
-          cacheId,
-          questions,
-          answers,
-          projectId,
-          projectName,
-          allFileIds,
-          baseVersion,
-        },
-      });
+      await startGeneratePrdJob(
+        cacheId,
+        answers,
+        questions,
+        projectId,
+        projectName,
+        allFileIds,
+        baseVersion
+      );
     } catch (err) {
-      clearInterval(stepInterval);
-      setToast(err.message || "Failed to generate PRD. Please try again.");
       setGenerating(false);
+      setToast(err.message || "Failed to generate PRD. Please try again.");
     }
   };
 
@@ -303,7 +298,10 @@ const AiPrdClarifyPage = () => {
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
                     <button
                       className="inline-flex items-center gap-2 text-sm font-bold text-nexus-muted transition hover:text-nexus-text"
-                      onClick={() => navigate("/ai-prd-workspace")}
+                      onClick={() => {
+                        resetPrdSession();
+                        navigate("/ai-prd-workspace");
+                      }}
                       type="button"
                     >
                       <ArrowLeft size={17} /> Back to Uploads

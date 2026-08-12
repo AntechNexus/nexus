@@ -120,6 +120,15 @@ const DashboardHeader = ({ onOpenSidebar }) => {
     }
   };
 
+  const handleClearRead = async () => {
+    try {
+      await notificationService.clearReadNotifications();
+      setNotificationItems(notificationItems.filter(n => !n.isRead));
+    } catch (err) {
+      console.error("Failed to clear read notifications:", err);
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (!searchQuery.trim()) {
@@ -269,8 +278,16 @@ const DashboardHeader = ({ onOpenSidebar }) => {
           </button>
           {notificationsOpen && (
             <section className="absolute right-0 top-12 w-[min(92vw,432px)] overflow-hidden rounded-2xl border border-nexus-border bg-white text-left shadow-xl">
-              <div className="border-b border-nexus-border px-5 py-4">
+              <div className="flex items-center justify-between border-b border-nexus-border px-5 py-4">
                 <h2 className="text-lg font-bold text-nexus-text">Notifications</h2>
+                {notificationItems.some(n => n.isRead) && (
+                  <button 
+                    onClick={handleClearRead} 
+                    className="text-xs font-semibold text-slate-500 hover:text-nexus-primary transition-colors"
+                  >
+                    Clear Read
+                  </button>
+                )}
               </div>
               <div>
                 {notificationItems.length === 0 ? (
@@ -280,6 +297,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                 ) : (
                   notificationItems.map((notification) => {
                     const isInvite = notification.type === "collaboration_invite";
+                    const isSystemPrd = notification.type === "system" && notification.title === "AI PRD Job Completed";
                     const isUnread = !notification.isRead;
                     return (
                       <article 
@@ -297,9 +315,9 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                           <p className={`mt-1 text-sm ${isUnread ? 'font-semibold' : ''} leading-5 text-slate-500`}>{notification.message}</p>
                           <p className="mt-1 text-xs text-slate-400">{getRelativeTime(notification.createdAt)}</p>
                           {isInvite && notification.status !== "accepted" && notification.status !== "rejected" && (
-                            <div className="mt-3 flex gap-2">
+                            <div className="mt-3 flex items-center gap-2">
                               <button
-                                className="rounded-lg bg-nexus-action px-4 py-1.5 text-xs font-bold text-white transition hover:bg-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                                className="rounded-lg bg-nexus-primary px-3 py-1.5 text-xs font-bold text-white transition hover:bg-nexus-action"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleInvitationResponse(notification._id, "accepted");
@@ -309,7 +327,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                                 Accept
                               </button>
                               <button
-                                className="rounded-lg border border-nexus-border px-4 py-1.5 text-xs font-bold text-slate-600 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-200 hover:text-slate-900"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleInvitationResponse(notification._id, "rejected");
@@ -317,6 +335,23 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                                 type="button"
                               >
                                 Reject
+                              </button>
+                            </div>
+                          )}
+                          {isSystemPrd && (
+                            <div className="mt-3">
+                              <button
+                                className="rounded-lg border border-nexus-border bg-white px-3 py-1.5 text-xs font-bold text-nexus-primary shadow-sm transition hover:border-nexus-primary hover:bg-blue-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (isUnread) handleMarkAsRead(notification._id);
+                                  setNotificationsOpen(false);
+                                  // Navigating to workspace will auto-redirect based on localStorage state
+                                  navigate("/ai-prd-workspace");
+                                }}
+                                type="button"
+                              >
+                                View in Workspace
                               </button>
                             </div>
                           )}

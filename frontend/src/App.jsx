@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OAuthSuccess from "./pages/OAuthSuccess/OAuthSuccess";
+import GlobalToast from "./components/dashboard/GlobalToast";
 
 const CreateProjectPage = React.lazy(() => import("./pages/CreateProjectPage/CreateProjectPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage/DashboardPage"));
@@ -39,6 +40,7 @@ const ReservedRoute = ({ title }) => (
 const App = () => {
   return (
     <BrowserRouter>
+      <GlobalToast />
       <Suspense fallback={<main className="reserved-route-placeholder"><h1>Loading...</h1></main>}>
         <Routes>
           {/* Public Routes */}

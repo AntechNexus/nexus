@@ -51,7 +51,9 @@ const handleTranscribe = async (req, res) => {
       console.log(`[Transcribe] Uploading audio to Google Files API...`);
       uploadedFile = await ai.files.upload({
         file: file.localPath,
-        mimeType: mimeType,
+        config: {
+          mimeType: mimeType,
+        }
       });
 
       // Wait for Google to finish processing the file

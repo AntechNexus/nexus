@@ -18,6 +18,7 @@ import GithubSlugger from "github-slugger";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import { resetPrdSession, startRegeneratePrdJob, getActiveRegenerateJob } from "../../services/prdBackgroundService";
 import * as prdApi from "../../services/prdApi";
 
 const suggestionChips = [
@@ -29,14 +30,26 @@ const suggestionChips = [
 const AiPrdReviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { rawMarkdown, projectId, allFileIds, cacheId, questions, answers, projectName, baseVersion = 0 } = location.state || {};
+  const getInitialState = () => {
+    if (location.state && location.state.rawMarkdown) return location.state;
+    const stored = localStorage.getItem("prd_review_data");
+    if (stored) return JSON.parse(stored);
+    return null;
+  };
+
+  const initialState = getInitialState();
+  
+  const { 
+    rawMarkdown, projectId, allFileIds, cacheId, 
+    questions, answers, projectName, baseVersion = 0, currentVersion 
+  } = initialState || {};
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [regenOpen, setRegenOpen] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenInstruction, setRegenInstruction] = useState("");
-  const [version, setVersion] = useState(`V${baseVersion + 1}.0 Draft`);
+  const [version, setVersion] = useState(currentVersion || `V${baseVersion + 1}.0 Draft`);
   const [toast, setToast] = useState("");
   
   const [currentMarkdown, setCurrentMarkdown] = useState(rawMarkdown || "");
@@ -47,9 +60,35 @@ const AiPrdReviewPage = () => {
 
   useEffect(() => {
     if (!rawMarkdown) {
+      resetPrdSession();
       navigate("/ai-prd-workspace");
     }
   }, [rawMarkdown, navigate]);
+
+  useEffect(() => {
+    const activeRegen = getActiveRegenerateJob();
+    const regenStatus = localStorage.getItem("prd_regenerate_status");
+    if (activeRegen || regenStatus === "running") {
+      setRegenLoading(true);
+    } else {
+      setRegenLoading(false);
+    }
+
+    const handleJobCompleted = (e) => {
+      if (e.detail.message === "PRD Section Regenerated") {
+        setRegenLoading(false);
+        const stored = localStorage.getItem("prd_review_data");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setCurrentMarkdown(parsed.rawMarkdown);
+          setVersion(parsed.currentVersion || `V${parsed.baseVersion + 1}.1 Draft`);
+        }
+      }
+    };
+
+    window.addEventListener("prdJobCompleted", handleJobCompleted);
+    return () => window.removeEventListener("prdJobCompleted", handleJobCompleted);
+  }, []);
 
   // Dynamically generate document outline from markdown headers
   // Also pre-process markdown to ensure headings exist if Gemini forgot them
@@ -117,6 +156,14 @@ const AiPrdReviewPage = () => {
       });
       setSaved(true);
       setToast("PRD saved to project files. Exported DOCX & PDF.");
+      
+      // Clear localStorage drafts
+      localStorage.removeItem("prd_clarify_data");
+      localStorage.removeItem("prd_clarify_status");
+      localStorage.removeItem("prd_clarify_answers");
+      localStorage.removeItem("prd_generate_status");
+      localStorage.removeItem("prd_review_data");
+
       window.setTimeout(() => navigate(`/projects/${projectId}`), 1500);
     } catch (err) {
       setToast(err.message || "Failed to save PRD");
@@ -129,24 +176,22 @@ const AiPrdReviewPage = () => {
     if (!regenInstruction.trim()) return;
     setRegenOpen(false);
     setRegenLoading(true);
-    try {
-      const enhancedAnswers = { ...answers, _improvement_instruction: regenInstruction };
-      const aiResult = await prdApi.generatePrd(cacheId, enhancedAnswers, questions);
-      setCurrentMarkdown(aiResult.prd);
-      
-      const vMatch = version.match(/V(\d+)\.(\d+)/);
-      if (vMatch) {
-        setVersion(`V${vMatch[1]}.${parseInt(vMatch[2]) + 1} Draft`);
-      } else {
-        setVersion(`V${baseVersion + 1}.1 Draft`);
-      }
-      setToast("PRD Section Regenerated");
-      setRegenInstruction("");
-    } catch (err) {
-      setToast(err.message || "Failed to regenerate");
-    } finally {
-      setRegenLoading(false);
-    }
+    
+    const enhancedAnswers = { ...answers, _improvement_instruction: regenInstruction };
+    
+    startRegeneratePrdJob(
+      cacheId, 
+      enhancedAnswers, 
+      questions, 
+      projectId, 
+      projectName, 
+      allFileIds, 
+      baseVersion, 
+      version
+    );
+    
+    setToast("Regeneration started in background");
+    setRegenInstruction("");
   };
 
   if (!rawMarkdown) return null;
@@ -167,7 +212,24 @@ const AiPrdReviewPage = () => {
           <section className="mx-auto w-full max-w-7xl space-y-8">
             <div className="space-y-6">
               <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                <button className="text-slate-400 transition hover:text-nexus-primary" onClick={() => navigate("/ai-prd-workspace")} type="button">
+                <button 
+                  className="text-slate-400 transition hover:text-nexus-primary" 
+                  onClick={() => {
+                    localStorage.removeItem("prd_clarify_data");
+                    localStorage.removeItem("prd_clarify_status");
+                    localStorage.removeItem("prd_clarify_answers");
+                    localStorage.removeItem("prd_generate_status");
+                    localStorage.removeItem("prd_regenerate_status");
+                    localStorage.removeItem("prd_review_data");
+                    if (document.referrer.includes("/ai-prd-workspace")) {
+                      navigate(-1);
+                    } else {
+                      resetPrdSession();
+                      navigate("/ai-prd-workspace");
+                    }
+                  }} 
+                  type="button"
+                >
                   AI PRD Workspace
                 </button>
                 <span className="text-slate-300">&gt;</span>
