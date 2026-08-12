@@ -1,10 +1,24 @@
 const express = require('express');
 const multer = require('multer');
+const rateLimit = require('express-rate-limit');
 const { handleUpload } = require('../controllers/uploadController');
 const { handleGeneratePrd } = require('../controllers/prdController');
 const { handleSummary } = require('../controllers/summaryController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+// Strict Rate Limiter for AI Routes: max 10 requests per minute per IP
+const aiLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 10,
+  message: { success: false, message: "Terlalu banyak request ke AI, mohon tunggu sebentar." }
+});
+router.use(aiLimiter);
+
+// Apply authentication middleware to all AI routes
+router.use(authMiddleware);
+
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/upload', upload.array('files', 10), handleUpload);

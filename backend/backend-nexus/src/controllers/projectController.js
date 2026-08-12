@@ -19,8 +19,8 @@ const File = require("../models/File");
  */
 exports.createProject = async (req, res, next) => {
   try {
-    const { name, description, createdBy, members } = req.body;
-    const creatorId = req.user?.id || req.user?._id || createdBy;
+    const { name, description, members } = req.body;
+    const creatorId = req.user?.id || req.user?._id;
 
     if (!creatorId) {
       return res.status(401).json({

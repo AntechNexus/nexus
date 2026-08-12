@@ -15,9 +15,34 @@ const prdRoutes = require("./routes/prdRoutes");
 const searchRoutes = require("./routes/searchRoutes");
 
 const app = express();
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+
 app.set("trust proxy", 1); // Enable trusting proxy to get real IP for rate limiting
 
-app.use(cors({ origin: true, credentials: true })); // origin: true allows any requester origin
+app.use(helmet());
+
+// Global Rate Limiter: max 100 requests per minute per IP
+const globalLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 100,
+  message: { success: false, message: "Terlalu banyak request, mohon tunggu sebentar." }
+});
+app.use(globalLimiter);
+
+// Secure CORS: Only allow frontend
+const allowedOrigins = [process.env.FRONTEND_URL || "http://localhost:5173"];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 const path = require("path");
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));

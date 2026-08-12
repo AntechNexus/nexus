@@ -258,7 +258,7 @@ exports.createFile = async (req, res) => {
       previousVersionId,
     } = req.body;
 
-    const createdBy = req.user?.id || req.user?._id || req.body.createdBy;
+    const createdBy = req.user?.id || req.user?._id;
 
     if (!createdBy) {
       return res.status(401).json({
