@@ -50,6 +50,11 @@ const getUploadFileStyle = (name = "") => {
   return fileStyles[extension] || fileStyles.prd;
 };
 
+const splitFileName = (fileName = "") => {
+  const match = fileName.match(/^(.*?)(\.[^.]+)$/);
+  return match ? { baseName: match[1], extension: match[2] } : { baseName: fileName, extension: "" };
+};
+
 const ModalShell = ({ children, onClose, title }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -60,15 +65,17 @@ const ModalShell = ({ children, onClose, title }) => {
   }, [onClose]);
 
   return (
-    <div aria-modal="true" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm" role="dialog">
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-nexus-border p-6">
+    <div aria-modal="true" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-900/45 p-3 backdrop-blur-sm sm:p-4" role="dialog">
+      <div className="flex max-h-[min(92vh,760px)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        <div className="flex shrink-0 items-center justify-between border-b border-nexus-border p-5 sm:p-6">
           <h2 className="text-xl font-semibold text-nexus-text">{title}</h2>
           <button aria-label={`Close ${title} modal`} className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">
             <X size={20} />
           </button>
         </div>
-        {children}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -152,7 +159,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
 
   return (
     <ModalShell onClose={onClose} title="Upload Files">
-      <div className="p-6">
+      <div className="p-5 sm:p-6">
         <input
           accept={allowedDocumentExtensions}
           className="sr-only"
@@ -162,13 +169,13 @@ const AddFileModal = ({ onClose, onUpload }) => {
           multiple
         />
         <button
-          className="flex w-full flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-nexus-primary p-8 text-center transition hover:bg-blue-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+          className="flex w-full flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-nexus-primary p-5 text-center transition hover:bg-blue-50/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary sm:gap-4 sm:p-7"
           onDragOver={(event) => event.preventDefault()}
           onDrop={dropFile}
           onClick={() => inputRef.current?.click()}
           type="button"
         >
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-nexus-primary">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50 text-nexus-primary sm:h-12 sm:w-12">
             <UploadCloud size={25} />
           </span>
           <span>
@@ -181,7 +188,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
         {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600 border border-red-200 leading-relaxed">{error}</p>}
 
         {selectedFiles.length > 0 && (
-          <div className="mt-6 flex flex-col gap-3">
+          <div className="mt-5 max-h-[312px] space-y-3 overflow-y-auto pr-1">
             {selectedFiles.map((file, index) => {
               const { Icon, tone } = getUploadFileStyle(file.name);
 
@@ -209,7 +216,7 @@ const AddFileModal = ({ onClose, onUpload }) => {
           </div>
         )}
       </div>
-      <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
+      <div className="sticky bottom-0 flex shrink-0 gap-3 border-t border-nexus-border bg-slate-50 p-5 sm:p-6">
         <button className="flex-1 rounded-xl border border-nexus-border bg-white py-2.5 text-sm font-semibold text-nexus-text hover:bg-slate-100 disabled:opacity-50" onClick={onClose} type="button" disabled={isUploading}>
           Cancel
         </button>
@@ -273,7 +280,9 @@ const FolderModal = ({ existingNames, onClose, onCreate }) => {
 };
 
 const RenameModal = ({ item, onClose, onSave }) => {
-  const [name, setName] = useState(item?.name ?? "");
+  const isFile = item?.type !== "folder";
+  const { baseName, extension } = isFile ? splitFileName(item?.name ?? "") : { baseName: item?.name ?? "", extension: "" };
+  const [name, setName] = useState(baseName);
   const [error, setError] = useState("");
 
   const submit = async (event) => {
@@ -282,7 +291,8 @@ const RenameModal = ({ item, onClose, onSave }) => {
       setError("Name cannot be empty.");
       return;
     }
-    const res = await onSave(name.trim());
+    const nextName = isFile ? `${name.trim()}${extension}` : name.trim();
+    const res = await onSave(nextName);
     if (res && res.success === false) {
       setError(res.error?.response?.data?.message || "Failed to rename.");
     }
@@ -294,8 +304,20 @@ const RenameModal = ({ item, onClose, onSave }) => {
         <div className="p-6">
           <label className="block text-sm font-semibold text-nexus-text">
             New Name
-            <input className={`mt-2 h-11 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"}`} onChange={(event) => { setName(event.target.value); setError(""); }} value={name} />
+            <span className={`mt-2 flex h-11 w-full overflow-hidden rounded-xl border bg-white transition focus-within:ring-4 focus-within:ring-blue-100 ${error ? "border-red-400 focus-within:border-red-500" : "border-nexus-border focus-within:border-nexus-primary"}`}>
+              <input
+                className="min-w-0 flex-1 px-4 text-sm outline-none"
+                onChange={(event) => { setName(event.target.value); setError(""); }}
+                value={name}
+              />
+              {extension && (
+                <span className="flex shrink-0 items-center border-l border-nexus-border bg-slate-50 px-3 text-sm font-semibold text-nexus-muted">
+                  {extension}
+                </span>
+              )}
+            </span>
           </label>
+          {extension && <p className="mt-2 text-xs font-medium text-nexus-muted">File type is locked to keep previews and routing safe.</p>}
           {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
         </div>
         <div className="flex gap-3 border-t border-nexus-border bg-slate-50 p-6">
@@ -588,13 +610,25 @@ const ProjectDetailPage = () => {
   const openActionMenu = (event, item) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
+    const menuWidth = 160;
+    const menuHeight = isOwner ? 132 : 88;
+    const gap = 8;
+    const top =
+      rect.bottom + menuHeight + gap > window.innerHeight
+        ? Math.max(12, rect.top - menuHeight - gap)
+        : rect.bottom + gap;
+    const left = Math.min(
+      window.innerWidth - menuWidth - 12,
+      Math.max(12, rect.right - menuWidth),
+    );
+
     setActiveItem((current) => (current?.id === item.id ? null : item));
     setActionMenuPosition((current) =>
       activeItem?.id === item.id && current
         ? null
         : {
-            top: rect.bottom + 6,
-            left: Math.max(12, rect.right - 160),
+            top,
+            left,
           },
     );
   };
@@ -665,14 +699,14 @@ const ProjectDetailPage = () => {
             </div>
           </header>
 
-          <section className="flex-1 overflow-hidden">
+          <section className="min-h-0 flex-1 overflow-auto">
             {visibleDocuments.length === 0 ? (
               <div className="flex min-h-[420px] flex-col items-center justify-center px-6 text-center">
                 <h2 className="nexus-page-title">Drop files here</h2>
                 <p className="mt-4 text-lg text-nexus-muted">or use the '+ Add' button.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto pb-24">
                 <table className="min-w-[980px] w-full text-left text-sm">
                   <thead className="sticky top-0 z-10 bg-white text-xs uppercase tracking-wider text-nexus-muted">
                     <tr className="border-b border-nexus-border">
@@ -732,7 +766,7 @@ const ProjectDetailPage = () => {
 
       {activeItem && actionMenuPosition && (
         <div
-          className="fixed z-[85] w-40 overflow-hidden rounded-xl border border-nexus-border bg-white py-1 text-left shadow-xl"
+          className="fixed z-[95] w-40 overflow-hidden rounded-xl border border-nexus-border bg-white py-1 text-left shadow-xl"
           ref={actionRef}
           style={{ top: actionMenuPosition.top, left: actionMenuPosition.left }}
         >

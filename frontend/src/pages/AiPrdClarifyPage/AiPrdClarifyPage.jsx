@@ -3,9 +3,8 @@ import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
-import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardToast from "../../components/dashboard/DashboardToast";
-import { resetPrdSession, startGeneratePrdJob, getActiveGenerateJob } from "../../services/prdBackgroundService";
+import { resetPrdSession, startGeneratePrdJob } from "../../services/prdBackgroundService";
 
 const GENERATING_STEPS = [
   "Reading your documents...",
@@ -24,7 +23,7 @@ const stepItems = [
 const AiPrdClarifyPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state ?? {};
+  const state = location.state ?? JSON.parse(localStorage.getItem("prd_clarify_data") || "null") ?? {};
   const hasPrdState = Boolean(state.cacheId || state.questions);
   const { cacheId, questions = [], projectId, projectName, allFileIds = [], baseVersion = 0 } = state;
 
@@ -32,7 +31,7 @@ const AiPrdClarifyPage = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [answers, setAnswers] = useState(() => {
-    if (initialState?.answers) return initialState.answers;
+    if (state?.answers) return state.answers;
     const stored = localStorage.getItem("prd_clarify_answers");
     if (stored) return JSON.parse(stored);
     return {};
