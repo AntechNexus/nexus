@@ -39,6 +39,7 @@ const notifyUser = async (message, type, actionPath, projectId) => {
         projectId: projectId || null,
         actionPath: actionPath || null,
       });
+      window.dispatchEvent(new CustomEvent("forceNotificationRefresh"));
     } catch (e) {
       console.error("Failed to create notification:", e);
     }
@@ -133,7 +134,8 @@ export const startGeneratePrdJob = async (cacheId, answers, questions, projectId
   localStorage.setItem("prd_generate_status", "running");
 
   try {
-    const aiResult = await generatePrd(cacheId, answers, questions);
+    const versionName = `V${baseVersion + 1}.0 Draft`;
+    const aiResult = await generatePrd(cacheId, answers, questions, versionName);
     
     const reviewData = {
       rawMarkdown: aiResult.prd,
@@ -165,8 +167,6 @@ export const startRegeneratePrdJob = async (cacheId, answers, questions, project
   localStorage.setItem("prd_regenerate_status", "running");
 
   try {
-    const aiResult = await generatePrd(cacheId, answers, questions);
-    
     let newVersion;
     const vMatch = oldVersion.match(/V(\d+)\.(\d+)/);
     if (vMatch) {
@@ -174,6 +174,8 @@ export const startRegeneratePrdJob = async (cacheId, answers, questions, project
     } else {
       newVersion = `V${baseVersion + 1}.1 Draft`;
     }
+
+    const aiResult = await generatePrd(cacheId, answers, questions, newVersion);
     
     const reviewData = {
       rawMarkdown: aiResult.prd,

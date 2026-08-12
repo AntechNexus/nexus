@@ -55,8 +55,20 @@ const AiPrdClarifyPage = () => {
   useEffect(() => {
     if (!hasPrdState) {
       navigate("/ai-prd-workspace", { replace: true });
+    } else if (localStorage.getItem("prd_generate_status") === "done") {
+      navigate("/ai-prd-workspace/review", { replace: true });
     }
   }, [hasPrdState, navigate]);
+
+  useEffect(() => {
+    let interval;
+    if (generating) {
+      interval = setInterval(() => {
+        setGeneratingStep((prev) => (prev < GENERATING_STEPS.length - 1 ? prev + 1 : prev));
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [generating]);
 
   if (!hasPrdState) {
     return null;

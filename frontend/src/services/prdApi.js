@@ -162,11 +162,11 @@ export const uploadAndClarify = async (files) => {
  * @param {...any} args - Arguments required for the API call (e.g., payloads, IDs).
  * @returns {Promise<any>} A promise resolving to the API response data.
  */
-export const generatePrd = async (cacheId, answers, questions) => {
+export const generatePrd = async (cacheId, answers, questions, versionName) => {
   const res = await fetch(`${GEMINI_API}/generate-prd`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cacheId, answers, questions }),
+    body: JSON.stringify({ cacheId, answers, questions, versionName }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

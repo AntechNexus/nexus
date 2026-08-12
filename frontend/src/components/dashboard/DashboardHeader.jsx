@@ -51,7 +51,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
     return `${Math.round(diff / 86400)} days ago`;
   };
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const data = await notificationService.getNotifications();
       if (data && data.data) {
@@ -60,14 +60,21 @@ const DashboardHeader = ({ onOpenSidebar }) => {
     } catch (err) {
       console.error("Failed to fetch notifications:", err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
+    
+    const handleForceRefresh = () => {
+      fetchNotifications();
+    };
+    window.addEventListener("forceNotificationRefresh", handleForceRefresh);
     window.addEventListener("notificationUpdated", fetchNotifications);
+    
     return () => {
       clearInterval(interval);
+      window.removeEventListener("forceNotificationRefresh", handleForceRefresh);
       window.removeEventListener("notificationUpdated", fetchNotifications);
     };
   }, []);

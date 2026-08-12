@@ -17,7 +17,7 @@ const fs = require("fs").promises;
  */
 const handleGeneratePrd = async (req, res) => {
   try {
-    const { cacheId, answers, questions } = req.body;
+    const { cacheId, answers, questions, versionName } = req.body;
 
     if (!cacheId) {
       return res.status(400).json({ error: "Invalid Cache ID" });
@@ -60,15 +60,22 @@ const handleGeneratePrd = async (req, res) => {
       ---
       
       Create a HIGHLY TECHNICAL, PROFESSIONAL, and COMPREHENSIVE Product Requirements Document (PRD) using Markdown format.
-      You MUST use the exact structure and template below, filling each section with as much relevant detail as possible based on the context you have:
-
+      
+      IMPORTANT TEMPLATE INSTRUCTIONS:
+      1. First, check if the Context Documents contain a structural template provided by the user. 
+      2. If you find a template, evaluate if it is genuinely a PRD (Product Requirements Document) template. 
+      3. If the provided template appears to be a completely unrelated document type (e.g., a CV, Resume, Invoice, or Letter) despite its filename or if no template is provided, IGNORE IT and strictly use the "DEFAULT PRD STRUCTURE" below.
+      4. If the provided template IS a valid PRD template, you MUST prioritize and follow that user-provided template's exact structure, sections, and headings instead of the default structure.
+      
+      If using the DEFAULT PRD STRUCTURE, use the exact sections below:
+      
 # Product Requirements Document (PRD)
 
 ## 1. Project Overview
    - **Project Name:** [Fill based on document context]
    - **Project ID:** [Generate a unique ID or extract from document]
    - **Date:** [Today's date]
-   - **Version:** 1.0
+   - **Version:** ${versionName || "1.0"}
    - **Prepared By:** Nexus AI
    - **Approved By:** [Fill if information is available, otherwise write TBD]
 
