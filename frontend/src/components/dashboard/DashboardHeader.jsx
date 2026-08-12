@@ -30,6 +30,27 @@ const getFileTypeStyle = (file) => {
   return fileTypeStyles[fileType] || fileTypeStyles[extension] || fileTypeStyles.document;
 };
 
+/**
+ * Renders the top header navigation bar for the Dashboard layout.
+ *
+ * This component serves as the primary top-level navigation and utility bar within the application's dashboard.
+ * It is responsible for providing quick access to critical user-centric features, including real-time notifications,
+ * global search functionality across projects and files, and a user profile dropdown for account management and sign-out.
+ *
+ * Internally, it manages a significant amount of local state to handle the open/closed status of dropdown menus
+ * (notifications, user profile, search results) and the active search query. It establishes a polling mechanism
+ * via `useEffect` to fetch unread notifications every 15 seconds, and sets up global event listeners for window
+ * resize/clicks to close open dropdowns when clicking outside, ensuring a polished user experience.
+ *
+ * Side effects triggered by this component include API calls to `notificationService` (fetching, marking as read,
+ * responding to collaboration invites) and `searchService` (debounced global search as the user types). It also
+ * integrates with the browser's event system to listen for custom events like "forceNotificationRefresh" and
+ * "projectListUpdated", allowing cross-component communication without deep prop drilling.
+ *
+ * @param {Object} props - The properties object passed to this component.
+ * @param {Function} props.onOpenSidebar - Callback function triggered when the mobile menu (hamburger) icon is clicked. It is expected to toggle the visibility of the mobile sidebar.
+ * @returns {JSX.Element} The rendered `header` element containing the search bar, notification bell, profile menu, and mobile menu toggle.
+ */
 const DashboardHeader = ({ onOpenSidebar }) => {
   const navigate = useNavigate();
   const [notificationItems, setNotificationItems] = useState([]);

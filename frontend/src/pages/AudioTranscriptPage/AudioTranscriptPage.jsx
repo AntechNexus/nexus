@@ -39,6 +39,30 @@ const formatTime = (seconds) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
+/**
+ * Component for viewing and interacting with audio file transcripts.
+ *
+ * This page provides an interface to review AI-generated transcripts for audio or video files 
+ * uploaded to a project. It features an integrated audio player synced with interactive transcript text.
+ * Users can read the transcript, jump to specific audio timestamps by clicking transcript segments, 
+ * edit the text of individual segments, and view a summarized list of key insights extracted by the AI.
+ *
+ * The component maintains numerous states including:
+ * - `preview`, `transcriptObj`, and `segments` representing the core data structures for the document and its AI transcription.
+ * - `playing`, `currentTime`, `volume`, and `muted` to control and sync the HTML `<audio>` element with the UI.
+ * - `activeLineIdx` to visually highlight the transcript segment currently matching the audio playback time.
+ * - `aiSummary` to store and display the extracted high-level insights from the document.
+ * - `editingIdx`, `editValues`, and `saving` to manage the inline editing and updating of specific transcript segments.
+ *
+ * Key side effects include:
+ * - Fetching the document preview metadata and logging recent access on mount.
+ * - Fetching both the detailed AI transcript and the AI summary concurrently.
+ * - Synchronizing the native audio element's playback state and volume with React state.
+ * - Automatically auto-scrolling the transcript view (using `activeLineRef`) to ensure the currently active text is always visible during playback.
+ * - Handling API calls to save user edits back to the backend.
+ *
+ * @returns {JSX.Element} The rendered interface including the sidebar, header, AI summary aside, synchronized transcript editor, and sticky audio player footer.
+ */
 const AudioTranscriptPage = () => {
   const { documentId, projectId } = useParams();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

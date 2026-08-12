@@ -2,6 +2,22 @@ import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * GlobalToast component that renders a toast notification globally across the application.
+ * This component listens for a custom window event "globalToast" to display notifications 
+ * without needing to be wrapped in complex context providers at every level of the application tree.
+ * 
+ * It manages its own local state to hold the toast object which determines what is displayed. 
+ * The side effect defined inside it handles both the event listener registration and auto-dismissal 
+ * logic for standard toasts. If a toast includes an action path, the auto-dismiss is bypassed, 
+ * requiring the user to explicitly interact with it.
+ * 
+ * On render, if no toast state is present, it returns null. When a toast is active, it renders 
+ * a fixed positioning overlay at the bottom right containing the message, an optional action 
+ * button for navigation, and a dismiss button.
+ *
+ * @returns {JSX.Element|null} The JSX structure representing the toast notification or null if none active.
+ */
 const GlobalToast = () => {
   const [toast, setToast] = useState(null);
   const navigate = useNavigate();

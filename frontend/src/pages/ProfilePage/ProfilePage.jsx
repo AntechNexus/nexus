@@ -7,6 +7,12 @@ import DashboardToast from "../../components/dashboard/DashboardToast";
 import StorageCard from "../../components/dashboard/StorageCard";
 import authService from "../../services/auth.service";
 
+/**
+ * A predefined array of industry categories used as selectable options within the user profile editing form.
+ * It provides a comprehensive list of major sectors to help categorize the user's organization or business area.
+ * 
+ * @type {string[]}
+ */
 const industryOptions = [
   "Technology, SaaS & Software Development",
   "Fast-Moving Consumer Goods (FMCG) & Manufacturing",
@@ -23,8 +29,25 @@ const industryOptions = [
   "Other",
 ];
 
+/**
+ * A predefined array of team size ranges used to indicate the scale of a user's organization.
+ * It provides structured options from small teams to large enterprises for the profile dropdown.
+ * 
+ * @type {string[]}
+ */
 const teamSizeOptions = ["1-10", "11-20", "21-50", "51-100", "101-250", "250+"];
 
+/**
+ * Generates an uppercase two-letter initial string from a given full name.
+ * 
+ * This utility function splits a name string by spaces, filters out any empty segments, 
+ * and extracts the first character of up to the first two words. If the provided name is empty 
+ * or missing, it defaults to a fallback string ("AR"). This is primarily used as a placeholder 
+ * for user avatars when an uploaded profile picture is not available or fails to load.
+ * 
+ * @param {string} name - The full name of the user from which to extract initials.
+ * @returns {string} The uppercase initials of the user, or "AR" if extraction yields no valid characters.
+ */
 const initialsFromName = (name) =>
   name
     .split(" ")
@@ -34,6 +57,21 @@ const initialsFromName = (name) =>
     .join("")
     .toUpperCase() || "AR";
 
+/**
+ * ProfilePage Component
+ * 
+ * The main dashboard view where authenticated users can view and manage their profile information and security settings.
+ * This complex component manages several pieces of state, including sidebar toggle states for responsive layouts, 
+ * the primary user profile data fetched from the backend, and local forms for updating personal details and passwords.
+ * It handles states for loading, errors, image upload feedback, and UI toggles like modal visibility.
+ * 
+ * On mount, the component triggers a side effect to fetch the latest user profile data via the `authService`. 
+ * It interacts with the backend to update personal details, change passwords, and handle avatar image uploads 
+ * using `FormData`. Error handling and success notifications are managed locally and displayed using a toast component.
+ * 
+ * @returns {JSX.Element} The full profile dashboard view consisting of a sidebar, header, 
+ *                        user info cards, storage metrics, security settings, and modal overlays for editing data.
+ */
 const ProfilePage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

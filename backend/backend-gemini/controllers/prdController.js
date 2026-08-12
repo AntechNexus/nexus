@@ -2,18 +2,17 @@ const { OpenAI } = require("openai");
 const fs = require("fs").promises;
 
 /**
- * Handles the generation of a Product Requirement Document (PRD) using AI.
+ * Handles the automated generation of a Product Requirements Document (PRD) using an AI model.
  * 
- * Flow:
- * 1. Reads the user's answers to the clarifying questions.
- * 2. Retrieves the original file context from the temporary cache file on disk.
- * 3. Constructs a strict prompt with a required PRD Markdown template.
- * 4. Calls Gemini 3.1 Pro to generate the PRD based on the context and user answers.
- * 5. Returns the generated Markdown string to the frontend.
+ * This controller function integrates user responses to AI-generated clarifying questions with 
+ * previously cached document context to build a comprehensive prompt. It strictly instructs the Gemini 
+ * LLM to output a technical PRD in Markdown format. It respects user-provided templates if present in 
+ * the context, otherwise defaulting to a robust standard PRD structure.
  * 
- * @param {Object} req - Express request object containing cacheId, questions, and answers in the body.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the generated PRD Markdown string.
+ * @param {Object} req - Express request object. Expects `cacheId`, `questions`, `answers`, and `versionName` in the body.
+ * @param {Object} res - Express response object used to send the generated PRD Markdown text.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the structured PRD string.
+ * @sideEffects Reads cached context files directly from the disk filesystem. Calls the external Elice AI API to generate the PRD content.
  */
 const handleGeneratePrd = async (req, res) => {
   try {

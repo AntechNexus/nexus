@@ -112,6 +112,27 @@ const featureSummary = [
   },
 ];
 
+/**
+ * LandingPage Component
+ * 
+ * The `LandingPage` acts as the primary marketing and entry point for the Nexus application.
+ * Its main purpose is to introduce potential users to the platform's capabilities, emphasizing
+ * the transition from raw project documentation to structured PRDs (Product Requirement Documents).
+ * 
+ * This component does not manage any internal state or trigger any side effects on its own.
+ * It primarily serves as a presentational layer, orchestrating the layout of several distinct
+ * structural sections that compose the landing experience.
+ * 
+ * The rendering pipeline is divided into clear semantic sections:
+ * - A global navigation bar (`NavbarLanding`).
+ * - A hero section (`HeroLanding`) featuring the primary value proposition and calls to action.
+ * - A "How Nexus Works" workflow section that maps over static `workflowSteps` to display a step-by-step process.
+ * - A features and benefits section that maps over `benefits` and `featureSummary` to highlight key selling points.
+ * - A final call-to-action banner and the site footer containing branding and links.
+ * 
+ * @param {Object} props - The component props (currently none are utilized).
+ * @returns {JSX.Element} The fully constructed landing page layout containing navigation, hero, feature sections, and footer.
+ */
 const LandingPage = () => {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-text-main">

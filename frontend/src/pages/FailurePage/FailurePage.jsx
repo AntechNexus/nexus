@@ -47,6 +47,25 @@ const pageContent = {
   },
 };
 
+/**
+ * Component for displaying generic error and failure states.
+ *
+ * This page serves as a catch-all UI for various application-level errors, such as 404 Not Found, 
+ * 403 Forbidden, 500 Internal Server Error, or 503 Maintenance Mode. It provides a standardized, 
+ * user-friendly error layout with dynamic content, icons, and action buttons based on the specific 
+ * failure type.
+ *
+ * It does not manage complex internal state but relies on a pre-defined `pageContent` configuration 
+ * dictionary to render the appropriate text, styling (e.g., color tones), and call-to-action buttons.
+ *
+ * Key side effects include:
+ * - Using the `useNavigate` hook to allow users to navigate back to their previous page when they encounter a non-fatal error.
+ * - Allowing a full page reload (`window.location.reload()`) for server errors where a retry might resolve the issue.
+ *
+ * @param {Object} props The properties object.
+ * @param {string} [props.type="notFound"] The specific type of error to display. Expected values map to keys in the `pageContent` object (e.g., "notFound", "forbidden", "serverError", "maintenance").
+ * @returns {JSX.Element} The rendered error page displaying a relevant icon, error code, description, and recovery actions.
+ */
 const FailurePage = ({ type = "notFound" }) => {
   const navigate = useNavigate();
   const content = pageContent[type] || pageContent.notFound;

@@ -6,17 +6,18 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 /**
  * Handles transcribing audio/video files using Google Gemini API.
- * 
- * Flow:
- * 1. Checks if a transcript already exists in the database.
- * 2. Uploads the file to Google Files API.
- * 3. Polls the API until processing is complete.
- * 4. Calls Gemini 3.5 Flash to generate a structured JSON transcript with segments.
- * 5. Saves the transcript and deletes the file from Google Files API.
- * 
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the transcript.
+ *
+ * Purpose: Retrieves a file by ID, uploads its local content to the Google Files API, waits for it to be processed, and then sends a prompt to Gemini 3.5 Flash to generate a structured JSON transcript with timestamps and segments. Finally, it saves this transcript to the database and cleans up the remote file.
+ *
+ * @param {Object} req - Express request object containing the file ID in `req.params`.
+ * @param {Object} res - Express response object used to send back the JSON response.
+ * @returns {Object} JSON response containing the newly created or cached transcript document, or an error message.
+ *
+ * Side Effects:
+ * - Queries and mutates the database (File and Transcript models).
+ * - Uploads files to Google Files API, polls for status, and deletes the file afterward.
+ * - Makes a network request to the Gemini API for transcription.
+ * - Logs progress and errors to the console.
  */
 const handleTranscribe = async (req, res) => {
   try {
@@ -34,7 +35,9 @@ const handleTranscribe = async (req, res) => {
     }
 
     if (!file.localPath) {
-      return res.status(400).json({ detail: "File localPath is missing. Cannot transcribe." });
+      return res
+        .status(400)
+        .json({ detail: "File localPath is missing. Cannot transcribe." });
     }
 
     // Determine mimeType based on file extension
@@ -53,7 +56,7 @@ const handleTranscribe = async (req, res) => {
         file: file.localPath,
         config: {
           mimeType: mimeType,
-        }
+        },
       });
 
       // Wait for Google to finish processing the file
@@ -66,7 +69,9 @@ const handleTranscribe = async (req, res) => {
       }
 
       if (currentGf.state === "FAILED") {
-        return res.status(500).json({ detail: "Google failed to process the audio file." });
+        return res
+          .status(500)
+          .json({ detail: "Google failed to process the audio file." });
       }
 
       console.log(`[Transcribe] Audio processed, calling Gemini 3.5 Flash...`);
@@ -95,7 +100,12 @@ Note on 'segments':
         {
           role: "user",
           parts: [
-            { fileData: { fileUri: currentGf.uri, mimeType: currentGf.mimeType } },
+            {
+              fileData: {
+                fileUri: currentGf.uri,
+                mimeType: currentGf.mimeType,
+              },
+            },
             { text: prompt },
           ],
         },
@@ -111,9 +121,15 @@ Note on 'segments':
 
       let responseText = response.text.trim();
       if (responseText.startsWith("```json")) {
-        responseText = responseText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+        responseText = responseText
+          .replace(/^```json\n?/, "")
+          .replace(/\n?```$/, "")
+          .trim();
       } else if (responseText.startsWith("```")) {
-        responseText = responseText.replace(/^```\n?/, "").replace(/\n?```$/, "").trim();
+        responseText = responseText
+          .replace(/^```\n?/, "")
+          .replace(/\n?```$/, "")
+          .trim();
       }
 
       console.log(`[Transcribe] Response received, parsing...`);
@@ -143,12 +159,11 @@ Note on 'segments':
       const newTranscript = await Transcript.findOneAndUpdate(
         { fileId: file._id },
         { $set: transcriptData },
-        { upsert: true, new: true, runValidators: true }
+        { upsert: true, new: true, runValidators: true },
       );
 
       console.log(`[Transcribe] Transcript saved successfully.`);
       return res.json({ transcript: newTranscript });
-
     } catch (apiError) {
       // Cleanup uploaded file if error occurs
       if (uploadedFile) {
@@ -156,22 +171,30 @@ Note on 'segments':
       }
       throw apiError;
     }
-
   } catch (error) {
     console.error("Transcribe error:", error.message || error);
-    return res.status(500).json({ detail: error.message || "Internal server error" });
+    return res
+      .status(500)
+      .json({ detail: error.message || "Internal server error" });
   }
 };
 
 /**
  * Placeholder for updating a transcript. Actual logic resides in backend-nexus.
- * 
+ *
+ * Purpose: Acts as a stub endpoint that informs the client to use a different microservice (`backend-nexus`) for updating transcripts.
+ *
  * @param {Object} req - Express request object.
  * @param {Object} res - Express response object.
- * @returns {Object} JSON response indicating method not allowed.
+ * @returns {Object} JSON response with a 405 status indicating the method is not allowed here.
+ *
+ * Side Effects:
+ * - None, other than sending an HTTP response.
  */
 const updateTranscript = async (req, res) => {
-  return res.status(405).json({ detail: "Use backend-nexus for updating transcripts." });
+  return res
+    .status(405)
+    .json({ detail: "Use backend-nexus for updating transcripts." });
 };
 
 module.exports = { handleTranscribe, updateTranscript };

@@ -9,16 +9,17 @@ const pdfParse = require("pdf-parse");
 /**
  * Handles uploading and processing of multiple files to generate PRD clarification questions.
  * 
- * Flow:
- * 1. Parses up to 10 uploaded files (PDF, DOCX, XLSX, TXT, MD, Audio) and extracts their raw text.
- * 2. Runs a quick security check (prompt injection scan) using Gemini 3.6 Flash.
- * 3. Sends the combined text to Gemini 3.1 Pro to identify missing info and generate clarifying questions.
- * 4. Temporarily saves the concatenated text to the local disk as a cache file.
- * 5. Returns the cache ID (file path) and the generated JSON list of questions to the client.
+ * Purpose: Processes an array of uploaded files (up to 10), extracts their text based on file type (PDF, DOCX, XLSX, TXT, etc.), performs a prompt injection security scan using Gemini 3.6 Flash, and then sends the combined text to Gemini 3.1 Pro. The AI generates a list of clarifying questions to resolve missing or ambiguous information for a PRD.
  * 
- * @param {Object} req - Express request object containing the uploaded files (`req.files`).
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the cacheId and clarifying questions.
+ * @param {Object} req - Express request object containing the uploaded files in `req.files`.
+ * @param {Object} res - Express response object used to return the generated questions and cache ID.
+ * @returns {Object} JSON response containing the `cacheId` (temporary file path) and an array of `questions`, or an error message.
+ * 
+ * Side Effects:
+ * - Parses various file formats in-memory.
+ * - Makes external API calls to the AI models (Gemini Flash and Pro) for security scanning and question generation.
+ * - Writes the concatenated file contents to the local disk's temporary directory as a cache file.
+ * - Logs errors and parsing failures to the console.
  */
 const handleUpload = async (req, res) => {
   try {

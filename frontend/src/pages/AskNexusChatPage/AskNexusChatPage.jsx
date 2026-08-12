@@ -25,6 +25,27 @@ import {
   deleteAskNexusConversation,
 } from "../../services/askNexusApi";
 
+/**
+ * A functional component that renders markdown with a typewriter effect.
+ *
+ * This component wraps `react-markdown` and gradually reveals the text content character by character 
+ * to simulate a typing effect. This is primarily used to display AI responses as they are conceptually 
+ * "streaming" in or newly generated, enhancing the conversational feel of the interface. 
+ *
+ * It holds the following state:
+ * - `displayedText`: A substring of the full text that grows over time.
+ *
+ * Side effects:
+ * - Sets up a `setInterval` that incrementally appends characters to `displayedText` until it matches the full `text` prop.
+ * - Cleans up the interval on unmount or when dependencies change.
+ * - Bypasses the typewriter effect entirely if the `isStreaming` prop is false, instantly showing the full text.
+ *
+ * @param {Object} props The properties object.
+ * @param {string} props.text The full markdown text to display.
+ * @param {number} [props.speed=10] The interval delay in milliseconds between each character.
+ * @param {boolean} [props.isStreaming=false] Whether to apply the typewriter effect or show the text instantly.
+ * @returns {JSX.Element} A React component rendering the gradually revealed markdown.
+ */
 const TypewriterMarkdown = ({ text, speed = 10, isStreaming = false }) => {
   const [displayedText, setDisplayedText] = useState(isStreaming ? "" : text);
 
@@ -50,6 +71,29 @@ const TypewriterMarkdown = ({ text, speed = 10, isStreaming = false }) => {
 };
 import { projectService } from "../../services/project.service";
 
+/**
+ * Component for rendering a specific Ask Nexus AI conversation thread.
+ *
+ * This page provides a dedicated chat interface for interacting with the Nexus AI within the context 
+ * of a specific project. It fetches and displays the history of a selected conversation, allows the user 
+ * to send new messages, regenerate AI responses, and view inline citations linking to source documents.
+ *
+ * The component maintains complex state for the chat interface:
+ * - `conversation` to store the messages, metadata, and citations of the current active thread.
+ * - `conversations` to list recent chats in the sidebar history.
+ * - `projects` to populate the project context selector in the sidebar.
+ * - `draft` for tracking the user's current input in the text area.
+ * - `loading` to disable inputs and show loading indicators while waiting for the AI backend.
+ * - `deleteConfirmId` to handle the display of the deletion confirmation modal.
+ *
+ * Side effects triggered by this component include:
+ * - Fetching the specific conversation data, all user conversations, and all user projects on mount or when the `conversationId` URL parameter changes.
+ * - Scrolling the chat view to the bottom automatically whenever the `conversation` state updates, ensuring the latest messages are visible.
+ * - Interacting with the clipboard API to copy AI answers when requested by the user.
+ * - Updating local state and navigating away when a conversation is successfully deleted.
+ *
+ * @returns {JSX.Element} The rendered chat layout featuring a sidebar with history, a main chat window with message bubbles and citations, and an input area.
+ */
 const AskNexusChatPage = () => {
   const { conversationId } = useParams();
   const navigate = useNavigate();

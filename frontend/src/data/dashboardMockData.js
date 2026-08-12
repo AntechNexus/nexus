@@ -1,3 +1,11 @@
+/**
+ * Mock data array representing a collection of active projects on the dashboard.
+ * Used primarily for UI development and testing when the backend API is unavailable.
+ * Contains objects with detailed project metadata including IDs, titles, modification strings, 
+ * and arrays representing team members with their respective avatar styling.
+ * 
+ * @type {Array<Object>}
+ */
 export const initialProjects = [
   {
     id: "global-site-localization",
@@ -22,6 +30,13 @@ export const initialProjects = [
   },
 ];
 
+/**
+ * Mock data array representing a list of recently accessed or modified files by the user.
+ * It simulates real-world file management data, providing structured properties such as
+ * the file ID, name, last editor, time of last edit, file size, associated team members, and the type of file (e.g., document or folder).
+ * 
+ * @type {Array<Object>}
+ */
 export const recentFiles = [
   {
     id: "cloud-infrastructure-v2",

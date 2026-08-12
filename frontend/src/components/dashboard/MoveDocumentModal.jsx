@@ -28,6 +28,30 @@ const buildFolderHierarchy = (docs, excludeId = null) => {
   return flattened;
 };
 
+/**
+ * MoveDocumentModal component responsible for displaying a modal interface to move a specific document
+ * or folder into another folder within the same project. It provides a hierarchical view of available 
+ * destination folders, ensuring users have clear context about where their document is going.
+ * 
+ * The component maintains several pieces of state: the list of folders formatted into a hierarchy, 
+ * a loading state to indicate data fetching progress, and the currently selected destination folder ID. 
+ * As a side effect, when the modal opens and a projectId is provided, it triggers an API call to fetch 
+ * all project documents. These documents are then processed to build a folder tree, specifically excluding 
+ * the document currently being moved to prevent circular nesting.
+ * 
+ * When rendered, it displays an overlay backdrop and a centered modal dialog. Inside the dialog, 
+ * it shows a loading spinner during data fetch, and subsequently renders a scrollable list of 
+ * indented folder options representing the hierarchy. It includes 'Cancel' and 'Move' buttons, 
+ * disabling the 'Move' button if the selection is invalid (e.g., trying to move to the same parent).
+ *
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isOpen - Determines whether the modal is visible on screen.
+ * @param {Function} props.onClose - Callback function triggered to close the modal.
+ * @param {Object} props.documentToMove - The document or folder object that is intended to be moved.
+ * @param {string} props.projectId - The unique identifier of the project, used to fetch the folder list.
+ * @param {Function} props.onMove - Callback function executed when the user confirms the move action, passing the document and target folder ID.
+ * @returns {JSX.Element|null} The JSX structure representing the modal overlay and dialog, or null if isOpen is false.
+ */
 export default function MoveDocumentModal({ isOpen, onClose, documentToMove, projectId, onMove }) {
   const [folders, setFolders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

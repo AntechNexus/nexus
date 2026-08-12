@@ -67,6 +67,19 @@ const comparisonRows = [
   ["Support", "Community", "Email Support", "24/7 Priority"],
 ];
 
+/**
+ * FeatureValue Component
+ * 
+ * This functional component is responsible for rendering individual feature values in the comparison table of the Subscriptions page.
+ * It evaluates the provided value and decides whether to display a checkmark icon (for included features), a hyphen (for unavailable features), or plain text.
+ * 
+ * It manages no local state and does not trigger side effects, simply computing the UI based on its props.
+ * 
+ * @param {Object} props - The component props.
+ * @param {boolean} [props.highlight=false] - Whether to apply highlighted styling to the text value.
+ * @param {string|React.ReactNode} props.value - The feature value to display. Can be "check", "-", or any string/number.
+ * @returns {JSX.Element} A table cell content representing the feature's availability or specification.
+ */
 const FeatureValue = ({ highlight = false, value }) => {
   if (value === "check") {
     return <CheckCircle2 className="mx-auto text-nexus-primary" size={18} />;
@@ -83,6 +96,21 @@ const FeatureValue = ({ highlight = false, value }) => {
   );
 };
 
+/**
+ * SubscriptionsPage Component
+ * 
+ * This component acts as the main view for the Subscription Plans page, allowing users to compare and select different pricing tiers.
+ * It manages several pieces of local state:
+ * - `sidebarCollapsed`: Tracks the desktop sidebar's collapsed status.
+ * - `mobileSidebarOpen`: Tracks whether the mobile sidebar drawer is currently open.
+ * - `yearly`: Toggles between monthly and yearly billing cycles, which dynamically updates the displayed prices and billing period labels.
+ * - `selectedPlan`: Keeps track of the currently selected subscription plan name.
+ * 
+ * The component relies on the `useMemo` hook to calculate the `billingLabel` string for accessibility purposes based on the `yearly` state.
+ * There are no asynchronous side effects in this component, as it primarily relies on statically defined `plans` and `comparisonRows` data structures to render the UI.
+ * 
+ * @returns {JSX.Element} The full page layout including the sidebar, header, pricing cards, and feature comparison table.
+ */
 const SubscriptionsPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

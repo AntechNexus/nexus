@@ -3,6 +3,16 @@ const { askNexus, getConversations, getConversationById, regenerateMessage, dele
 
 const router = express.Router();
 
+/**
+ * Middleware to authenticate requests.
+ * Extracts the Bearer token from the Authorization header and verifies it
+ * against the authentication service. If valid, attaches the user object to the request.
+ *
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @param {Function} next - The next middleware function in the stack.
+ * @returns {Promise<void>} Calls next() if authenticated, otherwise sends a 401 response.
+ */
 const authMiddleware = async (req, res, next) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {

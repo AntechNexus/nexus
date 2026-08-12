@@ -9,6 +9,36 @@ import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectC
 import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
 import { projectService } from "../../services/project.service";
 
+/**
+ * ProjectsPage Component
+ * 
+ * This component acts as the primary dashboard view for users to oversee all their existing technical document translation and archival projects.
+ * It serves as the main hub where users can browse their project portfolio, create new initiatives, and manage high-level details of existing ones.
+ * 
+ * State:
+ * - `projects` (Array): Holds the complete collection of project objects fetched from the backend, transformed slightly for frontend consumption.
+ * - `sidebarCollapsed`, `mobileSidebarOpen` (boolean): Manage the responsive visual state of the global navigation sidebar.
+ * - `openMenuProjectId` (string | null): Tracks which specific project card currently has its contextual action menu expanded.
+ * - `selectedProjectId` (string | null): Tracks which project card is currently focused or selected by the user.
+ * - `editingProject` (Object | null): Stores the data of a project actively being modified in the edit modal.
+ * - `trashProject` (Object | null): Stores the data of a project slated for deletion, awaiting user confirmation in the trash modal.
+ * - `toast` (string): Contains the text for ephemeral notification banners signaling success or failure of user actions.
+ * - `currentUser` (Object | null): Caches the authenticated user's profile information.
+ * 
+ * Side Effects / Behavior:
+ * - Initialization: Upon mounting, it triggers asynchronous calls to retrieve the authenticated user's profile via dynamic import and fetches the list of all projects using the `projectService`.
+ * - Polling Mechanism: Implements a recurring timer (`setInterval`) every 15 seconds to refetch the project list, ensuring the dashboard remains synchronized with backend changes or collaborative updates. The timer is rigorously cleared upon component unmount.
+ * - Event Handlers: Exposes tailored functions (`handleProjectAction`, `handleSaveProject`, `handleMoveToTrash`) to orchestrate complex interactions bridging the UI (project cards) with the underlying service layer and modal state management.
+ * 
+ * Rendering:
+ * - Constructs the page layout utilizing the standard `DashboardSidebar` and `DashboardHeader` components.
+ * - Renders a prominent header section detailing the page title, a brief description of the platform's purpose, and a highly visible "New Project" call-to-action button.
+ * - Displays a responsive CSS grid containing a dedicated `NewProjectCard` followed by a dynamically generated list of `ProjectCard` components, passing down necessary state and callback props to each.
+ * - Conditionally renders modal overlays (`EditProjectModal`, `TrashProjectModal`) if their corresponding state variables are populated, allowing safe and isolated data manipulation.
+ * - Mounts a `DashboardToast` to provide immediate, non-intrusive feedback following CRUD operations.
+ * 
+ * @returns {JSX.Element} The rendered projects dashboard overview.
+ */
 const ProjectsPage = () => {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);

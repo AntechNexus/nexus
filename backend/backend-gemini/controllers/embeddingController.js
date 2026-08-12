@@ -3,10 +3,14 @@ const DocumentEmbedding = require("../models/DocumentEmbedding");
 
 let extractor = null;
 /**
- * Initializes and retrieves the embedding extractor model (Xenova/bge-base-en-v1.5).
- * Uses a singleton pattern so the model is only loaded once in memory.
+ * Initializes and retrieves the Xenova/bge-base-en-v1.5 embedding extractor model.
  * 
- * @returns {Promise<Function>} The initialized feature-extraction pipeline.
+ * This function utilizes a singleton pattern to ensure the 768-dimensional feature-extraction 
+ * pipeline is instantiated exactly once. The loaded model is quantized to improve performance 
+ * and reduce memory footprint while processing document text.
+ * 
+ * @returns {Promise<Function>} A promise that resolves to the initialized feature-extraction pipeline function.
+ * @sideEffects Mutates the global `extractor` variable upon initial execution, loading the AI model into memory.
  */
 async function getExtractor() {
   if (!extractor) {
@@ -17,12 +21,16 @@ async function getExtractor() {
 }
 
 /**
- * Splits a long text into an array of smaller chunks based on character limit.
- * Ensures chunks do not cut words in half by splitting at spaces.
+ * Splits a long body of text into an array of smaller, manageable chunks.
  * 
- * @param {string} text - The full document text.
- * @param {number} maxChars - Maximum characters per chunk (default 1000).
- * @returns {string[]} An array of text chunks.
+ * This utility function segments large documents into smaller blocks defined by the `maxChars` limit. 
+ * It ensures that words are not split in half by breaking the text exclusively at space characters. 
+ * This is vital for maintaining semantic meaning during vector embedding.
+ * 
+ * @param {string} text - The full, unsegmented document text to be chunked.
+ * @param {number} [maxChars=1000] - The maximum number of characters allowed per chunk.
+ * @returns {string[]} An array containing the sequentially chunked text blocks.
+ * @sideEffects None. This is a pure data transformation function.
  */
 function chunkText(text, maxChars = 1000) {
   if (!text) return [];
@@ -43,18 +51,17 @@ function chunkText(text, maxChars = 1000) {
 }
 
 /**
- * Generates vector embeddings for a given text and saves them to the database.
+ * Generates and stores vector embeddings for uploaded document text.
  * 
- * Flow:
- * 1. Takes the text, projectId, fileId, and createdBy from the request body.
- * 2. Splits the text into chunks of 1000 characters.
- * 3. Deletes any existing embeddings for the given file to prevent duplicates.
- * 4. Generates a 768-dimensional vector embedding for each chunk.
- * 5. Saves each chunk and its embedding to the DocumentEmbedding collection.
+ * This controller function takes a raw text payload, chunks it into smaller blocks, and utilizes 
+ * a local Transformers.js model to generate 768-dimensional vector embeddings. To prevent duplication 
+ * during re-processing, it first purges any existing embeddings for the provided file ID before saving 
+ * the newly generated vectors to the database.
  * 
- * @param {Object} req - Express request object containing the file and text data.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response indicating success and the number of embeddings saved.
+ * @param {Object} req - Express request object. Expects `text`, `projectId`, `fileId`, `createdBy`, and optional metadata in the body.
+ * @param {Object} res - Express response object used to send the success status and the total count of processed embeddings.
+ * @returns {Promise<Object>} A promise resolving to the Express response confirming the successful embedding generation.
+ * @sideEffects Deletes existing documents matching `fileId` in the `DocumentEmbedding` collection. Inserts multiple new documents into the `DocumentEmbedding` collection.
  */
 const generateEmbeddings = async (req, res) => {
   try {
