@@ -30,6 +30,8 @@ const fileStyles = {
   prd: { Icon: FileText, tone: "bg-violet-50 text-violet-700" },
 };
 
+const MAX_UPLOAD_TOTAL_BYTES = 75 * 1024 * 1024;
+
 const slugify = (value) =>
   value
     .trim()
@@ -41,6 +43,11 @@ const formatFileSize = (bytes = 0) => {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
+
+const getUploadFileStyle = (name = "") => {
+  const extension = name.split(".").pop()?.toLowerCase();
+  return fileStyles[extension] || fileStyles.prd;
 };
 
 const ModalShell = ({ children, onClose, title }) => {
@@ -76,18 +83,34 @@ const AddFileModal = ({ onClose, onUpload }) => {
     if (!files || files.length === 0) return;
     
     const validFiles = [];
-    let hasError = false;
+    const invalidTypeFiles = [];
+    let nextTotalBytes = selectedFiles.reduce((total, file) => total + file.size, 0);
+    let exceedsTotalLimit = false;
 
     Array.from(files).forEach((file) => {
       if (!isAllowedUploadFile(file.name)) {
-        hasError = true;
-      } else {
-        validFiles.push(file);
+        invalidTypeFiles.push(file.name);
+        return;
       }
+
+      if (nextTotalBytes + file.size > MAX_UPLOAD_TOTAL_BYTES) {
+        exceedsTotalLimit = true;
+        return;
+      }
+
+      validFiles.push(file);
+      nextTotalBytes += file.size;
     });
 
-    if (hasError) {
-      setError("Some files were skipped. Unsupported file type. Upload only PDF, DOCX, XLSX, MP3, M4A, WAV, or PRD files.");
+    if (invalidTypeFiles.length > 0 || exceedsTotalLimit) {
+      const messages = [];
+      if (invalidTypeFiles.length > 0) {
+        messages.push("Unsupported file type skipped. Upload only PDF, DOCX, XLSX, MP3, M4A, WAV, or PRD files.");
+      }
+      if (exceedsTotalLimit) {
+        messages.push("Total upload size cannot exceed 75 MB.");
+      }
+      setError(messages.join(" "));
     } else {
       setError("");
     }
@@ -144,30 +167,36 @@ const AddFileModal = ({ onClose, onUpload }) => {
             <span className="block text-sm text-nexus-muted">or browse files</span>
           </span>
           <span className="text-xs text-nexus-muted">Supported: PDF, DOCX, XLSX, MP3, M4A, WAV, PRD</span>
+          <span className="text-xs text-nexus-muted">Maximum 75 MB total per upload</span>
         </button>
         {error && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600 border border-red-200 leading-relaxed">{error}</p>}
 
         {selectedFiles.length > 0 && (
           <div className="mt-6 flex flex-col gap-3">
-            {selectedFiles.map((file, index) => (
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-4" key={index}>
-                <div className="flex items-center gap-3">
-                  <FileText className="text-nexus-primary" size={20} />
-                  <div>
-                    <span className="block text-sm font-semibold text-nexus-text">{file.name}</span>
-                    <span className="block text-xs font-medium text-slate-500">{formatFileSize(file.size)}</span>
+            {selectedFiles.map((file, index) => {
+              const { Icon, tone } = getUploadFileStyle(file.name);
+
+              return (
+                <div className="grid grid-cols-[32px_minmax(0,1fr)_36px] items-center gap-3 rounded-xl bg-slate-50 p-4" key={index}>
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${tone}`}>
+                    <Icon size={18} />
+                  </span>
+                  <div className="min-w-0">
+                    <span className="block break-words text-sm font-semibold leading-5 text-nexus-text">{file.name}</span>
+                    <span className="mt-0.5 block text-xs font-medium text-slate-500">{formatFileSize(file.size)}</span>
                   </div>
+                  <button
+                    aria-label={`Remove ${file.name}`}
+                    className="flex h-9 w-9 items-center justify-center rounded-lg text-red-500 transition hover:bg-red-50 disabled:opacity-50"
+                    onClick={() => removeFile(index)}
+                    type="button"
+                    disabled={isUploading}
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
-                <button
-                  className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
-                  onClick={() => removeFile(index)}
-                  type="button"
-                  disabled={isUploading}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -571,7 +600,7 @@ const ProjectDetailPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-white">
+        <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-white font-sans">
           <header className="border-b border-nexus-border px-4 py-5 sm:px-8 sm:py-6">
             <nav className="mb-4 flex flex-wrap items-center gap-2 text-sm text-nexus-muted">
               <Link className="transition hover:text-nexus-primary" to="/projects">Projects</Link>
@@ -602,7 +631,7 @@ const ProjectDetailPage = () => {
             </nav>
             <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-nexus-text">{folderPath.at(-1)?.name || project.title}</h1>
+                <h1 className="nexus-page-title">{folderPath.at(-1)?.name || project.title}</h1>
                 <p className="mt-1 max-w-2xl text-sm text-nexus-muted">{project.description}</p>
               </div>
               <div className="relative" ref={addRef}>
@@ -630,7 +659,7 @@ const ProjectDetailPage = () => {
           <section className="flex-1 overflow-hidden">
             {visibleDocuments.length === 0 ? (
               <div className="flex min-h-[420px] flex-col items-center justify-center px-6 text-center">
-                <h2 className="text-3xl font-semibold tracking-tight text-nexus-text">Drop files here</h2>
+                <h2 className="nexus-page-title">Drop files here</h2>
                 <p className="mt-4 text-lg text-nexus-muted">or use the '+ Add' button.</p>
               </div>
             ) : (

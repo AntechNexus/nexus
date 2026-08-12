@@ -120,10 +120,10 @@ const ProjectsPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text">Projects</h1>
+              <h1 className="nexus-page-title">Projects</h1>
               <p className="mt-2 text-sm text-nexus-muted">Manage your technical document translation and archival workflows.</p>
             </div>
             <button

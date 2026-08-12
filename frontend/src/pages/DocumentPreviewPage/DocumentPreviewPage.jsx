@@ -10,7 +10,6 @@ import {
   Folder,
   Home,
   Lightbulb,
-  Smile,
   Sparkles,
   X,
 } from "lucide-react";
@@ -59,7 +58,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
           {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
         </span>
       )}
-      <Icon className={active ? "text-nexus-primary shrink-0" : iconTone[item.type] || "text-slate-600 shrink-0"} size={15} />
+      <Icon className={`${iconTone[item.type] || "text-slate-600"} shrink-0`} size={15} />
       <span className="truncate">{truncateName(item.name)}</span>
       {active && <span className="ml-auto h-2 w-2 rounded-full bg-nexus-primary shrink-0" />}
     </div>
@@ -68,7 +67,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
   return (
     <div key={item.id}>
       {item.type === "folder" ? (
-        <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition">
+        <div className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition" title={item.name}>
           {content}
         </div>
       ) : (
@@ -76,6 +75,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
           className={`flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold transition hover:bg-blue-50 hover:text-nexus-primary ${
             active ? "border-l-4 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-slate-700"
           }`}
+          title={item.name}
           to={isAudioTranscriptDocument(item) ? `/projects/${projectId}/transcripts/${item.id}` : `/projects/${projectId}/documents/${item.id}`}
         >
           {content}
@@ -146,6 +146,8 @@ const DocumentPreviewPage = () => {
   }
 
   const document = preview.document;
+  const DocumentIcon = getIcon(document?.type);
+  const documentIconTone = iconTone[document?.type] || "text-slate-600";
 
   return (
     <div className="min-h-screen bg-nexus-bg font-sans text-nexus-text">
@@ -192,19 +194,18 @@ const DocumentPreviewPage = () => {
                   {project.title}
                 </Link>
                 <ChevronRight size={14} />
-                <span>Document Preview</span>
+                <span className="max-w-[260px] truncate font-medium text-nexus-text">
+                  {document?.name || "Document Preview"}
+                </span>
               </nav>
 
-              <div className="mb-6 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-amber-600">
-                  <Smile size={22} />
-                </span>
+              <div className="mb-6">
                 <h1 className="text-2xl font-bold tracking-tight text-nexus-text">Document Preview</h1>
               </div>
 
               <div className="max-w-4xl rounded-xl border border-nexus-border bg-white shadow-sm flex flex-col h-[750px]">
                 <header className="flex items-center gap-3 border-b border-nexus-border px-5 py-4">
-                  <FileText className="text-nexus-primary" size={18} />
+                  <DocumentIcon className={documentIconTone} size={18} />
                   <h2 className="font-bold text-nexus-text">{document?.name || "Document Not Found"}</h2>
                 </header>
                 <div className="p-0 flex-1 overflow-hidden bg-slate-50 rounded-b-xl flex flex-col relative">

@@ -52,7 +52,7 @@ const industryOptions = [
   "Real Estate, PropTech & Construction",
   "Energy, Utilities & Resources",
   "Government, Public Sector & Non-Profit",
-  "Lainnya (Other)",
+  "Other",
 ];
 
 const initialDetails = {

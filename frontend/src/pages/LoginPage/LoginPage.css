@@ -1,9 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 :root {
-  --auth-primary: #2563eb;
-  --auth-primary-hover: #1d4ed8;
-  --auth-panel-deep: #1e3a8a;
+  --auth-primary: #0032c4;
+  --auth-primary-hover: #294de3;
+  --auth-panel-deep: #0032c4;
   --auth-text-main: #0f172a;
   --auth-text-muted: #64748b;
   --auth-text-light: #94a3b8;
@@ -27,7 +27,7 @@
 
 .auth-brand-panel {
   flex: 1.1;
-  background: linear-gradient(145deg, var(--auth-primary) 0%, var(--auth-panel-deep) 100%);
+  background: var(--auth-primary);
   color: #ffffff;
   padding: 56px 64px;
   display: flex;

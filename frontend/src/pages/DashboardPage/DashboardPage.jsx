@@ -150,15 +150,15 @@ const DashboardPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex items-center gap-3">
             <span className="h-8 w-1 rounded-full bg-nexus-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-nexus-text">Dashboard</h1>
+            <h1 className="nexus-page-title">Dashboard</h1>
           </div>
 
           <section>
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-xl font-bold text-nexus-text">My Projects</h2>
+              <h2 className="nexus-section-title">My Projects</h2>
               <button
                 className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-nexus-primary transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
                 onClick={() => navigate("/projects")}

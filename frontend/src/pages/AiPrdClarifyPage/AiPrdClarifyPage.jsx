@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { 
-  ArrowLeft, Check, Loader2,
-  CheckCircle2, ChevronRight, 
-  HelpCircle, CheckSquare, AlignLeft, Info 
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ArrowLeft, Check, Loader2 } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardToast from "../../components/dashboard/DashboardToast";
@@ -27,24 +24,9 @@ const stepItems = [
 const AiPrdClarifyPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const getInitialState = () => {
-    if (location.state && location.state.cacheId) return location.state;
-    const stored = localStorage.getItem("prd_clarify_data");
-    if (stored) return JSON.parse(stored);
-    return null;
-  };
-
-  const initialState = getInitialState();
-  const hasPrdState = Boolean(initialState?.cacheId);
-  
-  const {
-    cacheId = null,
-    questions = [],
-    projectId = "",
-    projectName = "",
-    allFileIds = [],
-    baseVersion = 0,
-  } = initialState || {};
+  const state = location.state ?? {};
+  const hasPrdState = Boolean(state.cacheId || state.questions);
+  const { cacheId, questions = [], projectId, projectName, allFileIds = [], baseVersion = 0 } = state;
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -63,43 +45,6 @@ const AiPrdClarifyPage = () => {
       navigate("/ai-prd-workspace", { replace: true });
     }
   }, [hasPrdState, navigate]);
-
-  useEffect(() => {
-    localStorage.setItem("prd_clarify_answers", JSON.stringify(answers));
-  }, [answers]);
-
-  useEffect(() => {
-    const handleJobCompleted = (e) => {
-      if (e.detail.actionPath && generating) {
-        navigate(e.detail.actionPath, { replace: true });
-      }
-    };
-    window.addEventListener("prdJobCompleted", handleJobCompleted);
-    return () => window.removeEventListener("prdJobCompleted", handleJobCompleted);
-  }, [generating, navigate]);
-
-  useEffect(() => {
-    const activeGenerate = getActiveGenerateJob();
-    const generateStatus = localStorage.getItem("prd_generate_status");
-    
-    if (activeGenerate) {
-      setGenerating(true);
-    } else if (generateStatus === "done") {
-      navigate("/ai-prd-workspace/review", { replace: true });
-    } else if (generateStatus === "running") {
-      setGenerating(true);
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    let stepInterval;
-    if (generating) {
-      stepInterval = setInterval(() => {
-        setGeneratingStep((s) => (s < GENERATING_STEPS.length - 1 ? s + 1 : s));
-      }, 2500);
-    }
-    return () => clearInterval(stepInterval);
-  }, [generating]);
 
   if (!hasPrdState) {
     return null;

@@ -8,6 +8,15 @@ const fs = require("fs");
 const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer } = require("docx");
 const PDFDocument = require("pdfkit");
 
+const toPrdProjectSlug = (name = "Project", maxLength = 72) => {
+  const slug = String(name)
+    .trim()
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return (slug || "Project").slice(0, maxLength).replace(/_+$/g, "") || "Project";
+};
+
 // Create PRD Data Collection
 /**
  * Creates a new Product Requirement Document (PRD) manually.
@@ -588,7 +597,7 @@ exports.saveGeneratedPrd = async (req, res) => {
     const userId = req.user?.id || req.user?._id;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    const { rawMarkdown, projectId, prdName, sourceFileIds } = req.body;
+    const { rawMarkdown, projectId, sourceFileIds } = req.body;
     if (!rawMarkdown || !projectId) {
       return res.status(400).json({ message: "rawMarkdown and projectId are required" });
     }
@@ -600,9 +609,13 @@ exports.saveGeneratedPrd = async (req, res) => {
       project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isOwnerOrMember) return res.status(403).json({ message: "Access denied to this project" });
 
-    const safeDate = new Date().toISOString().split("T")[0];
-    const safeName = prdName || `PRD – ${project.name}`;
-    const folderName = `PRD – ${safeName} – ${safeDate}`;
+    const latestPrd = await PRD.findOne({ projectId })
+      .sort({ version: -1 })
+      .select("version")
+      .lean();
+    const nextVersion = (latestPrd?.version || 0) + 1;
+    const safeName = `PRD_${toPrdProjectSlug(project.name)}_V${nextVersion}`;
+    const folderName = safeName;
 
     let savedFolder = await Folder.findOne({ projectId, name: folderName, isDeleted: false });
     if (!savedFolder) {
@@ -650,14 +663,14 @@ exports.saveGeneratedPrd = async (req, res) => {
 
     const docxDoc = new Document({ sections: [{ children: docChildren }] });
     const docxBuffer = await Packer.toBuffer(docxDoc);
-    const docxFileName = `${Date.now()}-${safeName.replace(/[^a-zA-Z0-9]/g, "_")}.docx`;
+    const docxFileName = `${Date.now()}-${safeName}.docx`;
     const exportDir = path.join(__dirname, "../../uploads/prd-exports");
     if (!fs.existsSync(exportDir)) fs.mkdirSync(exportDir, { recursive: true });
     const docxPath = path.join(exportDir, docxFileName);
     fs.writeFileSync(docxPath, docxBuffer);
 
     // ── Generate PDF ──────────────────────────────────────────────────────
-    const pdfFileName = `${Date.now()}-${safeName.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`;
+    const pdfFileName = `${Date.now()}-${safeName}.pdf`;
     const pdfPath = path.join(exportDir, pdfFileName);
     await new Promise((resolve, reject) => {
       const pdfDoc = new PDFDocument({ margin: 50 });
@@ -739,7 +752,7 @@ exports.saveGeneratedPrd = async (req, res) => {
     const newPrd = new PRD({
       projectId,
       name: safeName,
-      version: 1,
+      version: nextVersion,
       rawMarkdown,
       content: { markdown: rawMarkdown },
       sourceFileIds: sourceFileIds || [],
