@@ -50,31 +50,43 @@ const EditProjectModal = ({ onClose, onSave, project }) => {
         </div>
         <label className="mb-4 block text-sm font-medium text-slate-600">
           Project Name
-          <input
-            className={`mt-1 h-11 w-full rounded-xl border px-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
-              errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
-            }`}
-            onChange={(event) => {
-              setName(event.target.value);
-              setErrors((prev) => ({ ...prev, name: null }));
-            }}
-            value={name}
-          />
+          <div className="relative mt-1">
+            <input
+              maxLength={75}
+              className={`h-11 w-full rounded-xl border px-3 pr-16 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+                errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+              }`}
+              onChange={(event) => {
+                setName(event.target.value);
+                setErrors((prev) => ({ ...prev, name: null }));
+              }}
+              value={name}
+            />
+            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-400">
+              {name.length}/75
+            </div>
+          </div>
         </label>
         {errors.name && <p className="-mt-2 mb-4 text-sm font-semibold text-red-600">{errors.name}</p>}
         {errors.general && <p className="-mt-2 mb-4 text-sm font-semibold text-red-600">{errors.general}</p>}
         <label className="mb-6 block text-sm font-medium text-slate-600">
           Project Description
-          <textarea
-            className={`mt-1 h-24 w-full resize-none rounded-xl border p-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
-              errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
-            }`}
-            onChange={(event) => {
-              setDescription(event.target.value);
-              setErrors((prev) => ({ ...prev, description: null }));
-            }}
-            value={description}
-          />
+          <div className="relative mt-1">
+            <textarea
+              maxLength={200}
+              className={`h-24 w-full resize-none rounded-xl border p-3 pb-8 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+                errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+              }`}
+              onChange={(event) => {
+                setDescription(event.target.value);
+                setErrors((prev) => ({ ...prev, description: null }));
+              }}
+              value={description}
+            />
+            <div className="pointer-events-none absolute bottom-2 right-3 text-xs text-slate-400">
+              {description.length}/200
+            </div>
+          </div>
         </label>
         {errors.description && <p className="-mt-2 mb-6 text-sm font-semibold text-red-600">{errors.description}</p>}
         <div className="flex justify-end gap-3">

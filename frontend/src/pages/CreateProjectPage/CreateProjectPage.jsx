@@ -102,35 +102,47 @@ const CreateProjectPage = () => {
                 <span className="mb-2 flex items-center justify-between gap-3 text-xs font-bold text-nexus-text">
                   Project Name
                 </span>
-                <input
-                  className={`h-12 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                    errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
-                  }`}
-                  onChange={(event) => {
-                    setProjectName(event.target.value);
-                    setErrors((prev) => ({ ...prev, name: null }));
-                  }}
-                  placeholder="Enter a unique project name"
-                  type="text"
-                  value={projectName}
-                />
+                <div className="relative">
+                  <input
+                    maxLength={75}
+                    className={`h-12 w-full rounded-xl border px-4 pr-16 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
+                      errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+                    }`}
+                    onChange={(event) => {
+                      setProjectName(event.target.value);
+                      setErrors((prev) => ({ ...prev, name: null }));
+                    }}
+                    placeholder="Enter a unique project name"
+                    type="text"
+                    value={projectName}
+                  />
+                  <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs text-slate-400">
+                    {projectName.length}/75
+                  </div>
+                </div>
                 {errors.name && <p className="mt-2 text-xs font-semibold text-red-600">{errors.name}</p>}
                 {errors.general && <p className="mt-2 text-xs font-semibold text-red-600">{errors.general}</p>}
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-xs font-bold text-nexus-text">Description <span className="font-medium text-slate-500">(Optional)</span></span>
-                <textarea
-                  className={`min-h-32 w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
-                    errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
-                  }`}
-                  onChange={(event) => {
-                    setDescription(event.target.value);
-                    setErrors((prev) => ({ ...prev, description: null }));
-                  }}
-                  placeholder="Add a brief description of the project goals..."
-                  value={description}
-                />
+                <div className="relative">
+                  <textarea
+                    maxLength={200}
+                    className={`min-h-32 w-full resize-none rounded-xl border px-4 py-3 pb-8 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${
+                      errors.description ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+                    }`}
+                    onChange={(event) => {
+                      setDescription(event.target.value);
+                      setErrors((prev) => ({ ...prev, description: null }));
+                    }}
+                    placeholder="Add a brief description of the project goals..."
+                    value={description}
+                  />
+                  <div className="pointer-events-none absolute bottom-3 right-4 text-xs text-slate-400">
+                    {description.length}/200
+                  </div>
+                </div>
                 {errors.description && <p className="mt-2 text-xs font-semibold text-red-600">{errors.description}</p>}
               </label>
 

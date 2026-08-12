@@ -324,14 +324,22 @@ const ProfilePage = () => {
               ].map(([name, label, placeholder]) => (
                 <label className="block" key={name}>
                   <span className="mb-1 block text-xs font-bold uppercase text-slate-500">{label}</span>
-                  <input
-                    className="h-11 w-full rounded-lg border border-nexus-border bg-slate-50 px-3 text-sm outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-blue-100"
-                    onChange={(event) => setEditForm((current) => ({ ...current, [name]: event.target.value }))}
-                    placeholder={placeholder}
-                    type={name === "email" ? "email" : "text"}
-                    value={editForm[name]}
-                    disabled={name === "email"}
-                  />
+                  <div className="relative">
+                    <input
+                      maxLength={name === "email" ? 255 : 75}
+                      className={`h-11 w-full rounded-lg border border-nexus-border bg-slate-50 px-3 text-sm outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-blue-100 ${name === "email" ? "opacity-60" : "pr-14"}`}
+                      onChange={(event) => setEditForm((current) => ({ ...current, [name]: event.target.value }))}
+                      placeholder={placeholder}
+                      type={name === "email" ? "email" : "text"}
+                      value={editForm[name]}
+                      disabled={name === "email"}
+                    />
+                    {name !== "email" && (
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-400">
+                        {editForm[name]?.length || 0}/75
+                      </div>
+                    )}
+                  </div>
                 </label>
               ))}
               <label className="block">

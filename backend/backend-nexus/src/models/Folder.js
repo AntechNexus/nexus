@@ -17,7 +17,7 @@ const folderSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Folder name is required"],
-      maxlength: [50, "Folder name cannot exceed 50 characters"],
+      maxlength: [75, "Folder name cannot exceed 75 characters"],
       trim: true,
     },
     color: {

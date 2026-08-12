@@ -27,12 +27,12 @@ const userSchema = new mongoose.Schema(
         type: String,
         required: true,
         minlength: 2,
-        maxlength: 50,
+        maxlength: 75,
         default: 'New User',
       },
       roleTitle: {
         type: String,
-        maxlength: 50,
+        maxlength: 75,
         default: '',
       },
       avatarUrl: {
@@ -48,14 +48,17 @@ const userSchema = new mongoose.Schema(
       },
       role: {
         type: String,
+        maxlength: 75,
         default: '',
       },
       teamSize: {
         type: String,
+        maxlength: 75,
         default: '',
       },
       industry: {
         type: String,
+        maxlength: 75,
         default: '',
       },
     },

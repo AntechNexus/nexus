@@ -13,8 +13,8 @@ const memberSchema = new mongoose.Schema(
 const projectSchema = new mongoose.Schema(
   {
     projectId: { type: String, unique: true, required: true, default: () => `NEX-PRJ-${String(Math.floor(1 + Math.random() * 999)).padStart(3, '0')}` },
-    name: { type: String, required: [true, 'Project name is required'], maxlength: [50, 'Project name cannot exceed 50 characters'], index: true, trim: true },
-    description: { type: String, maxlength: [250, 'Description cannot exceed 250 characters'], default: null },
+    name: { type: String, required: [true, 'Project name is required'], maxlength: [75, 'Project name cannot exceed 75 characters'], index: true, trim: true },
+    description: { type: String, maxlength: [200, 'Description cannot exceed 200 characters'], default: null },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     members: { type: [memberSchema], validate: [(val) => val.length <= 5, 'Project collaborator list maximum of 5 people'], default: [] },

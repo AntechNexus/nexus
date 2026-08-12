@@ -120,14 +120,21 @@ const RegisterPage = () => {
             <div className="input-group">
               <fieldset>
                 <legend>Full name</legend>
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Jane Doe"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                />
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    maxLength={75}
+                    type="text"
+                    name="fullName"
+                    placeholder="Jane Doe"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    style={{ paddingRight: '50px' }}
+                    required
+                  />
+                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#94a3b8', pointerEvents: 'none' }}>
+                    {formData.fullName.length}/75
+                  </div>
+                </div>
               </fieldset>
               <small className="helper-text">For example: Jane Doe</small>
             </div>

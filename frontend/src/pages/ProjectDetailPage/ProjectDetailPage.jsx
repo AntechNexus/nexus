@@ -262,7 +262,12 @@ const FolderModal = ({ existingNames, onClose, onCreate }) => {
         <div className="p-6">
           <label className="block text-sm font-semibold text-nexus-text">
             Folder name
-            <input className={`mt-2 h-11 w-full rounded-xl border px-4 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"}`} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Enter folder name" value={name} />
+            <div className="relative mt-2">
+              <input maxLength={75} className={`h-11 w-full rounded-xl border px-4 pr-16 text-sm outline-none transition focus:ring-4 focus:ring-blue-100 ${error ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"}`} onChange={(event) => { setName(event.target.value); setError(""); }} placeholder="Enter folder name" value={name} />
+              <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-xs text-slate-400">
+                {name.length}/75
+              </div>
+            </div>
           </label>
           {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
         </div>
@@ -305,11 +310,17 @@ const RenameModal = ({ item, onClose, onSave }) => {
           <label className="block text-sm font-semibold text-nexus-text">
             New Name
             <span className={`mt-2 flex h-11 w-full overflow-hidden rounded-xl border bg-white transition focus-within:ring-4 focus-within:ring-blue-100 ${error ? "border-red-400 focus-within:border-red-500" : "border-nexus-border focus-within:border-nexus-primary"}`}>
-              <input
-                className="min-w-0 flex-1 px-4 text-sm outline-none"
-                onChange={(event) => { setName(event.target.value); setError(""); }}
-                value={name}
-              />
+              <div className="relative min-w-0 flex-1">
+                <input
+                  maxLength={75}
+                  className="h-full w-full px-4 pr-14 text-sm outline-none"
+                  onChange={(event) => { setName(event.target.value); setError(""); }}
+                  value={name}
+                />
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-400 bg-white">
+                  {name.length}/75
+                </div>
+              </div>
               {extension && (
                 <span className="flex shrink-0 items-center border-l border-nexus-border bg-slate-50 px-3 text-sm font-semibold text-nexus-muted">
                   {extension}

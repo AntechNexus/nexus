@@ -5,7 +5,7 @@ services:
     image: mongo:latest
     container_name: nexus_mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - nexus_mongo_data:/data/db
     restart: unless-stopped
