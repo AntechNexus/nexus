@@ -192,12 +192,20 @@ const ProfilePage = () => {
                     </div>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg, image/png"
                       ref={fileInputRef}
                       className="hidden"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          if (file.type !== "image/jpeg" && file.type !== "image/png") {
+                            setToast("Format file harus .jpg atau .png");
+                            return;
+                          }
+                          if (file.size > 2 * 1024 * 1024) {
+                            setToast("Ukuran file maksimal 2MB.");
+                            return;
+                          }
                           try {
                             const formData = new FormData();
                             formData.append("avatar", file);
