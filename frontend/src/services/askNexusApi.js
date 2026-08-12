@@ -130,3 +130,22 @@ export const regenerateAskNexusMessage = async (conversationId) => {
   
   return fetchAskNexusConversation(result.conversationId);
 };
+
+/**
+ * API service function: deleteAskNexusConversation
+ * Coordinates HTTP requests to the backend for this feature.
+ * 
+ * @param {string} conversationId - The ID of the conversation to delete.
+ * @returns {Promise<any>} A promise resolving to the API response data.
+ */
+export const deleteAskNexusConversation = async (conversationId) => {
+  const res = await fetch(`${GEMINI_API}/ask-nexus/conversations/${conversationId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to delete conversation");
+  }
+  return res.json();
+};

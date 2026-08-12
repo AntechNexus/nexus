@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users, Loader2 } from "lucide-react";
+import { ArrowUp, Bot, FileText, ListChecks, MessageSquare, ShieldCheck, Users, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
 import ProjectCard from "../../components/dashboard/ProjectCard";
-import { askNexus, fetchAskNexusConversations, fetchAskNexusPrompts } from "../../services/askNexusApi";
+import { askNexus, fetchAskNexusConversations, fetchAskNexusPrompts, deleteAskNexusConversation } from "../../services/askNexusApi";
 import { projectService } from "../../services/project.service";
 
 // Fallback removed to show empty state when no projects exist
@@ -38,6 +38,7 @@ const AskNexusPage = () => {
   const [openMenuProjectId, setOpenMenuProjectId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,6 +89,20 @@ const AskNexusPage = () => {
     if (action === "teams") navigate(`/projects/${project.id}/teams`);
     if (action === "edit") setToast("Project editing stays available from Projects for now.");
     if (action === "trash") setToast("Project deletion stays available from Projects for now.");
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!deleteConfirmId) return;
+    try {
+      await deleteAskNexusConversation(deleteConfirmId);
+      setToast("Conversation deleted.");
+      const updatedConvs = await fetchAskNexusConversations();
+      setConversations(updatedConvs);
+      setDeleteConfirmId(null);
+    } catch (error) {
+      setToast("Failed to delete: " + error.message);
+      setDeleteConfirmId(null);
+    }
   };
 
   return (
@@ -222,14 +237,24 @@ const AskNexusPage = () => {
                       <p className="py-2 text-sm text-slate-400">No recent conversations.</p>
                     ) : (
                       conversations.map((conversation) => (
-                        <button
-                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:bg-blue-50 hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
-                          key={conversation._id || conversation.id}
-                          onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
-                          type="button"
-                        >
-                          <MessageSquare size={17} /> {conversation.title}
-                        </button>
+                        <div key={conversation._id || conversation.id} className="group relative flex w-full items-start justify-between gap-2 rounded-xl text-left transition hover:bg-slate-50">
+                          <button
+                            className="flex flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-600 transition hover:text-nexus-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                            onClick={() => navigate(`/ask-nexus/chat/${conversation._id || conversation.id}`)}
+                            type="button"
+                          >
+                            <MessageSquare size={17} /> 
+                            <span className="truncate pr-6">{conversation.title}</span>
+                          </button>
+                          <button
+                            className="absolute right-2 top-1/2 -translate-y-1/2 hidden group-hover:flex h-8 w-8 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(conversation._id || conversation.id); }}
+                            type="button"
+                            title="Delete Conversation"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       ))
                     )}
                   </div>
@@ -252,6 +277,18 @@ const AskNexusPage = () => {
           </section>
         </main>
       </div>
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="text-xl font-bold text-nexus-text">Delete Chat</h2>
+            <p className="mt-2 text-sm text-slate-600">Are you sure you want to delete this conversation? This action cannot be undone.</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={() => setDeleteConfirmId(null)} type="button">Cancel</button>
+              <button className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500" onClick={handleDeleteConversation} type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
       <DashboardToast message={toast} onDismiss={() => setToast("")} />
     </div>
   );

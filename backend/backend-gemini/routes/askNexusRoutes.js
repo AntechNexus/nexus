@@ -1,5 +1,5 @@
 const express = require("express");
-const { askNexus, getConversations, getConversationById, regenerateMessage } = require("../controllers/askNexusController");
+const { askNexus, getConversations, getConversationById, regenerateMessage, deleteConversation } = require("../controllers/askNexusController");
 
 const router = express.Router();
 
@@ -33,5 +33,6 @@ router.post("/ask", authMiddleware, askNexus);
 router.post("/regenerate", authMiddleware, regenerateMessage);
 router.get("/conversations", authMiddleware, getConversations);
 router.get("/conversations/:id", authMiddleware, getConversationById);
+router.delete("/conversations/:id", authMiddleware, deleteConversation);
 
 module.exports = router;
