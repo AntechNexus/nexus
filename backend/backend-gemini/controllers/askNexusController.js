@@ -82,10 +82,17 @@ const askNexus = async (req, res) => {
     const questionVector = Array.from(output.data);
 
     // 2. Fetch all embeddings for this project
-    const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate("fileId", "originalName fileName");
+    const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate({
+      path: "fileId",
+      match: { status: "active" },
+      select: "originalName fileName"
+    });
+    
+    // Filter out embeddings whose fileId is null (meaning they were filtered out by the match condition)
+    const activeEmbeddings = allEmbeddings.filter(doc => doc.fileId !== null);
     
     // 3. Compute cosine similarity
-    const scoredChunks = allEmbeddings.map(doc => {
+    const scoredChunks = activeEmbeddings.map(doc => {
       const score = cosineSimilarity(questionVector, doc.embedding);
       return { doc, score };
     });
@@ -105,6 +112,7 @@ const askNexus = async (req, res) => {
       sources.push({
         fileName: fileName,
         fileId: item.doc.fileId?._id,
+        fileStatus: item.doc.fileId?.status || 'active',
         textSnippet: item.doc.textContent.substring(0, 100) + "..."
       });
     });
@@ -210,9 +218,27 @@ const getConversations = async (req, res) => {
  */
 const getConversationById = async (req, res) => {
   try {
-    const conv = await ChatConversation.findById(req.params.id);
+    const conv = await ChatConversation.findById(req.params.id).populate('messages.sources.fileId', 'status');
     if (!conv) return res.status(404).json({ message: "Not found" });
-    return res.status(200).json({ data: conv });
+    
+    // Map populated fileId to fileStatus and restore fileId string
+    const convObj = conv.toObject();
+    if (convObj.messages) {
+      convObj.messages.forEach(msg => {
+        if (msg.sources) {
+          msg.sources.forEach(src => {
+            if (src.fileId && typeof src.fileId === 'object') {
+              src.fileStatus = src.fileId.status;
+              src.fileId = src.fileId._id;
+            } else {
+              src.fileStatus = src.fileStatus || 'active';
+            }
+          });
+        }
+      });
+    }
+    
+    return res.status(200).json({ data: convObj });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
@@ -267,10 +293,17 @@ const regenerateMessage = async (req, res) => {
     const questionVector = Array.from(output.data);
 
     // 2. Fetch all embeddings for this project
-    const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate("fileId", "originalName fileName");
+    const allEmbeddings = await DocumentEmbedding.find({ projectId }).populate({
+      path: "fileId",
+      match: { status: "active" },
+      select: "originalName fileName"
+    });
+    
+    // Filter out embeddings whose fileId is null (meaning they were filtered out by the match condition)
+    const activeEmbeddings = allEmbeddings.filter(doc => doc.fileId !== null);
     
     // 3. Compute cosine similarity
-    const scoredChunks = allEmbeddings.map(doc => {
+    const scoredChunks = activeEmbeddings.map(doc => {
       const score = cosineSimilarity(questionVector, doc.embedding);
       return { doc, score };
     });
@@ -290,6 +323,7 @@ const regenerateMessage = async (req, res) => {
       sources.push({
         fileName: fileName,
         fileId: item.doc.fileId?._id,
+        fileStatus: item.doc.fileId?.status || 'active',
         textSnippet: item.doc.textContent.substring(0, 100) + "..."
       });
     });

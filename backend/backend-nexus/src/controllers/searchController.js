@@ -55,12 +55,14 @@ exports.globalSearch = async (req, res) => {
     // Search Folders
     const folders = await Folder.find({
       projectId: { $in: allAccessibleProjectIds },
+      status: 'active',
       name: regex
     }).limit(5).select('_id name projectId path');
 
     // Search Files
     const files = await File.find({
       projectId: { $in: allAccessibleProjectIds },
+      status: 'active',
       $or: [
         { fileName: regex },
         { originalName: regex }

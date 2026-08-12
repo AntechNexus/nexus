@@ -310,6 +310,7 @@ const AskNexusChatPage = () => {
                   let citations = message.citations || (message.sources || []).map((source) => ({
                     fileName: typeof source === "string" ? source : source.fileName,
                     fileId: typeof source === "string" ? null : source.fileId,
+                    fileStatus: source.fileStatus || "active",
                     snippet: source.textSnippet || "",
                     timestamp: "",
                   }));
@@ -350,17 +351,33 @@ const AskNexusChatPage = () => {
                           <div className="mt-5 space-y-2">
                             <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-slate-500">Sources</p>
                             <div className="flex flex-wrap gap-2">
-                              {citations.map((citation) => (
-                                <button
-                                  className="inline-flex items-center gap-2 rounded-lg border border-nexus-border bg-white px-3 py-2 text-xs font-bold text-slate-600 shadow-sm transition hover:border-nexus-primary hover:text-nexus-primary"
-                                  key={`${citation.fileId || citation.fileName}-${citation.timestamp}`}
-                                  title={citation.snippet}
-                                  onClick={() => citation.fileId ? navigate(`/projects/${conversation.projectId}/${getRouteType(citation.fileName)}/${citation.fileId}`) : null}
-                                  type="button"
-                                >
-                                  <FileText size={15} /> {citation.fileName}{citation.timestamp ? ` - ${citation.timestamp}` : ""}
-                                </button>
-                              ))}
+                              {citations.map((citation) => {
+                                const isDeleted = citation.fileStatus === "trash" || citation.fileStatus === "deleted";
+                                return (
+                                  <div className="group relative inline-flex" key={`${citation.fileId || citation.fileName}-${citation.timestamp}`}>
+                                    <button
+                                      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold shadow-sm transition ${
+                                        isDeleted 
+                                          ? "border-transparent bg-slate-100 text-slate-400 cursor-not-allowed" 
+                                          : "border-nexus-border bg-white text-slate-600 hover:border-nexus-primary hover:text-nexus-primary"
+                                      }`}
+                                      title={!isDeleted ? citation.snippet : undefined}
+                                      onClick={() => (!isDeleted && citation.fileId) ? navigate(`/projects/${conversation.projectId}/${getRouteType(citation.fileName)}/${citation.fileId}`) : null}
+                                      type="button"
+                                      disabled={isDeleted}
+                                    >
+                                      <FileText size={15} /> {citation.fileName}{citation.timestamp ? ` - ${citation.timestamp}` : ""}
+                                    </button>
+                                    
+                                    {isDeleted && (
+                                      <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-nexus-text px-3 py-2 text-xs font-semibold text-white opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100">
+                                        File has been deleted
+                                        <div className="absolute left-1/2 top-full -mt-1 h-2 w-2 -translate-x-1/2 rotate-45 bg-nexus-text"></div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

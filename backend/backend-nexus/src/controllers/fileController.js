@@ -317,8 +317,8 @@ exports.getFileById = async (req, res) => {
       .populate("updatedBy", "name email")
       .populate("previousVersionId");
 
-    if (!file || file.status === "deleted") {
-      return res.status(404).json({ message: "File not found" });
+    if (!file || file.status === "deleted" || file.status === "trash") {
+      return res.status(404).json({ message: "File not found or has been moved to trash" });
     }
 
     const project = await Project.findOne({ _id: file.projectId, isDeleted: false });
@@ -862,7 +862,7 @@ exports.downloadFile = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const file = await File.findOne({ _id: id, status: { $ne: 'deleted' } });
+    const file = await File.findOne({ _id: id, status: 'active' });
     if (!file) {
       return res.status(404).json({ message: "File not found" });
     }

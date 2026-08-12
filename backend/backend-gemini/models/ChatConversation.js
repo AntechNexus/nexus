@@ -30,7 +30,8 @@ const chatConversationSchema = new mongoose.Schema(
         sources: [
           {
             fileName: String,
-            fileId: mongoose.Schema.Types.ObjectId,
+            fileId: { type: mongoose.Schema.Types.ObjectId, ref: "File" },
+            fileStatus: { type: String, default: "active" },
             textSnippet: String
           }
         ],
