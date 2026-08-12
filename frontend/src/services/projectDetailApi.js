@@ -384,7 +384,12 @@ export const renameProjectDocument = async (projectId, item, newName) => {
       // I will add a patch request. If it fails, we ignore it.
       await api.patch(`/folders/${item.id}`, { name: newName }).catch(console.warn);
     } else {
-      await api.put(`/files/${item.id}`, { fileName: newName });
+      const currentExtension = getFileExtension(item.name);
+      const nextExtension = getFileExtension(newName);
+      const safeName = currentExtension && nextExtension.toLowerCase() !== currentExtension.toLowerCase()
+        ? `${newName.replace(/(\.[^.]+)$/, "")}${currentExtension}`
+        : newName;
+      await api.put(`/files/${item.id}`, { fileName: safeName });
     }
     return await fetchProjectDocuments(projectId);
   } catch (error) {

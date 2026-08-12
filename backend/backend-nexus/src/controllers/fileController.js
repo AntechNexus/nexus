@@ -58,6 +58,11 @@ async function getUniqueFileName(projectId, folderId, originalName) {
   return fileName;
 }
 
+const getFileExtension = (fileName = "") => {
+  const lastDotIndex = fileName.lastIndexOf('.');
+  return lastDotIndex !== -1 ? fileName.substring(lastDotIndex) : "";
+};
+
 async function checkAndIncrementStorage(ownerId, fileSize) {
   const owner = await User.findById(ownerId);
   if (!owner) throw new Error("Project owner not found");
@@ -528,7 +533,19 @@ exports.updateFile = async (req, res) => {
       file.updatedBy = updaterId;
     }
 
-    if (fileName !== undefined) file.fileName = fileName;
+    if (fileName !== undefined) {
+      const currentExtension = getFileExtension(file.originalName || file.fileName);
+      const requestedExtension = getFileExtension(fileName);
+
+      if (currentExtension && requestedExtension && requestedExtension.toLowerCase() !== currentExtension.toLowerCase()) {
+        return res.status(400).json({ message: "File type cannot be changed during rename." });
+      }
+
+      const nextBaseName = requestedExtension ? fileName.slice(0, -requestedExtension.length) : fileName;
+      const safeFileName = `${nextBaseName}${currentExtension || requestedExtension}`;
+      file.fileName = safeFileName;
+      file.originalName = safeFileName;
+    }
     if (folderId !== undefined) file.folderId = folderId === "" ? null : folderId;
 
     const updatedFile = await file.save();
