@@ -8,6 +8,23 @@ const formatBytes = (bytes) => {
   return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
+/**
+ * Displays a visual summary of the user's current storage usage limits and breakdown.
+ * 
+ * This component fetches the storage information on mount using an authentication service and 
+ * listens to a global 'storageUpdated' event to keep the data synchronized without requiring a page refresh.
+ * It calculates storage usage percentages and renders an SVG-based donut chart to represent 
+ * the breakdown of different file types (e.g., Documents, Audio, PRD) consuming the storage space.
+ * 
+ * The component supports two rendering modes: a default detailed view and a compact view. 
+ * The detailed view presents a comprehensive breakdown including the chart, specific byte counts 
+ * per category, and remaining storage space. The compact view renders a minimal circular indicator 
+ * showing only the overall usage percentage, suitable for constrained spaces like a sidebar or header.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {boolean} [props.compact=false] - A flag determining the display mode. If true, renders a simplified, smaller version of the storage usage percentage.
+ * @returns {JSX.Element|null} A formatted card presenting storage statistics, or null if storage data has not yet loaded.
+ */
 const StorageCard = ({ compact = false }) => {
   const [storageData, setStorageData] = useState(null);
 

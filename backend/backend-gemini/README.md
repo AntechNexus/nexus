@@ -9,6 +9,11 @@ This is a microservice dedicated to interfacing with the Gemini AI model. It pro
 1. Copy the example env file: `cp .env.example .env`
 2. Configure the following key variables:
    - `GEMINI_API_KEY`: Your Google Gemini API key.
+   - `ELICE_API_KEY`: Your Elice API key.
+
+### Obtaining API Keys
+- **Gemini API Key**: You can get your free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+- **Elice API Key**: You can get this key from the [Elice AI Platform](https://elice.io/en) or by asking your Elice organization administrator.
 
 *Note: This service does NOT require a `JWT_SECRET`. It is intended to be called internally by `backend-nexus` which handles user authentication.*
 

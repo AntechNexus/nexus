@@ -9,6 +9,10 @@ The project is divided into three main microservices:
 3. **[Backend Gemini/AI](./backend/backend-gemini/README.md)**: Python/Node.js microservice handling AI integration (Elice API & Google Models) and heavy processing.
 
 ## Quick Start (Docker)
+
+> [!WARNING]
+> **macOS Users:** AirPlay Receiver runs on port 5000 by default, which conflicts with the Backend Nexus port. You must disable AirPlay Receiver in your Mac's System Settings -> General -> AirDrop & Handoff before starting the application.
+
 The easiest way to run the entire stack is using Docker Compose:
 
 ```bash

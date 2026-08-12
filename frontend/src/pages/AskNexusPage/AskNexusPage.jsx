@@ -12,16 +12,25 @@ import { projectService } from "../../services/project.service";
 const promptIcons = [FileText, ListChecks, Users];
 
 /**
- * AskNexusPage Component
- * 
- * The main interface for the Ask Nexus AI Copilot.
- * Responsibilities:
- * - Provides a chat-like interface to query AI about project context.
- * - Handles conversation history selection and creation.
- * - Displays AI responses with inline citations (source documents).
- * - Integrates deeply with Retrieval-Augmented Generation (RAG) backend endpoints.
- * 
- * @returns {JSX.Element} The rendered AI chat copilot interface.
+ * The main landing component for the Ask Nexus AI Copilot.
+ *
+ * This page serves as the starting point for interacting with the Nexus AI. It allows users to select 
+ * a target project and start a new conversation based on that project's documents. It provides quick-start 
+ * prompt suggestions, recent conversation history, and project summaries to help the user get started quickly.
+ *
+ * The component manages several aspects of state:
+ * - `selectedProjectId` to track which project context the user intends to query.
+ * - `question` storing the user's initial prompt for the new conversation.
+ * - `projects`, `conversations`, and `prompts` holding the fetched backend data to populate the UI.
+ * - `isLoading` and `isSubmitting` to manage loading spinners during initial fetch or when kicking off a new chat.
+ * - `deleteConfirmId` to track which conversation is pending deletion in the confirmation modal.
+ *
+ * Side effects triggered by this component include:
+ * - Fetching projects, recent conversations, and preset prompts immediately upon mount.
+ * - Resolving the initial `selectedProjectId` from the location state (if navigated from another page) or falling back to the first available project.
+ * - Programmatically navigating to the dedicated `/ask-nexus/chat/:conversationId` page once a new conversation is successfully created.
+ *
+ * @returns {JSX.Element} The rendered interface including the project selector, the main prompt input box, quick prompt suggestions, and a sidebar showing recent chats and project details.
  */
 const AskNexusPage = () => {
   const navigate = useNavigate();

@@ -16,6 +16,28 @@ const typeStyles = {
   prd: { Icon: FileText, tone: "bg-violet-50 text-violet-700" },
 };
 
+/**
+ * TrashPage Component
+ * 
+ * The trash page displays a list of files and folders that have been moved to the trash bin, allowing the user to either restore them to their original location or permanently delete them.
+ * 
+ * State managed:
+ * - `sidebarCollapsed`, `mobileSidebarOpen`: Controls the visibility of the dashboard navigation sidebar.
+ * - `items`: An array of trashed items (files and folders) retrieved from the backend.
+ * - `openMenuItemId`: The ID of the trash item whose context menu is currently open.
+ * - `menuPosition`: The computed top/left coordinates for rendering the context menu popup.
+ * - `emptyConfirmOpen`: A boolean controlling the visibility of the "Empty Trash" confirmation modal.
+ * - `permanentDeleteItem`: Stores the specific item object targeted for permanent deletion to pass into the confirmation modal.
+ * - `toast`: A string representing temporary status messages.
+ * 
+ * Side effects:
+ * - `loadItems` is called on initial mount and after any successful deletion or restoration action to refresh the data from the API (`getTrashItems`).
+ * - Attaches window event listeners for `pointerdown` and `keydown` (Escape key) to dismiss context menus and modals when the user clicks outside or presses Escape.
+ * - Includes specific logic to filter out nested trashed items and only show the root deleted entities based on parent folder IDs.
+ * - Makes asynchronous API calls for `removeTrashItem`, `restoreItemFromTrash`, and `emptyTrash`.
+ * 
+ * @returns {JSX.Element} The rendered Trash dashboard view, including the header, sidebar, item list table, context menus, and modals.
+ */
 const TrashPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);

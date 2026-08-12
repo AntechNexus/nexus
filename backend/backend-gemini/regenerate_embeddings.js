@@ -5,6 +5,18 @@ const DocumentEmbedding = require('./models/DocumentEmbedding');
 require('dotenv').config();
 
 // Function to chunk text into smaller pieces
+/**
+ * Chunks a given text into smaller pieces of a specified maximum character length.
+ * 
+ * This function takes a string and splits it into an array of smaller strings,
+ * ensuring that no chunk exceeds the maxChars limit. Words are not split unless
+ * a single word is longer than the limit.
+ * 
+ * @function chunkText
+ * @param {string} text - The text to be chunked.
+ * @param {number} [maxChars=1000] - The maximum number of characters per chunk.
+ * @returns {string[]} An array of text chunks.
+ */
 function chunkText(text, maxChars = 1000) {
   if (!text) return [];
   const words = text.split(" ");
@@ -23,6 +35,19 @@ function chunkText(text, maxChars = 1000) {
   return chunks;
 }
 
+/**
+ * Runs the regeneration of embeddings for all files with content.
+ * 
+ * This function connects to the MongoDB database, retrieves all files that have
+ * content, and processes them one by one. For each file, it chunks the content,
+ * generates embeddings using the Google GenAI API, and saves the new embeddings
+ * to the DocumentEmbedding collection after deleting any old ones for that file.
+ * 
+ * @async
+ * @function run
+ * @returns {Promise<void>} A promise that resolves when the process is complete and exits the script.
+ * @throws {Error} Throws an error if database connection or embedding generation fails.
+ */
 async function run() {
   await mongoose.connect('mongodb://localhost:27017/nexus');
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });

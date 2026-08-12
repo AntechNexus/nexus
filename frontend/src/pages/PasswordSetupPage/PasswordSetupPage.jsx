@@ -6,6 +6,21 @@ import authService from "../../services/auth.service";
 import tokenService from "../../services/token.service";
 import "../LoginPage/LoginPage.css";
 
+/**
+ * PasswordSetupPage Component
+ * 
+ * This component is responsible for handling the user's password setup and reset flows. 
+ * It determines the current context (either setting a new password for a Google-authenticated user or resetting an existing password) 
+ * by examining the URL parameters and routing state. It maintains local state for the user's account details, 
+ * password input, confirmation, validation criteria, and submission status.
+ * 
+ * Side effects triggered by this component include checking the user's current Google account session on mount 
+ * if not in the reset flow. It also uses the `authService` to securely transmit the new password to the backend API 
+ * and handles potential error responses by displaying them to the user.
+ * 
+ * @returns {JSX.Element} The rendered interface for setting up or resetting a user's password, 
+ *                        complete with a real-time security checklist and feedback messages.
+ */
 const PasswordSetupPage = () => {
   const navigate = useNavigate();
   const location = useLocation();

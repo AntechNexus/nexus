@@ -27,6 +27,29 @@ const suggestionChips = [
   "Improve acceptance criteria",
 ];
 
+/**
+ * Component for reviewing and editing the generated Product Requirements Document (PRD).
+ *
+ * This page serves as the final step in the PRD generation wizard. It takes the raw Markdown output 
+ * produced by the Nexus AI and presents it in a rich text format using `react-markdown`. It allows the user 
+ * to read through the drafted PRD, see a dynamic document outline, regenerate specific sections or the entire 
+ * document based on custom instructions, and ultimately save the final document back to their project.
+ *
+ * The component maintains various states such as:
+ * - `sidebarCollapsed` and `mobileSidebarOpen` for controlling the main dashboard layout.
+ * - `currentMarkdown` holding the text of the PRD being reviewed.
+ * - `outline` containing a list of document headings generated dynamically to facilitate smooth scrolling navigation.
+ * - `regenOpen`, `regenInstruction`, and `regenLoading` for managing the regeneration modal and background job status.
+ * - `saveLoading` and `saved` for handling the state of the final save action to the backend API.
+ *
+ * Key side effects include:
+ * - Validating the presence of `rawMarkdown` on mount, redirecting the user if the expected draft data is missing.
+ * - Subscribing to the `prdJobCompleted` event to update the `currentMarkdown` when a regeneration job finishes.
+ * - Dynamically pre-processing the markdown when it changes (via `useMemo`) to ensure headers are correctly formatted for the slugger and outline generator.
+ * - Cleaning up the local storage session data when the user successfully saves the PRD.
+ *
+ * @returns {JSX.Element} The rendered interface including the markdown viewer, sidebar outline, regeneration modal, and save controls.
+ */
 const AiPrdReviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();

@@ -86,6 +86,22 @@ const slugify = (value = "") =>
 const isAudioTranscriptFile = (file) =>
   file.typeLabel === "Transcript" || /\.(mp3|mp4)$/i.test(file.name || "") || ["mp3", "mp4", "audio-transcript"].includes(file.type);
 
+/**
+ * Renders a comprehensive table displaying a user's most recently accessed or modified files.
+ * 
+ * This component provides a robust interface for users to browse, filter, and sort their recent files.
+ * It manages its own internal state for filtering by file type (e.g., 'All Types', 'Document', 'PDF') 
+ * and sorting by various criteria (e.g., 'Last Modified', 'File Name A-Z', 'Size Largest').
+ * The component calculates visible files dynamically using memoization to ensure optimal performance 
+ * even with large datasets. It also includes interactive elements such as dropdowns for sort/filter 
+ * selection, and allows users to select rows via click or keyboard navigation (Enter/Space).
+ * Double-clicking or hitting Enter on a row triggers navigation to the file's preview or detail page, 
+ * routing users to a specific path depending on whether the file is an audio transcript or a standard document.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {Array<Object>} props.files - An array of file objects to be displayed in the table. Each object should contain metadata such as `id`, `name`, `typeLabel`, `project`, `lastModified`, `modifiedBy`, `modifiedByInitials`, and `size`.
+ * @returns {JSX.Element} A section containing the table headers, filter/sort controls, and the list of recent files, or an empty state if no files exist.
+ */
 const RecentFilesTable = ({ files }) => {
   const navigate = useNavigate();
   const [selectedType, setSelectedType] = useState("All Types");

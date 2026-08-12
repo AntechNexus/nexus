@@ -61,6 +61,39 @@ const initialDetails = {
   industry: "",
 };
 
+/**
+ * Represents the multi-step Onboarding flow for newly registered or incomplete user profiles.
+ * 
+ * This comprehensive component guides users through an essential data collection process required to 
+ * personalize their platform experience. The onboarding sequence is divided into two distinct steps. 
+ * Step 1 focuses on capturing the user's professional role through a visually engaging, grid-based 
+ * selection interface. Users can choose from predefined roles such as Founder, Product Manager, Developer, 
+ * Architect, or indicate an alternative specialization.
+ * 
+ * Step 2 transitions to capturing demographic and organizational details, including the user's full name, 
+ * the size of their team, and their primary industry. The component is highly dynamic; it maintains 
+ * extensive local state utilizing the `useState` hook to track the current step, the `selectedRole`, 
+ * and a `details` object containing `fullName`, `teamSize`, and `industry`. It seamlessly handles 
+ * state transitions between these steps and meticulously validates the inputs prior to submission.
+ * 
+ * The component leverages the `useEffect` hook to preemptively fetch the user's profile information 
+ * from the backend upon mounting. If the user's full name is available in the profile response but not 
+ * already populated via the initial location state, it updates the `details` state to pre-fill the 
+ * Full Name field in Step 2. This creates a smoother, less repetitive user experience.
+ * 
+ * Submission is managed through the `saveAndContinue` asynchronous function, which invokes the 
+ * `authService.updateProfile` method to transmit the collected data. Additionally, a `skipOnboarding` 
+ * capability is provided for users wishing to bypass the detailed data entry, though it still registers 
+ * the minimal selected context. Upon successful profile update or a skipped action, the user is navigated 
+ * to the `/login` view (with an onboarding completed flag) to initiate their fully authenticated session.
+ * 
+ * Visually, the component implements a polished, responsive, centered card layout. It employs a rich 
+ * set of icons from the `lucide-react` library and adheres to a sophisticated styling paradigm featuring 
+ * focus states, shadows, and disabled-state handling for interactive elements. Error messages are conditionally 
+ * rendered inline to provide immediate validation feedback.
+ * 
+ * @returns {JSX.Element} The complete JSX structure for the multi-step onboarding wizard.
+ */
 const OnboardingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();

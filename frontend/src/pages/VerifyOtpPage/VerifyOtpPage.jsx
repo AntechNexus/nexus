@@ -6,6 +6,24 @@ import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
 import "../LoginPage/LoginPage.css";
 
+/**
+ * VerifyOtpPage Component
+ * 
+ * This component is responsible for rendering the OTP (One-Time Password) verification screen after a user registers.
+ * 
+ * It maintains the following local state:
+ * - `otp`: An array of 6 strings, representing the individual digits of the verification code.
+ * - `status`: A string representing the current form submission state ('idle', 'loading', 'success').
+ * - `error`: A string to store and display validation or API errors.
+ * 
+ * Side effects triggered by this component include:
+ * - `updateOtp`: Manages the OTP input array and automatically focuses the next input field as the user types.
+ * - `handleKeyDown`: Intercepts Backspace presses on empty fields to move focus to the previous input automatically.
+ * - `handleSubmit`: Validates that all 6 digits are provided, sets the loading state, and calls the verification API. On success, it persists the session token via `tokenService`, clears old tokens, and navigates the user to the onboarding flow. On failure, it updates the error state.
+ * - `handleResend`: Makes an API call to re-send the verification code and alerts the user of the outcome.
+ * 
+ * @returns {JSX.Element} The OTP verification interface including a branding side-panel and the 6-digit input form.
+ */
 const VerifyOtpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();

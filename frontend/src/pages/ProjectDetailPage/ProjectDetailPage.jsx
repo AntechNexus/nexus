@@ -55,6 +55,28 @@ const splitFileName = (fileName = "") => {
   return match ? { baseName: match[1], extension: match[2] } : { baseName: fileName, extension: "" };
 };
 
+/**
+ * ModalShell Component
+ * 
+ * This component acts as a reusable, accessible wrapper for all modal dialogues within the application.
+ * Its primary purpose is to provide a consistent visual structure, layout, and user experience for pop-ups,
+ * ensuring that modals always appear centered on the screen with a semi-transparent backdrop.
+ * 
+ * State & Lifecycle:
+ * - Does not hold internal state.
+ * - Sets up a global `keydown` event listener on mount to allow users to close the modal by pressing the "Escape" key.
+ * - Cleans up the event listener upon unmounting to prevent memory leaks and unintended behavior across different views.
+ * 
+ * Rendering:
+ * - Renders a fixed-position container covering the entire viewport with a backdrop blur effect.
+ * - Renders a centered, elevated box with a header section containing a title and a close button, followed by a scrollable content area.
+ * 
+ * @param {Object} props - The component props.
+ * @param {React.ReactNode} props.children - The inner content to be displayed within the modal shell.
+ * @param {Function} props.onClose - The callback function executed when the close button is clicked or the Escape key is pressed.
+ * @param {string} props.title - The text string displayed as the primary heading of the modal.
+ * @returns {JSX.Element} The rendered modal wrapper containing the provided children.
+ */
 const ModalShell = ({ children, onClose, title }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -81,6 +103,33 @@ const ModalShell = ({ children, onClose, title }) => {
   );
 };
 
+/**
+ * AddFileModal Component
+ * 
+ * This component provides a specialized interface for users to select, validate, and upload files to the current project.
+ * It is a crucial part of the file management workflow, allowing batch processing of documents, audio files, and spreadsheets.
+ * 
+ * State:
+ * - `selectedFiles` (Array): Maintains a list of valid `File` objects that the user has chosen or dropped into the modal, pending upload.
+ * - `error` (string): Stores any validation error messages (e.g., unsupported file types, empty files, size limit exceeded) to be displayed to the user.
+ * - `isUploading` (boolean): Tracks the upload progress state to disable interactions and show a loading spinner while files are being transferred.
+ * 
+ * Side Effects / Behavior:
+ * - Intercepts file inputs either via the hidden native `<input type="file">` element or through drag-and-drop events on the designated dropzone area.
+ * - Validates files based on predefined allowed extensions, non-zero file sizes, and an aggregate maximum total bytes limit (75 MB).
+ * - Discards invalid files and accumulates error messages to inform the user why specific files were rejected.
+ * 
+ * Rendering:
+ * - Wraps its content inside a `ModalShell` with the title "Upload Files".
+ * - Renders an interactive drag-and-drop zone that can also be clicked to open the native file browser.
+ * - Displays a dynamic list of currently selected valid files, showing their icons, names, and formatted sizes, along with a button to remove them individually.
+ * - Renders action buttons at the bottom ("Cancel" and "Upload Files"), disabling them conditionally based on the `isUploading` state or if no files are selected.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - The callback function invoked to dismiss the modal without uploading.
+ * @param {Function} props.onUpload - The asynchronous callback function executed when the user confirms the upload, receiving the array of `selectedFiles`. Must return an object with a `success` boolean.
+ * @returns {JSX.Element} The file upload modal interface.
+ */
 const AddFileModal = ({ onClose, onUpload }) => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [error, setError] = useState("");
@@ -238,6 +287,33 @@ const AddFileModal = ({ onClose, onUpload }) => {
   );
 };
 
+/**
+ * FolderModal Component
+ * 
+ * This component presents a user interface for creating a new directory (folder) within the active project workspace.
+ * It handles the input gathering, validation against naming conflicts, and triggers the creation process.
+ * 
+ * State:
+ * - `name` (string): Holds the current value of the folder name input field.
+ * - `error` (string): Stores validation error messages, such as if the input is empty or if the proposed name already exists in the current directory.
+ * 
+ * Behavior:
+ * - Captures the `onSubmit` event of the form to prevent default page reloads.
+ * - Trims whitespace from the user input and checks it against an array of existing item names (`existingNames`) to prevent duplicates.
+ * - If validation passes, it calls the provided `onCreate` handler with the sanitized folder name.
+ * 
+ * Rendering:
+ * - Utilizes `ModalShell` for layout consistency, titled "Create new folder".
+ * - Renders an HTML form containing a text input field with a maximum length of 75 characters and a visual character counter.
+ * - Conditionally displays error messages below the input field if validation fails.
+ * - Renders a footer with "Cancel" and "Create Folder" buttons.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Array<string>} props.existingNames - An array of lowercased strings representing the names of existing files and folders in the current view, used for collision detection.
+ * @param {Function} props.onClose - The callback function to close the modal without taking action.
+ * @param {Function} props.onCreate - The callback function invoked with the validated new folder name when the form is successfully submitted.
+ * @returns {JSX.Element} The folder creation modal interface.
+ */
 const FolderModal = ({ existingNames, onClose, onCreate }) => {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
@@ -284,6 +360,33 @@ const FolderModal = ({ existingNames, onClose, onCreate }) => {
   );
 };
 
+/**
+ * RenameModal Component
+ * 
+ * This component allows users to change the name of an existing file or folder in the project workspace.
+ * It is designed to intelligently handle files by locking their extensions, preventing users from accidentally breaking file associations.
+ * 
+ * State:
+ * - `name` (string): Stores the editable portion of the item's name (the base name without the extension for files, or the full name for folders).
+ * - `error` (string): Holds any error messages returned from the renaming API or local validation (e.g., empty names).
+ * 
+ * Behavior:
+ * - Upon initialization, it dissects the target `item`'s name. If it's a file, it separates the base name from the extension.
+ * - During form submission, it reconstructs the full name by appending the locked extension (if applicable) to the trimmed user input.
+ * - Asynchronously calls the `onSave` prop and handles potential failure responses by updating the `error` state.
+ * 
+ * Rendering:
+ * - Uses `ModalShell` with the title "Rename Item".
+ * - Renders an input field tailored to the item type. If the item is a file, the extension is displayed as a locked, non-editable suffix adjacent to the input field.
+ * - Provides helper text explaining the locked extension behavior to the user.
+ * - Includes a footer with "Cancel" and "Save Changes" action buttons.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object} props.item - The entity (file or folder object) being renamed. Expected to have `name` and `type` properties.
+ * @param {Function} props.onClose - The callback function to dismiss the modal.
+ * @param {Function} props.onSave - The asynchronous callback function executed with the newly constructed full name. Should return an object indicating success or failure.
+ * @returns {JSX.Element} The item renaming modal interface.
+ */
 const RenameModal = ({ item, onClose, onSave }) => {
   const isFile = item?.type !== "folder";
   const { baseName, extension } = isFile ? splitFileName(item?.name ?? "") : { baseName: item?.name ?? "", extension: "" };
@@ -344,6 +447,27 @@ const RenameModal = ({ item, onClose, onSave }) => {
   );
 };
 
+/**
+ * RemoveModal Component
+ * 
+ * This component serves as a critical confirmation dialogue designed to prevent accidental deletions of files or folders.
+ * It explicitly warns the user about the consequences of the removal action, providing specialized messaging if the target is a directory.
+ * 
+ * State & Lifecycle:
+ * - This component is purely presentational and does not manage any internal state. It relies entirely on props for content and action triggers.
+ * 
+ * Rendering:
+ * - Encapsulated within a `ModalShell` titled "Remove Item".
+ * - Displays a clear, concise confirmation message detailing exactly which item (`item.name`) is about to be deleted.
+ * - If the target `item` is identified as a folder, it renders an additional, highly visible warning banner (styled in orange) emphasizing that all nested contents will also be permanently moved to the trash.
+ * - Renders "Cancel" and "Remove" (styled distinctively in red to indicate a destructive action) buttons in the footer.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object} props.item - The file or folder entity slated for removal, used to display its name and determine its type for contextual warnings.
+ * @param {Function} props.onClose - The callback function to abort the deletion process and close the modal.
+ * @param {Function} props.onRemove - The callback function executed when the user confirms the destructive action by clicking "Remove".
+ * @returns {JSX.Element} The deletion confirmation modal interface.
+ */
 const RemoveModal = ({ item, onClose, onRemove }) => (
   <ModalShell onClose={onClose} title="Remove Item">
     <div className="p-6">
@@ -372,14 +496,33 @@ const RemoveModal = ({ item, onClose, onRemove }) => (
 /**
  * ProjectDetailPage Component
  * 
- * The main workspace for a specific project.
- * Responsibilities:
- * - Displays and manages folders, documents, and PRDs associated with a project.
- * - Handles drag-and-drop file uploads and HTML5 file movement across folders.
- * - Communicates with multiple APIs (Project Detail API, Folder API, AI transcript API).
- * - Implements auto-refresh polling (15s) for collaborative updates.
+ * This is the central, highly interactive workspace component where users manage the contents of a specific project.
+ * It functions as a full-fledged file explorer, providing capabilities to navigate hierarchical folder structures, upload new documents,
+ * manage existing items (rename, move, delete), and access detailed views for supported file types (like AI transcripts).
  * 
- * @returns {JSX.Element} The rendered project workspace.
+ * State:
+ * - Layout States: `sidebarCollapsed`, `mobileSidebarOpen` control the dashboard's spatial arrangement.
+ * - Data States: `project` (metadata), `documents` (the flat list of all files/folders in the project), `currentUser` (session details).
+ * - Navigation State: `currentFolderId` tracks the user's current depth within the directory tree (null represents the root).
+ * - UI Interaction States: `highlightedItemId` (for single-click selection), `activeItem` and `actionMenuPosition` (for managing the contextual three-dot dropdown menu).
+ * - Modal States: `addOpen` (controls the "Add" dropdown), `modal` (string enum dictating which specific modal overlay is active, e.g., "add-file", "add-folder").
+ * - Drag & Drop States: `draggedItem`, `dragOverFolderId`, `confirmMoveItem` orchestrate the complex logic required for HTML5 native file movement between visual rows.
+ * - Feedback State: `toast` manages ephemeral success/error notification messages.
+ * 
+ * Side Effects / Behavior:
+ * - Data Fetching on Mount: Initiates concurrent requests to retrieve the user's profile, the project's metadata, and the full list of project documents based on the `projectId` URL parameter.
+ * - Polling: Establishes a 15-second interval to continuously fetch the latest documents, ensuring collaborative changes from other users reflect in near real-time. Cleans up the interval on unmount.
+ * - Global Event Listeners: Attaches `pointerdown` and `keydown` (Escape) listeners to the document to handle clicking outside of dropdown menus, automatically closing them to improve UX.
+ * - Derived Data (Memoization): Calculates the `folderPath` (breadcrumb trail) and `visibleDocuments` (items belonging only to the `currentFolderId`, sorted intuitively) optimally using `useMemo`.
+ * 
+ * Rendering:
+ * - Assembles the overall dashboard layout by combining `DashboardSidebar` and `DashboardHeader` with the main content area.
+ * - Renders a dynamic header featuring breadcrumb navigation that updates instantly as the user traverses folders, along with project metadata and the primary "Add" action button.
+ * - Conditionally renders an empty state (if the current folder is bare) or a comprehensive data table listing files/folders with icons, names, metadata, and contextual action menus.
+ * - Integrates complex drag-and-drop event handlers directly onto the table rows and breadcrumbs to enable seamless item reorganization.
+ * - Conditionally portals various modals (`AddFileModal`, `FolderModal`, `RenameModal`, `RemoveModal`) and the floating action menu based on their respective state flags.
+ * 
+ * @returns {JSX.Element} The comprehensive project file management workspace.
  */
 const ProjectDetailPage = () => {
   const { projectId } = useParams();

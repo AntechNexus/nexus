@@ -6,6 +6,20 @@ import nexusLogo from '../../assets/icons/Logo-nexus.png';
 import authService from '../../services/auth.service';
 import './RegisterPage.css';
 
+/**
+ * RegisterPage Component
+ * 
+ * This component is responsible for rendering the registration page where new users can sign up for a Nexus account.
+ * It manages the local state for user input (full name, email, password), toggles password visibility, tracks validation errors, and handles loading states during the API request.
+ * 
+ * The component relies on several side effects:
+ * - It checks if the user is already authenticated (via `tokenService.getToken()`) on mount and redirects them to the dashboard if a valid session exists.
+ * - On form submission, it prevents the default browser action, performs custom client-side validation against email format and password strength requirements, and sends a registration payload to the server.
+ * - If registration is successful, the user's previous authentication token is cleared, and they are navigated to the OTP verification page (`/signup/verify`) with their email and full name passed through routing state.
+ * - If the registration fails, it updates the local error state to display feedback to the user.
+ * 
+ * @returns {JSX.Element} The rendered registration page containing the promotional left banner and the interactive signup form on the right.
+ */
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);

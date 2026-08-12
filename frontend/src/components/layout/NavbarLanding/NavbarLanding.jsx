@@ -1,6 +1,18 @@
 import React from "react";
 import nexusLogo from "../../../assets/icons/Logo-nexus.png";
 
+/**
+ * The NavbarLanding component serves as the primary navigation header for the unauthenticated/landing page view.
+ * It provides users with links to different sections of the marketing page and quick access to authentication
+ * routes such as 'Sign In' and 'Get Started'.
+ * 
+ * This component utilizes a fixed positioning strategy to remain at the top of the viewport during scrolling,
+ * applying a translucent background with a backdrop blur effect for a modern aesthetic. It does not manage any
+ * local state or execute side effects. It is a pure, static layout component that handles responsive design 
+ * hiding and showing navigation links based on screen size breakpoints.
+ * 
+ * @returns {JSX.Element} A `<header>` containing a responsive `<nav>` structure with branding, anchor links, and auth buttons.
+ */
 const NavbarLanding = () => {
   return (
     <header className="fixed left-0 top-0 z-50 w-full border-b border-outline-strong/70 bg-background/90 backdrop-blur-md">

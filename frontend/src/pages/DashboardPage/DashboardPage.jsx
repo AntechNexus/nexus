@@ -12,15 +12,24 @@ import { projectService } from "../../services/project.service";
 import { fetchRecentFiles } from "../../services/recentFilesApi";
 
 /**
- * DashboardPage Component
- * 
- * The primary landing page for authenticated users. 
- * Responsibilities:
- * - Displays an overview of recent files and active projects.
- * - Manages notification polling (via DashboardHeader).
- * - Serves as the central hub for navigating the Nexus workspace.
- * 
- * @returns {JSX.Element} The rendered dashboard interface.
+ * The primary dashboard landing page for authenticated users.
+ *
+ * This component acts as the central hub of the Nexus workspace, providing a high-level overview 
+ * of the user's active projects and most recently accessed files. It allows quick navigation, 
+ * project creation, and inline project management (editing details or moving projects to the trash).
+ *
+ * The component maintains various states such as:
+ * - `projects` containing a list of projects the user owns or is a member of.
+ * - `recentFiles` containing a list of the user's most recently interacted documents across all projects.
+ * - `currentUser` for displaying personalized data.
+ * - `openMenuProjectId`, `editingProject`, and `trashProject` for managing the state of context menus and modal dialogs.
+ *
+ * Key side effects include:
+ * - Fetching the user's profile, list of projects, and recent files when the component mounts.
+ * - Listening to the custom `projectListUpdated` window event to automatically refresh the project and recent files lists.
+ * - Handling asynchronous backend calls to update project metadata or soft-delete (trash) projects, and updating the local state optimistically upon success.
+ *
+ * @returns {JSX.Element} The rendered dashboard interface featuring the sidebar, header, project cards grid, recent files table, and management modals.
  */
 const DashboardPage = () => {
   const navigate = useNavigate();

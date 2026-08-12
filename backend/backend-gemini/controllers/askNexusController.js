@@ -7,10 +7,15 @@ const mongoose = require("mongoose");
 
 let extractor = null;
 /**
- * Initializes and retrieves the embedding extractor model (Xenova/bge-base-en-v1.5).
- * Uses a singleton pattern so the model is only loaded once in memory.
+ * Initializes and retrieves the Xenova/bge-base-en-v1.5 embedding extractor model.
  * 
- * @returns {Promise<Function>} The initialized feature-extraction pipeline.
+ * This function utilizes a singleton pattern to ensure that the feature-extraction 
+ * pipeline is instantiated only once during the application's lifecycle, which saves 
+ * memory and computation time on subsequent calls. The model is quantized for 
+ * optimized performance.
+ * 
+ * @returns {Promise<Function>} A promise that resolves to the initialized feature-extraction pipeline function.
+ * @sideEffects Mutates the global `extractor` variable if it is currently null, loading the model into memory.
  */
 async function getExtractor() {
   if (!extractor) {
@@ -20,12 +25,16 @@ async function getExtractor() {
 }
 
 /**
- * Computes the cosine similarity between two vectors.
- * Useful for finding the similarity distance between a question embedding and document embeddings.
+ * Computes the cosine similarity between two numerical vectors.
  * 
- * @param {number[]} vecA - First vector.
- * @param {number[]} vecB - Second vector.
- * @returns {number} Cosine similarity score (between -1 and 1).
+ * This mathematical function is crucial for determining the similarity or semantic closeness 
+ * between a generated question embedding and stored document embeddings. A higher score 
+ * indicates greater similarity. If either vector has a norm of zero, it safely returns 0.
+ * 
+ * @param {number[]} vecA - The first numerical vector for comparison.
+ * @param {number[]} vecB - The second numerical vector for comparison.
+ * @returns {number} The cosine similarity score, ranging from -1 (completely dissimilar) to 1 (perfectly similar).
+ * @sideEffects None. This is a pure mathematical function.
  */
 function cosineSimilarity(vecA, vecB) {
   let dotProduct = 0;
@@ -41,19 +50,16 @@ function cosineSimilarity(vecA, vecB) {
 }
 
 /**
- * Handles generating an AI answer based on the uploaded project documents (RAG).
+ * Handles generating an AI answer based on the uploaded project documents using Retrieval-Augmented Generation (RAG).
  * 
- * Flow:
- * 1. Validates the user's project access.
- * 2. Embeds the user's question into a vector using Transformers.js.
- * 3. Fetches all document embeddings for the project and computes cosine similarity.
- * 4. Extracts the top 8 most relevant document chunks to form the context.
- * 5. Passes the context, conversation history, and question to the Gemini model.
- * 6. Saves the generated answer to the ChatConversation history and returns it.
+ * This controller function takes a user's question, generates its vector embedding, and retrieves the most 
+ * contextually relevant document chunks via cosine similarity. It then compiles these chunks into a strict 
+ * system prompt and queries the Gemini LLM for an answer. Access controls verify the user has project permissions.
  * 
- * @param {Object} req - Express request object containing projectId and question.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the answer, source snippets, and conversationId.
+ * @param {Object} req - Express request object. Expects `projectId`, `question`, and optional `conversationId` in the body.
+ * @param {Object} res - Express response object used to send the JSON result or error messages.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the generated answer text, source snippets, and conversation ID.
+ * @sideEffects Queries the database for embeddings and projects. Calls the external Elice AI API. Creates or updates a `ChatConversation` record in the database.
  */
 const askNexus = async (req, res) => {
   try {
@@ -187,11 +193,15 @@ const askNexus = async (req, res) => {
 
 /**
  * Retrieves all chat conversations belonging to the authenticated user.
- * Can be filtered by a specific projectId via query params.
  * 
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing an array of conversations.
+ * This controller function fetches the user's chat history from the database, sorting it 
+ * by the most recently updated conversations first. It optionally accepts a `projectId` 
+ * query parameter to filter conversations specific to a given project.
+ * 
+ * @param {Object} req - Express request object. Expects an authenticated user and optional `projectId` in the query string.
+ * @param {Object} res - Express response object used to send the JSON array of conversations.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the fetched conversations.
+ * @sideEffects Queries the `ChatConversation` collection in the MongoDB database.
  */
 const getConversations = async (req, res) => {
   try {
@@ -210,11 +220,16 @@ const getConversations = async (req, res) => {
 };
 
 /**
- * Retrieves a specific chat conversation by its ID.
+ * Retrieves a specific chat conversation in full detail by its unique ID.
  * 
- * @param {Object} req - Express request object containing the conversation ID in params.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the conversation history.
+ * This controller function fetches a single conversation record and populates the 
+ * underlying file metadata for each source cited in the conversation's messages. It 
+ * maps the populated data back to a simplified structure for the frontend client.
+ * 
+ * @param {Object} req - Express request object. Expects the `id` of the conversation in the URL parameters.
+ * @param {Object} res - Express response object used to send the specific conversation data.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the populated conversation object.
+ * @sideEffects Queries the `ChatConversation` collection and populates references to the `File` collection in the database.
  */
 const getConversationById = async (req, res) => {
   try {
@@ -245,19 +260,17 @@ const getConversationById = async (req, res) => {
 };
 
 /**
- * Regenerates the AI's last response in a conversation.
+ * Regenerates the AI's latest response for an existing chat conversation.
  * 
- * Flow:
- * 1. Finds the conversation by ID.
- * 2. Pops off the last AI response (if any) so it can be regenerated.
- * 3. Gets the last user question and embeds it again.
- * 4. Retrieves the top relevant context chunks using cosine similarity.
- * 5. Calls the Gemini model again to get a fresh response.
- * 6. Saves the new response to the conversation history.
+ * This function locates a specific conversation, verifies that the final message was an AI 
+ * response, and removes it. It then re-embeds the preceding user question, gathers fresh 
+ * contextual chunks, and queries the LLM again to provide a new answer. The conversation 
+ * history is then updated with this newly generated response.
  * 
- * @param {Object} req - Express request object containing conversationId.
- * @param {Object} res - Express response object.
- * @returns {Object} JSON response containing the regenerated answer.
+ * @param {Object} req - Express request object. Expects `conversationId` in the body.
+ * @param {Object} res - Express response object used to send the regenerated answer and sources.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the regenerated answer text and conversation ID.
+ * @sideEffects Modifies the `ChatConversation` document by popping the last message and pushing a new one. Interacts with the Elice AI API. Queries the database for project embeddings.
  */
 const regenerateMessage = async (req, res) => {
   try {
@@ -374,6 +387,18 @@ const regenerateMessage = async (req, res) => {
   }
 };
 
+/**
+ * Deletes a specific chat conversation.
+ * 
+ * This controller handles the permanent removal of a chat conversation by its ID. It 
+ * verifies the ownership of the conversation, ensuring that only the user who created 
+ * the conversation has the authorization to delete it.
+ * 
+ * @param {Object} req - Express request object. Expects the conversation `id` in the URL parameters and an authenticated user.
+ * @param {Object} res - Express response object used to send the success or error status.
+ * @returns {Promise<Object>} A promise resolving to the Express response indicating successful deletion.
+ * @sideEffects Irreversibly deletes a document from the `ChatConversation` collection in the database.
+ */
 const deleteConversation = async (req, res) => {
   try {
     const userId = req.user?.id || req.user?._id;

@@ -21,9 +21,7 @@ const primaryNav = [
   { label: "Ask Nexus", to: "/ask-nexus", icon: Bot },
 ];
 
-const secondaryNav = [
-  { label: "Trash", to: "/trash", icon: Trash2 },
-];
+const secondaryNav = [{ label: "Trash", to: "/trash", icon: Trash2 }];
 
 const navClass = ({ isActive }, collapsed) =>
   [
@@ -40,7 +38,36 @@ const Tooltip = ({ label }) => (
   </span>
 );
 
-const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollapse }) => (
+/**
+ * Renders the sidebar navigation menu for the Dashboard layout.
+ *
+ * This component acts as the main navigation hub for the user, providing links to all primary sections
+ * of the application such as Dashboard, Projects, AI PRD Workspace, Teams, Ask Nexus, and Trash.
+ * It adapts its layout dynamically based on the current viewport size and user preferences, supporting
+ * both a fully expanded state and a minimized (collapsed) state on desktop, as well as a sliding drawer
+ * interface on mobile devices.
+ *
+ * The component relies entirely on props to manage its visual state (collapsed vs. expanded, mobile visibility)
+ * and does not maintain internal React state for these aspects, making it a controlled component. It maps over
+ * predefined `primaryNav` and `secondaryNav` arrays to render navigation links using React Router's `NavLink`,
+ * which automatically applies active styling based on the current URL path.
+ *
+ * No complex asynchronous side effects are triggered directly within this component. It primarily handles
+ * routing interactions and dispatches layout toggle callbacks provided by its parent container.
+ *
+ * @param {Object} props - The properties object passed to this component.
+ * @param {boolean} props.collapsed - Indicates whether the sidebar should be in a minimized (icon-only) state on desktop viewports.
+ * @param {boolean} props.mobileOpen - Indicates whether the sidebar is currently open and visible as an overlay on mobile viewports.
+ * @param {Function} props.onCloseMobile - Callback function triggered when the user clicks the close button or the background overlay on mobile devices.
+ * @param {Function} props.onToggleCollapse - Callback function triggered when the user clicks the collapse/expand toggle button on desktop devices.
+ * @returns {JSX.Element} The rendered `aside` element containing the application logo, "New Project" button, and navigation links.
+ */
+const DashboardSidebar = ({
+  collapsed,
+  mobileOpen,
+  onCloseMobile,
+  onToggleCollapse,
+}) => (
   <>
     <button
       aria-label="Close sidebar overlay"
@@ -56,8 +83,12 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
         "w-[280px]",
       ].join(" ")}
     >
-      <div className={`mb-9 flex items-center ${collapsed ? "lg:justify-center" : "justify-between gap-3"}`}>
-        <div className={`flex items-center gap-3 ${collapsed ? "lg:justify-center" : ""}`}>
+      <div
+        className={`mb-9 flex items-center ${collapsed ? "lg:justify-center" : "justify-between gap-3"}`}
+      >
+        <div
+          className={`flex items-center gap-3 ${collapsed ? "lg:justify-center" : ""}`}
+        >
           {collapsed ? (
             <button
               aria-label="Expand sidebar"
@@ -65,19 +96,37 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
               onClick={onToggleCollapse}
               type="button"
             >
-              <img alt="" aria-hidden="true" className="h-7 w-7 object-contain transition group-hover/sidebar:opacity-0" src={nexusLogo} />
-              <PanelLeft className="absolute opacity-0 transition group-hover/sidebar:opacity-100" size={20} />
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-7 w-7 object-contain transition group-hover/sidebar:opacity-0"
+                src={nexusLogo}
+              />
+              <PanelLeft
+                className="absolute opacity-0 transition group-hover/sidebar:opacity-100"
+                size={20}
+              />
               <span className="pointer-events-none absolute left-full top-1/2 z-50 ml-3 hidden -translate-y-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg group-hover/sidebar:block">
                 Sidebar
               </span>
             </button>
           ) : (
             <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-nexus-border bg-white shadow-sm lg:flex">
-              <img alt="" aria-hidden="true" className="h-7 w-7 object-contain" src={nexusLogo} />
+              <img
+                alt=""
+                aria-hidden="true"
+                className="h-7 w-7 object-contain"
+                src={nexusLogo}
+              />
             </div>
           )}
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-nexus-border bg-white shadow-sm lg:hidden">
-            <img alt="" aria-hidden="true" className="h-7 w-7 object-contain" src={nexusLogo} />
+            <img
+              alt=""
+              aria-hidden="true"
+              className="h-7 w-7 object-contain"
+              src={nexusLogo}
+            />
           </div>
           <Link
             className={`text-2xl font-bold tracking-tight text-nexus-primary transition ${collapsed ? "lg:hidden" : ""}`}
@@ -119,12 +168,20 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
         {primaryNav.map((item) => {
           const Icon = item.icon;
           return (
-            <NavLink className={(state) => navClass(state, collapsed)} key={item.to} to={item.to}>
+            <NavLink
+              className={(state) => navClass(state, collapsed)}
+              key={item.to}
+              to={item.to}
+            >
               {({ isActive }) => (
                 <>
-                  {isActive && !collapsed && <span className="absolute left-0 h-6 w-1 rounded-r bg-nexus-primary" />}
+                  {isActive && !collapsed && (
+                    <span className="absolute left-0 h-6 w-1 rounded-r bg-nexus-primary" />
+                  )}
                   <Icon size={19} />
-                  <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
+                  <span className={collapsed ? "lg:hidden" : ""}>
+                    {item.label}
+                  </span>
                   {collapsed && <Tooltip label={item.label} />}
                 </>
               )}
@@ -133,14 +190,23 @@ const DashboardSidebar = ({ collapsed, mobileOpen, onCloseMobile, onToggleCollap
         })}
       </nav>
 
-      <nav aria-label="Workspace settings" className="border-t border-nexus-border pt-5">
+      <nav
+        aria-label="Workspace settings"
+        className="border-t border-nexus-border pt-5"
+      >
         {secondaryNav.map((item) => {
           const Icon = item.icon;
           return (
-            <NavLink className={(state) => navClass(state, collapsed)} key={item.to} to={item.to}>
+            <NavLink
+              className={(state) => navClass(state, collapsed)}
+              key={item.to}
+              to={item.to}
+            >
               <>
                 <Icon size={19} />
-                <span className={collapsed ? "lg:hidden" : ""}>{item.label}</span>
+                <span className={collapsed ? "lg:hidden" : ""}>
+                  {item.label}
+                </span>
                 {collapsed && <Tooltip label={item.label} />}
               </>
             </NavLink>

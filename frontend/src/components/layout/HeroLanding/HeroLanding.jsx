@@ -30,6 +30,18 @@ const floatingFiles = [
   { label: "AUDIO", icon: FileAudio, className: "left-[18%] top-[67%] text-ai-accent" },
 ];
 
+/**
+ * The HeroLanding component serves as the main hero section of the landing page for the Nexus application.
+ * It provides a highly visual and engaging introduction to the core value proposition of the product, which is
+ * turning documents into clear Product Requirements Documents (PRDs) in minutes using AI.
+ * 
+ * This component does not hold any internal React state or trigger side effects. It relies purely on static
+ * structure and predefined mock data arrays (`sourceFiles` and `floatingFiles`) to render a complex, responsive layout.
+ * The layout includes a dynamic headline, call-to-action buttons, trust badges, and an interactive-looking preview
+ * dashboard that demonstrates the workflow (uploading documents, clarifying questions, and AI insight previews).
+ * 
+ * @returns {JSX.Element} A comprehensive `<section>` element containing the hero visual structure, marketing copy, and a preview mock UI.
+ */
 const HeroLanding = () => {
   return (
     <section id="top" className="relative mx-auto max-w-[1440px] px-6 pb-16 pt-[104px] sm:px-10 lg:px-11 lg:pb-20">
@@ -210,6 +222,20 @@ const HeroLanding = () => {
   );
 };
 
+/**
+ * A reusable TrustBadge component used to display a small icon alongside a title and descriptive copy.
+ * This is primarily utilized in the hero section to highlight key benefits such as enterprise-grade security,
+ * team collaboration, and data privacy.
+ * 
+ * It renders a flex container with the provided SVG icon on the left, and the text information structured
+ * clearly on the right. No local state or side effects are used within this component.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {React.ElementType} props.icon - The Lucide React icon component to be rendered.
+ * @param {string} props.title - The primary bolded text highlighting the trust feature.
+ * @param {string} props.copy - The secondary muted text providing additional context or description.
+ * @returns {JSX.Element} A `<div>` element containing the flex-aligned icon, title, and copy.
+ */
 const TrustBadge = ({ icon: Icon, title, copy }) => (
   <div className="flex items-start gap-3">
     <Icon aria-hidden="true" className="mt-1 h-5 w-5 shrink-0 text-primary" />
@@ -220,6 +246,21 @@ const TrustBadge = ({ icon: Icon, title, copy }) => (
   </div>
 );
 
+/**
+ * The PreviewPanel component is a wrapper layout component used to display categorized sections
+ * within the mock dashboard UI of the hero section. It provides a consistent styling with a rounded border,
+ * a soft background color, and an optional badge.
+ * 
+ * It acts purely as a presentational container. It handles rendering its `children` alongside a styled
+ * header that includes the provided `title` and conditionally rendered `badge`. No internal state or 
+ * lifecycle methods are utilized.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {string} props.title - The headline title for the panel section.
+ * @param {string} [props.badge] - An optional text string to display as a highlighted badge next to the title.
+ * @param {React.ReactNode} props.children - The nested React elements to render inside the panel's body.
+ * @returns {JSX.Element} A `<section>` element serving as a styled container with a header and nested content.
+ */
 const PreviewPanel = ({ title, badge, children }) => (
   <section className="rounded-2xl border border-outline-soft bg-[#fbfbfc] p-4">
     <div className="mb-4 flex items-center justify-between">
@@ -230,6 +271,20 @@ const PreviewPanel = ({ title, badge, children }) => (
   </section>
 );
 
+/**
+ * The InsightGroup component displays a categorized list of AI-detected insights or potential gaps
+ * within the mock dashboard UI. It renders a styled list of string items, each accompanied by an icon
+ * denoting success (detected) or a warning (needs attention).
+ * 
+ * The component evaluates the `type` prop to determine which icon to render next to each item in the list.
+ * It is completely stateless and relies solely on the provided props to dictate its visual output.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {string} props.title - The small uppercase heading text for this group of insights.
+ * @param {Array<string>} props.items - An array of strings representing individual insights or data points.
+ * @param {string} props.type - The status type of the group, usually "success" or "warning", which dictates the icon used.
+ * @returns {JSX.Element} A `<div>` containing the header and mapped list of items with their respective status icons.
+ */
 const InsightGroup = ({ title, items, type }) => (
   <div>
     <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#64748b]">{title}</p>
