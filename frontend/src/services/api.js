@@ -73,8 +73,6 @@ api.interceptors.response.use(
       ) {
         tokenService.clearToken();
         window.location.href = '/login';
-      } else if (error.response.status === 403 && error.config.method === 'get') {
-        window.location.href = '/403';
       }
     }
     return Promise.reject(error);
