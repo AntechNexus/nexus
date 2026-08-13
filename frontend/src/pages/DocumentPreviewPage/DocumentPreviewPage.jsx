@@ -344,9 +344,6 @@ const DocumentPreviewPage = () => {
                     </span>
                     AI Summary
                   </h2>
-                  <button aria-label="Close AI summary" className="rounded-lg p-1 text-slate-500 transition hover:bg-slate-100" type="button">
-                    <X size={17} />
-                  </button>
                 </div>
               </div>
               <div className="space-y-7 px-5 py-5">
