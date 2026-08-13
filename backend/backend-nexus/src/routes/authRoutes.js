@@ -8,24 +8,18 @@ const upload = require("../middleware/upload");
 
 // Rate limiting configurations
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 10, 
-  message: { message: 'Terlalu banyak percobaan login, coba lagi setelah 15 menit' },
+  windowMs: 5 * 60 * 1000, 
+  max: 5, 
+  message: { message: 'Too many login attempts, please try again after 5 minutes' },
 });
 
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, 
   max: 5, 
-  message: { message: 'Terlalu banyak percobaan daftar, coba lagi setelah 1 jam' },
+  message: { message: 'Too many registration attempts, please try again after 1 hour' },
 });
 
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: { message: 'Terlalu banyak request, coba lagi nanti' },
-});
-
-router.use(generalLimiter);
+// Removed generalLimiter as it conflicts with /auth/me polling and Google SSO redirects
 
 router.post("/register", registerLimiter, auth.register);
 router.post("/verify-otp", auth.verifyOtp);

@@ -64,6 +64,14 @@ const sortOptions = [
   { label: "Last Updated", value: "updated-desc" },
 ];
 
+/**
+ * readStoredJson Function
+ * 
+ * A utility function that parses JSON data from localStorage, providing a safe fallback.
+ * 
+ * @param {string} key - The localStorage key to read.
+ * @returns {Object} The parsed JSON object, or an empty object if parsing fails.
+ */
 const readStoredJson = (key) => {
   try {
     return JSON.parse(localStorage.getItem(key) || "{}");
@@ -72,6 +80,14 @@ const readStoredJson = (key) => {
   }
 };
 
+/**
+ * getCurrentProfile Function
+ * 
+ * A utility function that retrieves the current user profile from local storage.
+ * Used in the backup prototype mode to identify the owner.
+ * 
+ * @returns {Object} The current user's profile information object.
+ */
 const getCurrentProfile = () => {
   const storedProfile = readStoredJson("nexusOnboardingProfile");
   const storedAccount = readStoredJson("nexusPrototypeAccount");
@@ -84,6 +100,15 @@ const getCurrentProfile = () => {
   };
 };
 
+/**
+ * initials Function
+ * 
+ * A utility function that computes user initials from their full name.
+ * It splits the name by spaces, takes the first character of up to the first two words, and capitalizes them.
+ * 
+ * @param {string} name - The full name of the user.
+ * @returns {string} The computed initials (e.g., "JD" for "Jane Doe").
+ */
 const initials = (name) =>
   name
     .split(" ")
@@ -93,6 +118,17 @@ const initials = (name) =>
     .join("")
     .toUpperCase();
 
+/**
+ * normalizeTeamProject Function
+ * 
+ * A utility function that normalizes a project object, ensuring a standardized shape for rendering.
+ * It assigns default icon tones and prepends the owner profile to the members list.
+ * 
+ * @param {Object} project - The raw project object.
+ * @param {number} index - The index of the project in the list.
+ * @param {Object} ownerProfile - The owner's profile object.
+ * @returns {Object} The normalized project object.
+ */
 const normalizeTeamProject = (project, index, ownerProfile) => {
   const collaborators =
     project.members
@@ -111,6 +147,16 @@ const normalizeTeamProject = (project, index, ownerProfile) => {
   };
 };
 
+/**
+ * sortProjects Function
+ * 
+ * A utility function that sorts an array of project objects based on a specified sorting criteria.
+ * It handles sorting by project title (alphabetical ascending/descending), number of members (ascending/descending), and last updated date.
+ * 
+ * @param {Array} projectList - The list of projects to sort.
+ * @param {string} sortMode - The current sorting mode selected by the user.
+ * @returns {Array} A new array containing the sorted projects.
+ */
 const sortProjects = (projectList, sortMode) =>
   [...projectList].sort((firstProject, secondProject) => {
     if (sortMode === "name-desc") return secondProject.title.localeCompare(firstProject.title);
@@ -120,24 +166,50 @@ const sortProjects = (projectList, sortMode) =>
     return firstProject.title.localeCompare(secondProject.title);
   });
 
+/**
+ * ProjectAvatarStack Component
+ * 
+ * Renders a visual stack of circular avatars representing the members of a project.
+ * It displays up to three distinct member initials, and if there are more than three members, it appends a badge indicating the count of remaining members (e.g., "+2").
+ * 
+ * It manages no state and causes no side effects.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Array} props.members - The list of member objects containing their name, tone styling, and IDs.
+ * @returns {JSX.Element} An overlapping stack of member avatars.
+ */
 const ProjectAvatarStack = ({ members }) => (
   <div className="flex -space-x-2">
     {members.slice(0, 3).map((member) => (
       <span
-        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${member.tone}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold ${member.tone}`}
         key={member.id}
       >
         {initials(member.name)}
       </span>
     ))}
     {members.length > 3 && (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-bold text-slate-600">
         +{members.length - 3}
       </span>
     )}
   </div>
 );
 
+/**
+ * ProjectMenu Component
+ * 
+ * A dropdown menu component for individual projects that provides quick access to actions such as renaming or deleting a project.
+ * It only renders its contents when the `open` prop is true.
+ * 
+ * It does not maintain its own state but relies on its parent to control its visibility and handle the action callbacks.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onDelete - The callback function triggered when the "Delete" option is clicked.
+ * @param {Function} props.onRename - The callback function triggered when the "Rename" option is clicked.
+ * @param {boolean} props.open - Whether the menu is currently visible.
+ * @returns {JSX.Element|null} The absolute positioned dropdown menu, or null if closed.
+ */
 const ProjectMenu = ({ onDelete, onRename, open }) => {
   if (!open) return null;
 
@@ -161,6 +233,18 @@ const ProjectMenu = ({ onDelete, onRename, open }) => {
   );
 };
 
+/**
+ * SortMenu Component
+ * 
+ * A dropdown menu component that presents available sorting options for the project list.
+ * It iterates through predefined `sortOptions` and renders a selectable list of buttons. The currently active sort option is highlighted.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onSelect - The callback function triggered when a sort option is selected, passing the selected value.
+ * @param {boolean} props.open - Whether the sorting menu is currently visible.
+ * @param {string} props.selectedSort - The value of the currently active sorting mode.
+ * @returns {JSX.Element|null} The absolute positioned sort dropdown menu, or null if closed.
+ */
 const SortMenu = ({ onSelect, open, selectedSort }) => {
   if (!open) return null;
 
@@ -182,6 +266,23 @@ const SortMenu = ({ onSelect, open, selectedSort }) => {
   );
 };
 
+/**
+ * RenameProjectModal Component
+ * 
+ * A modal dialog that allows users to rename an existing project.
+ * It maintains local state for the new project name input and any validation errors that occur during the submission process.
+ * 
+ * Side effects:
+ * - Resets the name input and clears errors whenever the `project` prop changes (i.e., when the modal opens for a specific project).
+ * - Attaches a 'keydown' event listener to the document to allow closing the modal by pressing the Escape key.
+ * - On form submission, it validates that the name is not empty, invokes the `onSave` callback, and processes any errors returned by the API call.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - The callback function to close the modal without saving.
+ * @param {Function} props.onSave - The callback function to submit the new project name. Expected to return a promise.
+ * @param {Object|null} props.project - The project object currently being renamed. If null, the modal does not render.
+ * @returns {JSX.Element|null} The rename project modal overlay, or null if no project is provided.
+ */
 const RenameProjectModal = ({ onClose, onSave, project }) => {
   const [name, setName] = useState(project?.title ?? "");
   const [error, setError] = useState("");
@@ -245,6 +346,21 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
   );
 };
 
+/**
+ * DeleteProjectModal Component
+ * 
+ * A confirmation modal that prompts the user before permanently deleting a project.
+ * It warns the user that the project will be removed from their active workspace.
+ * 
+ * Side effects:
+ * - Attaches a 'keydown' event listener to the document to allow closing the modal by pressing the Escape key.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - The callback function to close the modal without deleting.
+ * @param {Function} props.onConfirm - The callback function to execute the deletion.
+ * @param {Object|null} props.project - The project object targeted for deletion. If null, the modal does not render.
+ * @returns {JSX.Element|null} The deletion confirmation modal overlay, or null if no project is provided.
+ */
 const DeleteProjectModal = ({ onClose, onConfirm, project }) => {
   useEffect(() => {
     if (!project) return undefined;
@@ -280,6 +396,21 @@ const DeleteProjectModal = ({ onClose, onConfirm, project }) => {
   );
 };
 
+/**
+ * AddMemberModal Component
+ * 
+ * A modal dialog for searching and adding new members to a project.
+ * It manages local state for the selection of a suggested member.
+ * 
+ * Side effects:
+ * - Attaches an Escape key listener to close the modal.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onAdd - The callback function triggered to add the selected user to the project.
+ * @param {Function} props.onClose - The callback function to close the modal.
+ * @param {Object|null} props.project - The project object to which members are being added. If null, the modal does not render.
+ * @returns {JSX.Element|null} The add member modal overlay, or null if no project is provided.
+ */
 const AddMemberModal = ({ onAdd, onClose, project }) => {
   const [selected, setSelected] = useState(false);
 
@@ -310,7 +441,7 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
             <input className="h-12 w-full rounded-xl border border-nexus-border bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100" placeholder="Search by name or email" />
           </label>
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-nexus-muted">Suggested</p>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">Suggested</p>
             <div className="flex items-center justify-between rounded-xl border border-nexus-border p-3">
               <div className="flex items-center gap-3">
                 <span className={`flex h-10 w-10 items-center justify-center rounded-full text-xs font-bold ${suggestedMember.tone}`}>
@@ -336,9 +467,9 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
           </div>
           {selected && (
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-nexus-muted">To be added</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">To be added</p>
               <span className="inline-flex items-center gap-2 rounded-full border border-nexus-border bg-slate-50 py-1 pl-2 pr-1 text-xs font-medium text-slate-700">
-                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-bold ${suggestedMember.tone}`}>
+                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${suggestedMember.tone}`}>
                   {initials(suggestedMember.name)}
                 </span>
                 {suggestedMember.name}
@@ -367,6 +498,22 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
   );
 };
 
+/**
+ * RemoveMemberModal Component
+ * 
+ * A confirmation modal that ensures the user actually wants to revoke a member's access to a project.
+ * It displays the target member's details and a warning about the consequences of the action.
+ * 
+ * Side effects:
+ * - Attaches an Escape key listener to close the modal.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object|null} props.member - The member object targeted for removal.
+ * @param {Function} props.onClose - The callback function to dismiss the modal without taking action.
+ * @param {Function} props.onConfirm - The callback function to confirm and execute the removal.
+ * @param {Object|null} props.project - The project from which the member is being removed.
+ * @returns {JSX.Element|null} The removal confirmation modal overlay, or null if either `member` or `project` is missing.
+ */
 const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
   useEffect(() => {
     if (!member) return undefined;
@@ -404,6 +551,28 @@ const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
   );
 };
 
+/**
+ * TeamsPage Component
+ * 
+ * The workspace settings and member management interface (Backup/Prototype Version).
+ * Responsibilities:
+ * - Displays all users within a project.
+ * - Handles local state updates for renaming, deleting, adding, and removing members.
+ * 
+ * State managed:
+ * - `sidebarCollapsed`, `mobileSidebarOpen`: UI states for the navigation layout.
+ * - `projects`: Array of local project data.
+ * - UI visibility states: `openProjectIds`, `openMenuProjectId`, `sortOpen`, and modal targets.
+ * - `sortMode`: The active sorting criteria for the projects list.
+ * - `toast`: Temporary notification messages for feedback on actions.
+ * 
+ * Side effects:
+ * - Loads mock/local project data on mount.
+ * - Listens to pointerdown and keydown events for closing dropdown menus and modals.
+ * - Modifies projects array locally and syncs to prototype storage.
+ * 
+ * @returns {JSX.Element} The complete team management page including the sidebar, header, project list, and various management modals.
+ */
 const TeamsPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -621,7 +790,7 @@ const TeamsPage = () => {
                   {isOpen && (
                     <div className="border-t border-nexus-border bg-slate-50/60 p-4 sm:p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <p className="text-xs font-bold uppercase tracking-widest text-nexus-muted">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">
                           Team Members ({project.members.length})
                         </p>
                         <button
@@ -648,7 +817,7 @@ const TeamsPage = () => {
                               </div>
                               <div className="flex shrink-0 items-center gap-4">
                                 {isOwner && (
-                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-nexus-primary">
+                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold uppercase tracking-wide text-nexus-primary">
                                     Owner
                                   </span>
                                 )}

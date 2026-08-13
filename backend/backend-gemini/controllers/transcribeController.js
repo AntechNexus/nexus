@@ -4,11 +4,26 @@ const Transcript = require("../models/Transcript");
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+/**
+ * Handles transcribing audio/video files using Google Gemini API.
+ *
+ * Purpose: Retrieves a file by ID, uploads its local content to the Google Files API, waits for it to be processed, and then sends a prompt to Gemini 3.5 Flash to generate a structured JSON transcript with timestamps and segments. Finally, it saves this transcript to the database and cleans up the remote file.
+ *
+ * @param {Object} req - Express request object containing the file ID in `req.params`.
+ * @param {Object} res - Express response object used to send back the JSON response.
+ * @returns {Object} JSON response containing the newly created or cached transcript document, or an error message.
+ *
+ * Side Effects:
+ * - Queries and mutates the database (File and Transcript models).
+ * - Uploads files to Google Files API, polls for status, and deletes the file afterward.
+ * - Makes a network request to the Gemini API for transcription.
+ * - Logs progress and errors to the console.
+ */
 const handleTranscribe = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Check if transcript is already cached in DB
+
+    // Return cached transcript if exists
     const existingTranscript = await Transcript.findOne({ fileId: id });
     if (existingTranscript) {
       return res.json({ transcript: existingTranscript });
@@ -20,34 +35,46 @@ const handleTranscribe = async (req, res) => {
     }
 
     if (!file.localPath) {
-      return res.status(400).json({ detail: "File localPath is missing. Cannot transcribe." });
+      return res
+        .status(400)
+        .json({ detail: "File localPath is missing. Cannot transcribe." });
     }
+
+    // Determine mimeType based on file extension
+    let mimeType = "audio/mp3";
+    const fileName = file.fileName || "";
+    if (fileName.endsWith(".wav")) mimeType = "audio/wav";
+    else if (fileName.endsWith(".m4a")) mimeType = "audio/m4a";
+    else if (fileName.endsWith(".ogg")) mimeType = "audio/ogg";
+    else if (fileName.endsWith(".flac")) mimeType = "audio/flac";
+    else if (fileName.endsWith(".mp3")) mimeType = "audio/mp3";
 
     let uploadedFile;
     try {
-      // Find mimeType based on extension
-      let mimeType = "audio/mp3";
-      if (file.fileName.endsWith(".wav")) mimeType = "audio/wav";
-      else if (file.fileName.endsWith(".m4a")) mimeType = "audio/m4a";
-      else if (file.fileName.endsWith(".ogg")) mimeType = "audio/ogg";
-      else if (file.fileName.endsWith(".flac")) mimeType = "audio/flac";
-
+      console.log(`[Transcribe] Uploading audio to Google Files API...`);
       uploadedFile = await ai.files.upload({
-         file: file.localPath,
-         mimeType: mimeType,
+        file: file.localPath,
+        config: {
+          mimeType: mimeType,
+        },
       });
 
+      // Wait for Google to finish processing the file
       let currentGf = uploadedFile;
       let retries = 0;
-      while (currentGf.state === "PROCESSING" && retries < 15) {
-        await new Promise(r => setTimeout(r, 2000));
+      while (currentGf.state === "PROCESSING" && retries < 20) {
+        await new Promise((r) => setTimeout(r, 2000));
         currentGf = await ai.files.get({ name: uploadedFile.name });
         retries++;
       }
-      
+
       if (currentGf.state === "FAILED") {
-        return res.status(500).json({ detail: "Gemini failed to process the audio file." });
+        return res
+          .status(500)
+          .json({ detail: "Google failed to process the audio file." });
       }
+
+      console.log(`[Transcribe] Audio processed, calling Gemini 3.5 Flash...`);
 
       const prompt = `
 Please transcribe this audio recording.
@@ -66,61 +93,108 @@ The JSON object must have this EXACT structure:
 Note on 'segments':
 - 'start' and 'end' must be integers representing seconds.
 - Include the speaker's name in the text if possible (e.g. "[Speaker Name]: ...").
+- If you cannot identify speakers, use "[Speaker 1]", "[Speaker 2]", etc.
 `;
-      
-      const contents = [{ 
-         role: "user", 
-         parts: [
-           { fileData: { fileUri: uploadedFile.uri, mimeType: uploadedFile.mimeType } },
-           { text: prompt }
-         ] 
-      }];
+
+      const contents = [
+        {
+          role: "user",
+          parts: [
+            {
+              fileData: {
+                fileUri: currentGf.uri,
+                mimeType: currentGf.mimeType,
+              },
+            },
+            { text: prompt },
+          ],
+        },
+      ];
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: "gemini-3.5-flash",
         contents,
       });
 
-      // Cleanup
-      await ai.files.delete({ name: uploadedFile.name });
+      // Cleanup uploaded file from Google
+      await ai.files.delete({ name: uploadedFile.name }).catch(() => {});
 
       let responseText = response.text.trim();
       if (responseText.startsWith("```json")) {
-        responseText = responseText.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+        responseText = responseText
+          .replace(/^```json\n?/, "")
+          .replace(/\n?```$/, "")
+          .trim();
+      } else if (responseText.startsWith("```")) {
+        responseText = responseText
+          .replace(/^```\n?/, "")
+          .replace(/\n?```$/, "")
+          .trim();
       }
 
+      console.log(`[Transcribe] Response received, parsing...`);
       const parsedData = JSON.parse(responseText);
 
-      // Save to database using the Transcript model
-      const newTranscript = new Transcript({
+      let segments = parsedData.segments || [];
+      if (!Array.isArray(segments) || segments.length === 0) {
+        segments = [
+          {
+            start: 0,
+            end: parsedData.durationSeconds || 0,
+            text: parsedData.fullText || "No speech detected.",
+          },
+        ];
+      }
+
+      const transcriptData = {
         fileId: file._id,
         projectId: file.projectId,
         fullText: parsedData.fullText || "No full text provided.",
         language: parsedData.language || "Unknown",
         durationSeconds: parsedData.durationSeconds || 0,
-        segments: parsedData.segments || [],
+        segments,
         createdBy: file.createdBy,
-      });
+      };
 
-      await newTranscript.save();
+      const newTranscript = await Transcript.findOneAndUpdate(
+        { fileId: file._id },
+        { $set: transcriptData },
+        { upsert: true, new: true, runValidators: true },
+      );
 
+      console.log(`[Transcribe] Transcript saved successfully.`);
       return res.json({ transcript: newTranscript });
-
     } catch (apiError) {
+      // Cleanup uploaded file if error occurs
       if (uploadedFile) {
         await ai.files.delete({ name: uploadedFile.name }).catch(() => {});
       }
       throw apiError;
     }
-
   } catch (error) {
-    console.error("Transcribe error:", error);
-    return res.status(500).json({ detail: error.message || "Internal server error" });
+    console.error("Transcribe error:", error.message || error);
+    return res
+      .status(500)
+      .json({ detail: error.message || "Internal server error" });
   }
 };
 
+/**
+ * Placeholder for updating a transcript. Actual logic resides in backend-nexus.
+ *
+ * Purpose: Acts as a stub endpoint that informs the client to use a different microservice (`backend-nexus`) for updating transcripts.
+ *
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ * @returns {Object} JSON response with a 405 status indicating the method is not allowed here.
+ *
+ * Side Effects:
+ * - None, other than sending an HTTP response.
+ */
 const updateTranscript = async (req, res) => {
-  return res.status(405).json({ detail: "Use backend-nexus for updating transcripts." });
+  return res
+    .status(405)
+    .json({ detail: "Use backend-nexus for updating transcripts." });
 };
 
 module.exports = { handleTranscribe, updateTranscript };

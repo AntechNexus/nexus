@@ -1,16 +1,40 @@
-# React + Vite
+# Nexus AI - Frontend Documentation
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This is the frontend application for **Nexus AI Product Management System**, built with React, Vite, and Tailwind CSS. It interfaces with both `backend-nexus` (for auth/storage) and `backend-gemini` (for AI features).
 
-Currently, two official plugins are available:
+## Tech Stack
+- **Framework**: React 18 with Vite
+- **Routing**: React Router DOM (v6)
+- **Styling**: Tailwind CSS, Lucide React (Icons), Custom Animations
+- **State & Data Fetching**: React Context, Axios
+- **Drag & Drop**: Native HTML5 Drag and Drop API
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Directory Structure
+- `/src/pages`: Contains all the full-page React components (e.g., `DashboardPage`, `ProjectDetailPage`, `AiPrdWorkspacePage`).
+- `/src/components`: Contains reusable UI elements (e.g., `Navbar`, `Sidebar`, `Modal`, `Buttons`).
+- `/src/services`: Contains Axios configurations and API wrappers. Every file here is documented via JSDoc.
+- `/src/assets`: Static images, icons, and illustrations.
+- `/src/utils`: Helper functions (date formatting, string manipulation).
 
-## React Compiler
+## Setup & Running Locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+2. **Environment Variables**:
+   By default, Axios points to `http://localhost:5000/api`. If you need to change this, create a `.env` file in the `frontend` root:
+   ```env
+   VITE_API_URL=http://localhost:5000/api
+   VITE_GEMINI_API_URL=http://localhost:5001/api
+   ```
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
+   The app will typically run on `http://localhost:5173`.
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Architecture Notes
+- **Authentication**: JWT tokens are stored in `localStorage` upon login and automatically attached to all requests via Axios interceptors in `src/services/api.js`.
+- **UI Responsiveness**: The app uses Tailwind utility classes (`sm:`, `md:`, `lg:`) to ensure responsiveness across devices.
+- **AI Integration**: Features like PRD Generation and Chat Copilot use SSE (Server-Sent Events) or direct polling to fetch streams/updates from the AI backends.

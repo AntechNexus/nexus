@@ -8,9 +8,29 @@ import EditProjectModal from "../../components/dashboard/EditProjectModal";
 import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import RecentFilesTable from "../../components/dashboard/RecentFilesTable";
 import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
-import { recentFiles } from "../../data/dashboardMockData";
 import { projectService } from "../../services/project.service";
+import { fetchRecentFiles } from "../../services/recentFilesApi";
 
+/**
+ * The primary dashboard landing page for authenticated users.
+ *
+ * This component acts as the central hub of the Nexus workspace, providing a high-level overview 
+ * of the user's active projects and most recently accessed files. It allows quick navigation, 
+ * project creation, and inline project management (editing details or moving projects to the trash).
+ *
+ * The component maintains various states such as:
+ * - `projects` containing a list of projects the user owns or is a member of.
+ * - `recentFiles` containing a list of the user's most recently interacted documents across all projects.
+ * - `currentUser` for displaying personalized data.
+ * - `openMenuProjectId`, `editingProject`, and `trashProject` for managing the state of context menus and modal dialogs.
+ *
+ * Key side effects include:
+ * - Fetching the user's profile, list of projects, and recent files when the component mounts.
+ * - Listening to the custom `projectListUpdated` window event to automatically refresh the project and recent files lists.
+ * - Handling asynchronous backend calls to update project metadata or soft-delete (trash) projects, and updating the local state optimistically upon success.
+ *
+ * @returns {JSX.Element} The rendered dashboard interface featuring the sidebar, header, project cards grid, recent files table, and management modals.
+ */
 const DashboardPage = () => {
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -22,9 +42,12 @@ const DashboardPage = () => {
   const [trashProject, setTrashProject] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [recentFiles, setRecentFiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchProjects = async () => {
     try {
+      setIsLoading(true);
       const res = await projectService.getProjects();
       setProjects(res.data.map(p => ({
         ...p,
@@ -38,6 +61,17 @@ const DashboardPage = () => {
       })));
     } catch (err) {
       console.error("Failed to fetch projects", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadRecentFiles = async () => {
+    try {
+      const files = await fetchRecentFiles(10);
+      setRecentFiles(files);
+    } catch (err) {
+      console.error("Failed to load recent files", err);
     }
   };
 
@@ -49,7 +83,11 @@ const DashboardPage = () => {
     });
 
     fetchProjects();
-    const handleUpdate = () => fetchProjects();
+    loadRecentFiles();
+    const handleUpdate = () => {
+      fetchProjects();
+      loadRecentFiles();
+    };
     window.addEventListener("projectListUpdated", handleUpdate);
     return () => window.removeEventListener("projectListUpdated", handleUpdate);
   }, []);
@@ -94,9 +132,11 @@ const DashboardPage = () => {
       );
       setEditingProject(null);
       setToast("Project updated successfully.");
+      return { success: true };
     } catch (err) {
       console.error(err);
-      setToast("Failed to update project.");
+      setToast(err.response?.data?.message || "Failed to update project.");
+      return { success: false, error: err };
     }
   };
 
@@ -123,15 +163,15 @@ const DashboardPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex items-center gap-3">
             <span className="h-8 w-1 rounded-full bg-nexus-primary" />
-            <h1 className="text-3xl font-semibold tracking-tight text-nexus-text">Dashboard</h1>
+            <h1 className="nexus-page-title">Dashboard</h1>
           </div>
 
           <section>
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-xl font-bold text-nexus-text">My Projects</h2>
+              <h2 className="nexus-section-title">My Projects</h2>
               <button
                 className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-nexus-primary transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
                 onClick={() => navigate("/projects")}
@@ -141,28 +181,32 @@ const DashboardPage = () => {
               </button>
             </div>
             
-            {projects.length === 0 ? (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <NewProjectCard onClick={() => navigate("/projects/new")} />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                <NewProjectCard onClick={() => navigate("/projects/new")} />
-                {projects.slice(0, 7).map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    currentUser={currentUser}
-                    menuOpen={openMenuProjectId === project.id}
-                    onMenuAction={handleProjectAction}
-                    onNavigate={navigateToProject}
-                    onSelect={setSelectedProjectId}
-                    onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
-                    project={project}
-                    selected={selectedProjectId === project.id}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {isLoading ? (
+                <div className="col-span-full py-10 text-center text-sm font-medium text-slate-500">
+                  Loading projects...
+                </div>
+              ) : (
+                <>
+                  {projects.length < 4 && (
+                    <NewProjectCard onClick={() => navigate("/projects/new")} />
+                  )}
+                  {projects.slice(0, 4).map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  currentUser={currentUser}
+                  menuOpen={openMenuProjectId === project.id}
+                  onMenuAction={handleProjectAction}
+                  onNavigate={navigateToProject}
+                  onSelect={setSelectedProjectId}
+                  onToggleMenu={(id) => setOpenMenuProjectId(openMenuProjectId === id ? null : id)}
+                  project={project}
+                  selected={selectedProjectId === project.id}
+                />
+              ))}
+                </>
+              )}
+            </div>
           </section>
 
           <RecentFilesTable files={recentFiles} />

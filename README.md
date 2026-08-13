@@ -1,32 +1,33 @@
-# Nexus AI Product Management System
+# Nexus - Main Repository
 
-This repository contains the integrated architecture for Nexus AI, featuring a React frontend and dual Node.js backends.
+Welcome to **Nexus**, an integrated AI-powered workspace combining project management, document storage, and intelligent AI services (Chat, PRD Generator, and Audio Transcription).
 
-## Architecture
-- **Frontend** (Port 5173): React application using Vite and Tailwind CSS.
-- **Backend Nexus** (Port 5000): Primary Node.js API handling authentication, projects, and files.
-- **Backend Gemini** (Port 5001): Dedicated Node.js AI service for Gemini API integration.
-- **MongoDB** (Port 27017): Database container.
+## Project Structure
+The project is divided into three main microservices:
+1. **[Frontend](./frontend/README.md)**: React (Vite) application for the user interface.
+2. **[Backend Nexus](./backend/backend-nexus/README.md)**: Main Node.js API for authentication, users, projects, and file management.
+3. **[Backend Gemini/AI](./backend/backend-gemini/README.md)**: Python/Node.js microservice handling AI integration (Elice API & Google Models) and heavy processing.
 
-## Getting Started with Docker
+## Quick Start (Docker)
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/RefaMuhammad/nexus.git
-   cd nexus
-   ```
+> [!WARNING]
+> **macOS Users:** AirPlay Receiver runs on port 5000 by default, which conflicts with the Backend Nexus port. You must disable AirPlay Receiver in your Mac's System Settings -> General -> AirDrop & Handoff before starting the application.
 
-2. **Environment Variables:**
-   Ensure you have the `.env` files created based on your specific credentials:
-   - `backend/backend-nexus/.env` (Requires `MONGO_URI`, `JWT_SECRET`, `GOOGLE_CLIENT_ID`, etc.)
-   - `backend/backend-gemini/.env` (Requires `GEMINI_API_KEY`)
+The easiest way to run the entire stack is using Docker Compose:
 
-3. **Run with Docker Compose:**
-   ```bash
-   docker-compose up --build
-   ```
+```bash
+docker compose up -d --build
+```
 
-4. **Access the Application:**
-   - Frontend: `http://localhost:5173`
-   - Nexus API: `http://localhost:5000`
-   - Gemini API: `http://localhost:5001`
+Make sure you have configured all `.env` files in their respective directories before starting the containers.
+
+- Frontend runs on: `http://localhost:5173`
+- Backend Nexus runs on: `http://localhost:5000`
+- Backend AI runs on: `http://localhost:5001`
+
+## Repositories & Links
+- **Organization**: [AntechNexus](https://github.com/AntechNexus)
+- **Nexus**: [https://github.com/AntechNexus/nexus.git](https://github.com/AntechNexus/nexus.git)
+- **Frontend Nexus**: [https://github.com/AntechNexus/Frontend-nexus.git](https://github.com/AntechNexus/Frontend-nexus.git)
+- **Backend Nexus**: [https://github.com/AntechNexus/backend-nexus.git](https://github.com/AntechNexus/backend-nexus.git)
+- **Backend Gemini**: [https://github.com/AntechNexus/LLM-nexus.git](https://github.com/AntechNexus/LLM-nexus.git)

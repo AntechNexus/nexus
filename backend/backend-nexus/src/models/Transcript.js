@@ -54,6 +54,22 @@ const transcriptSchema = new mongoose.Schema(
       type: [segmentSchema],
       required: [true, "segments is required"],
       validate: {
+        /**
+         * Enforces the business requirement that every persisted Transcript document must contain at least one meaningful audio segment.
+         * This validator is triggered implicitly by Mongoose before writing to the database. In the context of audio/video processing, 
+         * a transcript without any text segments is considered invalid and likely indicative of a failed transcription pipeline 
+         * or a silent media file.
+         *
+         * The function performs a twofold check:
+         * 1. It verifies the primitive type of the incoming value, ensuring it is strictly a Javascript Array.
+         * 2. It inspects the `length` property to guarantee that at least one segment object exists.
+         * By failing early at the schema level, the application avoids storing ghost transcripts that consume database 
+         * records without providing any retrievable NLP or search value, preventing cascading UI errors down the line.
+         *
+         * @param {Array<Object>} val - The array of parsed segment subdocuments attempting to be saved.
+         * @returns {boolean} `true` if the input is a valid array containing 1 or more items, otherwise `false`.
+         * @throws {ValidationError} Triggers a Mongoose ValidationError (HTTP 400) if the array is absent or empty.
+         */
         validator: (val) => Array.isArray(val) && val.length > 0,
         message: "segments must be a non-empty array",
       },
