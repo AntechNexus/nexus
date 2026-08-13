@@ -27,8 +27,15 @@ const documentEmbeddingSchema = new mongoose.Schema(
       type: [Number],
       required: [true, "embedding is required"],
       validate: {
-        validator: (v) => v.length === 1536,
-        message: "embedding must have exactly 1536 dimensions",
+        /**
+         * Validates the length of the embedding array.
+         * Ensures the embedding has exactly 768, 1536, or 3072 dimensions.
+         *
+         * @param {number[]} v - The array of numbers representing the embedding.
+         * @returns {boolean} True if the length is valid, false otherwise.
+         */
+        validator: (v) => v.length === 768 || v.length === 1536 || v.length === 3072,
+        message: "embedding must have exactly 768, 1536, or 3072 dimensions",
       },
     },
     metadata: {

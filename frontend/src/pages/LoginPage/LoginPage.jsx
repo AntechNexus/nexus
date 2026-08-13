@@ -1,9 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
+import tokenService from "../../services/token.service";
 import "./LoginPage.css";
 
+/**
+ * LoginPage Component
+ * 
+ * The `LoginPage` component handles user authentication for the Nexus platform.
+ * It provides a secure gateway for returning users to access their workspaces.
+ * This component manages both traditional email/password login and OAuth Google sign-in methods.
+ * 
+ * State Management:
+ * - `showPassword` (boolean): Toggles the visibility of the password input field.
+ * - `formData` (object): Holds the controlled form values for `email`, `password`, and a `remember` me toggle.
+ * - `errors` (object): Maintains field-specific and global validation/authentication error messages.
+ * - `status` (string): Tracks the form submission state ('idle', 'loading', 'success') to disable inputs and show loading indicators.
+ * 
+ * Side Effects:
+ * - Upon initial render, a `useEffect` checks if a valid authentication token exists via `tokenService`.
+ *   If a token is found, the user is immediately redirected to the `/dashboard`, preventing access to the login screen for already authenticated users.
+ * - Upon successful authentication via `authService.login`, it fetches the user profile to verify onboarding completion,
+ *   subsequently navigating the user to either the `/onboarding` flow or the `/dashboard`.
+ * 
+ * The UI is split into a branding panel showcasing the Nexus value proposition and an interactive authentication form panel.
+ * 
+ * @param {Object} props - The component props (currently none are utilized).
+ * @returns {JSX.Element} A split-screen layout containing the Nexus branding on one side and the interactive authentication form on the other.
+ */
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,6 +40,12 @@ const LoginPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (tokenService.getToken()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const validate = () => {
     const nextErrors = {};
@@ -54,10 +85,10 @@ const LoginPage = () => {
     setStatus("loading");
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await authService.login(formData.email, formData.password, formData.remember);
       
       // Simpan token
-      localStorage.setItem("nexus_token", response.token);
+      tokenService.setToken(response.token, formData.remember);
       
       // Ambil profile untuk cek onboarding
       const profileRes = await authService.getProfile();
@@ -108,7 +139,7 @@ const LoginPage = () => {
 
           {onboardingNotice && (
             <p className="auth-success-message" role="status">
-              Your sign up process has been completed successfully. Please sign in to continue.
+              Successfully Registered
             </p>
           )}
           {passwordResetNotice && (
@@ -117,7 +148,10 @@ const LoginPage = () => {
             </p>
           )}
 
-          <button type="button" className="auth-google-button" onClick={() => { window.location.href = "http://localhost:5000/api/auth/google"; }}>
+          <button type="button" className="auth-google-button" onClick={() => {
+            tokenService.clearToken();
+            window.location.href = "http://localhost:5000/api/auth/google";
+          }}>
             <img
               alt=""
               aria-hidden="true"

@@ -4,8 +4,15 @@ import { Link } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import StorageCard from "../../components/dashboard/StorageCard";
 import authService from "../../services/auth.service";
 
+/**
+ * A predefined array of industry categories used as selectable options within the user profile editing form.
+ * It provides a comprehensive list of major sectors to help categorize the user's organization or business area.
+ * 
+ * @type {string[]}
+ */
 const industryOptions = [
   "Technology, SaaS & Software Development",
   "Fast-Moving Consumer Goods (FMCG) & Manufacturing",
@@ -22,8 +29,25 @@ const industryOptions = [
   "Other",
 ];
 
+/**
+ * A predefined array of team size ranges used to indicate the scale of a user's organization.
+ * It provides structured options from small teams to large enterprises for the profile dropdown.
+ * 
+ * @type {string[]}
+ */
 const teamSizeOptions = ["1-10", "11-20", "21-50", "51-100", "101-250", "250+"];
 
+/**
+ * Generates an uppercase two-letter initial string from a given full name.
+ * 
+ * This utility function splits a name string by spaces, filters out any empty segments, 
+ * and extracts the first character of up to the first two words. If the provided name is empty 
+ * or missing, it defaults to a fallback string ("AR"). This is primarily used as a placeholder 
+ * for user avatars when an uploaded profile picture is not available or fails to load.
+ * 
+ * @param {string} name - The full name of the user from which to extract initials.
+ * @returns {string} The uppercase initials of the user, or "AR" if extraction yields no valid characters.
+ */
 const initialsFromName = (name) =>
   name
     .split(" ")
@@ -33,6 +57,21 @@ const initialsFromName = (name) =>
     .join("")
     .toUpperCase() || "AR";
 
+/**
+ * ProfilePage Component
+ * 
+ * The main dashboard view where authenticated users can view and manage their profile information and security settings.
+ * This complex component manages several pieces of state, including sidebar toggle states for responsive layouts, 
+ * the primary user profile data fetched from the backend, and local forms for updating personal details and passwords.
+ * It handles states for loading, errors, image upload feedback, and UI toggles like modal visibility.
+ * 
+ * On mount, the component triggers a side effect to fetch the latest user profile data via the `authService`. 
+ * It interacts with the backend to update personal details, change passwords, and handle avatar image uploads 
+ * using `FormData`. Error handling and success notifications are managed locally and displayed using a toast component.
+ * 
+ * @returns {JSX.Element} The full profile dashboard view consisting of a sidebar, header, 
+ *                        user info cards, storage metrics, security settings, and modal overlays for editing data.
+ */
 const ProfilePage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -95,8 +134,11 @@ const ProfilePage = () => {
     setEditModalOpen(true);
   };
 
+  const [editError, setEditError] = useState("");
+
   const handleEditSubmit = async (event) => {
     event.preventDefault();
+    setEditError("");
     try {
       const updatedProfile = {
         fullName: editForm.fullName.trim(),
@@ -118,7 +160,7 @@ const ProfilePage = () => {
       setEditModalOpen(false);
       setToast("Profile details updated successfully.");
     } catch (err) {
-      setToast(err.response?.data?.message || "Failed to update profile.");
+      setEditError(err.response?.data?.message || "Failed to update profile.");
     }
   };
 
@@ -158,23 +200,23 @@ const ProfilePage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto w-full max-w-[1440px] p-4 lg:p-8">
-          <div className="mb-8">
+        <main className="nexus-page-shell gap-5">
+          <div>
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-400">
               <Link className="transition hover:text-nexus-primary" to="/settings">Settings</Link>
               <ChevronRight size={15} />
               <span className="text-nexus-text">User Profile</span>
             </div>
-            <h1 className="text-3xl font-semibold tracking-tight text-nexus-text">Manage Profile</h1>
+            <h1 className="nexus-page-title">Manage Profile</h1>
           </div>
 
-          <div className="grid grid-cols-12 items-start gap-6">
-            <section className="col-span-12 space-y-6 lg:col-span-4">
+          <div className="grid grid-cols-12 items-start gap-x-6 gap-y-5">
+            <section className="col-span-12 lg:col-span-4">
               <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-nexus-border">
                 <div className="h-32 bg-gradient-to-br from-nexus-primary to-nexus-action" />
                 <div className="-mt-16 flex flex-col items-center px-6 pb-8 text-center">
                   <div className="relative group">
-                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-50 text-4xl font-extrabold text-nexus-primary shadow-md">
+                    <div className="flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-blue-50 text-4xl font-semibold text-nexus-primary shadow-md">
                       {avatarUrl && avatarUrl !== "null" && !imgError ? (
                         <img 
                           src={avatarUrl.startsWith("http") ? avatarUrl : `http://localhost:5000${avatarUrl}`} 
@@ -188,12 +230,20 @@ const ProfilePage = () => {
                     </div>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept="image/jpeg, image/png"
                       ref={fileInputRef}
                       className="hidden"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (file) {
+                          if (file.type !== "image/jpeg" && file.type !== "image/png") {
+                            setToast("Format file harus .jpg atau .png");
+                            return;
+                          }
+                          if (file.size > 2 * 1024 * 1024) {
+                            setToast("Ukuran file maksimal 2MB.");
+                            return;
+                          }
                           try {
                             const formData = new FormData();
                             formData.append("avatar", file);
@@ -218,28 +268,18 @@ const ProfilePage = () => {
                   </div>
                   <h2 className="mt-4 text-xl font-semibold text-nexus-text">{fullName}</h2>
                   <p className="text-sm text-slate-500">{role}</p>
+                  <Link
+                    className="mt-3 inline-flex items-center rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-nexus-primary transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
+                    to="/subscriptions"
+                  >
+                    Starter Plan
+                  </Link>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border">
-                <h3 className="mb-4 text-xs font-extrabold uppercase tracking-[0.14em] text-nexus-text">Platform Status</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Account Type</span>
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-nexus-primary">Enterprise Pro</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">Translation Quota</span>
-                    <span className="text-sm font-bold text-nexus-text">82% Used</span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-                    <div className="h-full w-[82%] rounded-full bg-nexus-primary" />
-                  </div>
-                </div>
-              </div>
             </section>
 
-            <section className="col-span-12 space-y-6 lg:col-span-8">
+            <section className="col-span-12 lg:col-span-8">
               <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border lg:p-8">
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <h2 className="flex items-center gap-2 text-xl font-semibold text-nexus-text">
@@ -269,6 +309,13 @@ const ProfilePage = () => {
                 </div>
               </div>
 
+            </section>
+
+            <section className="col-span-12 lg:col-span-4">
+              <StorageCard />
+            </section>
+
+            <section className="col-span-12 lg:col-span-8">
               <div className="rounded-xl bg-white p-6 shadow-sm ring-1 ring-nexus-border lg:p-8">
                 <h2 className="mb-8 flex items-center gap-2 text-xl font-semibold text-nexus-text">
                   <Shield className="text-nexus-primary" size={22} /> Security
@@ -315,14 +362,22 @@ const ProfilePage = () => {
               ].map(([name, label, placeholder]) => (
                 <label className="block" key={name}>
                   <span className="mb-1 block text-xs font-bold uppercase text-slate-500">{label}</span>
-                  <input
-                    className="h-11 w-full rounded-lg border border-nexus-border bg-slate-50 px-3 text-sm outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-blue-100"
-                    onChange={(event) => setEditForm((current) => ({ ...current, [name]: event.target.value }))}
-                    placeholder={placeholder}
-                    type={name === "email" ? "email" : "text"}
-                    value={editForm[name]}
-                    disabled={name === "email"}
-                  />
+                  <div className="relative">
+                    <input
+                      maxLength={name === "email" ? 255 : 75}
+                      className={`h-11 w-full rounded-lg border border-nexus-border bg-slate-50 px-3 text-sm outline-none transition focus:border-nexus-primary focus:ring-2 focus:ring-blue-100 ${name === "email" ? "opacity-60" : "pr-14"}`}
+                      onChange={(event) => setEditForm((current) => ({ ...current, [name]: event.target.value }))}
+                      placeholder={placeholder}
+                      type={name === "email" ? "email" : "text"}
+                      value={editForm[name]}
+                      disabled={name === "email"}
+                    />
+                    {name !== "email" && (
+                      <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-slate-400">
+                        {editForm[name]?.length || 0}/75
+                      </div>
+                    )}
+                  </div>
                 </label>
               ))}
               <label className="block">
@@ -356,6 +411,7 @@ const ProfilePage = () => {
                 </select>
               </label>
             </div>
+            {editError && <div className="px-6 pb-2"><p className="rounded-lg bg-red-50 p-3 text-sm font-semibold text-red-600">{editError}</p></div>}
             <div className="flex gap-3 border-t border-nexus-border p-6">
               <button className="flex-1 rounded-lg border border-nexus-border px-4 py-2.5 text-sm font-semibold" onClick={() => setEditModalOpen(false)} type="button">
                 Cancel

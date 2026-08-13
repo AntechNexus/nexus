@@ -1,6 +1,18 @@
 import React from "react";
 import "./HowItWorks.css";
 
+/**
+ * The HowItWorks component acts as a high-level marketing block to explain the transition from
+ * raw discussions to a structured PRD using the Nexus platform. 
+ * 
+ * It renders a relatively simple, static UI component structured with specific CSS classes 
+ * that are defined in an external stylesheet (`HowItWorks.css`). The component currently holds no
+ * internal React state, triggers no side effects, and receives no props. It returns a straightforward 
+ * semantic layout showcasing subtitles, a primary title, a descriptive paragraph, and placeholder 
+ * card slots meant to illustrate the steps involved in requirement documentation.
+ * 
+ * @returns {JSX.Element} A `<div>` container with class `how-it-works` encompassing the instructional marketing content.
+ */
 const HowItWorks = () => {
   return (
     <div className="how-it-works">

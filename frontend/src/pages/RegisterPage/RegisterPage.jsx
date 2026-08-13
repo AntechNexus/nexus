@@ -1,10 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import tokenService from '../../services/token.service';
 import nexusLogo from '../../assets/icons/Logo-nexus.png'; 
 import authService from '../../services/auth.service';
 import './RegisterPage.css';
 
+/**
+ * RegisterPage Component
+ * 
+ * This component is responsible for rendering the registration page where new users can sign up for a Nexus account.
+ * It manages the local state for user input (full name, email, password), toggles password visibility, tracks validation errors, and handles loading states during the API request.
+ * 
+ * The component relies on several side effects:
+ * - It checks if the user is already authenticated (via `tokenService.getToken()`) on mount and redirects them to the dashboard if a valid session exists.
+ * - On form submission, it prevents the default browser action, performs custom client-side validation against email format and password strength requirements, and sends a registration payload to the server.
+ * - If registration is successful, the user's previous authentication token is cleared, and they are navigated to the OTP verification page (`/signup/verify`) with their email and full name passed through routing state.
+ * - If the registration fails, it updates the local error state to display feedback to the user.
+ * 
+ * @returns {JSX.Element} The rendered registration page containing the promotional left banner and the interactive signup form on the right.
+ */
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +30,12 @@ const RegisterPage = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (tokenService.getToken()) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [navigate]);
 
   // Password validation rules check
   const passwordCriteria = [
@@ -27,6 +48,10 @@ const RegisterPage = () => {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
 
+  const clearStaleAuth = () => {
+    tokenService.clearToken();
+  };
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors((current) => ({ ...current, [e.target.name]: undefined }));
@@ -35,7 +60,7 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateEmail(formData.email)) {
-      setErrors({ email: 'Please enter a complete company email, for example jane@company.com.' });
+      setErrors({ email: 'Please enter a valid email address, for example jane@email.com.' });
       return;
     }
     if (passwordCriteria.some((criterion) => !criterion.test(formData.password))) {
@@ -45,6 +70,7 @@ const RegisterPage = () => {
 
     setIsLoading(true);
     try {
+      clearStaleAuth();
       await authService.register(formData.email, formData.password, formData.fullName);
       navigate('/signup/verify', { state: { email: formData.email, fullName: formData.fullName } });
     } catch (err) {
@@ -79,7 +105,7 @@ const RegisterPage = () => {
       <div className="right-section">
         <div className="top-nav">
           <span>Already have an account? </span>
-          <Link to="/login" className="login-link">Log in</Link>
+          <Link to="/login" className="login-link">Sign in</Link>
         </div>
 
         <div className="form-wrapper">
@@ -88,7 +114,10 @@ const RegisterPage = () => {
             Hiring a global team is complex. Nexus makes it easy.
           </p>
 
-          <button type="button" className="google-btn" onClick={() => window.location.href = "http://localhost:5000/api/auth/google"}>
+          <button type="button" className="google-btn" onClick={() => {
+            clearStaleAuth();
+            window.location.href = "http://localhost:5000/api/auth/google";
+          }}>
             <img 
               src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" 
               alt="Google" 
@@ -98,34 +127,41 @@ const RegisterPage = () => {
           </button>
 
           <div className="divider">
-            <span>OR CONTINUE WITH WORK EMAIL</span>
+            <span>OR CONTINUE WITH EMAIL</span>
           </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="input-group">
               <fieldset>
                 <legend>Full name</legend>
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Jane Doe"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                />
+                <div style={{ position: 'relative', width: '100%' }}>
+                  <input
+                    maxLength={75}
+                    type="text"
+                    name="fullName"
+                    placeholder="Jane Doe"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    style={{ paddingRight: '50px' }}
+                    required
+                  />
+                  <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '12px', color: '#94a3b8', pointerEvents: 'none' }}>
+                    {formData.fullName.length}/75
+                  </div>
+                </div>
               </fieldset>
               <small className="helper-text">For example: Jane Doe</small>
             </div>
 
             <div className="input-group">
               <fieldset className={errors.email ? 'fieldset-error' : undefined}>
-                <legend>Company email</legend>
+                <legend>Email address</legend>
                 <input
                   aria-describedby={errors.email ? 'signup-email-error' : undefined}
                   aria-invalid={Boolean(errors.email)}
                   type="email"
                   name="email"
-                  placeholder="jane@company.com"
+                  placeholder="jane@email.com"
                   value={formData.email}
                   onChange={handleChange}
                   pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
@@ -133,7 +169,7 @@ const RegisterPage = () => {
                 />
               </fieldset>
               {errors.email && <small className="form-error" id="signup-email-error">{errors.email}</small>}
-              <small className="helper-text">For example 'you@companyname.com'</small>
+              <small className="helper-text">For example: jane@email.com</small>
             </div>
 
             <div className="input-group">

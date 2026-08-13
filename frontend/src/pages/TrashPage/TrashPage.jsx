@@ -16,6 +16,28 @@ const typeStyles = {
   prd: { Icon: FileText, tone: "bg-violet-50 text-violet-700" },
 };
 
+/**
+ * TrashPage Component
+ * 
+ * The trash page displays a list of files and folders that have been moved to the trash bin, allowing the user to either restore them to their original location or permanently delete them.
+ * 
+ * State managed:
+ * - `sidebarCollapsed`, `mobileSidebarOpen`: Controls the visibility of the dashboard navigation sidebar.
+ * - `items`: An array of trashed items (files and folders) retrieved from the backend.
+ * - `openMenuItemId`: The ID of the trash item whose context menu is currently open.
+ * - `menuPosition`: The computed top/left coordinates for rendering the context menu popup.
+ * - `emptyConfirmOpen`: A boolean controlling the visibility of the "Empty Trash" confirmation modal.
+ * - `permanentDeleteItem`: Stores the specific item object targeted for permanent deletion to pass into the confirmation modal.
+ * - `toast`: A string representing temporary status messages.
+ * 
+ * Side effects:
+ * - `loadItems` is called on initial mount and after any successful deletion or restoration action to refresh the data from the API (`getTrashItems`).
+ * - Attaches window event listeners for `pointerdown` and `keydown` (Escape key) to dismiss context menus and modals when the user clicks outside or presses Escape.
+ * - Includes specific logic to filter out nested trashed items and only show the root deleted entities based on parent folder IDs.
+ * - Makes asynchronous API calls for `removeTrashItem`, `restoreItemFromTrash`, and `emptyTrash`.
+ * 
+ * @returns {JSX.Element} The rendered Trash dashboard view, including the header, sidebar, item list table, context menus, and modals.
+ */
 const TrashPage = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -23,6 +45,7 @@ const TrashPage = () => {
   const [openMenuItemId, setOpenMenuItemId] = useState(null);
   const [menuPosition, setMenuPosition] = useState(null);
   const [emptyConfirmOpen, setEmptyConfirmOpen] = useState(false);
+  const [permanentDeleteItem, setPermanentDeleteItem] = useState(null);
   const [toast, setToast] = useState("");
   const menuRef = useRef(null);
 
@@ -57,6 +80,7 @@ const TrashPage = () => {
         setOpenMenuItemId(null);
         setMenuPosition(null);
         setEmptyConfirmOpen(false);
+        setPermanentDeleteItem(null);
       }
     };
 
@@ -69,6 +93,7 @@ const TrashPage = () => {
   }, []);
 
   const permanentlyRemove = async (item) => {
+    if (!item) return;
     const success = await removeTrashItem(item);
     if (success) {
       await loadItems();
@@ -78,6 +103,7 @@ const TrashPage = () => {
     }
     setOpenMenuItemId(null);
     setMenuPosition(null);
+    setPermanentDeleteItem(null);
   };
 
   const restoreItem = async (item) => {
@@ -129,10 +155,10 @@ const TrashPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text">Trash</h1>
+              <h1 className="nexus-page-title">Trash</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-nexus-muted">
                 Files and folders moved from project workspaces appear here.
               </p>
@@ -153,7 +179,7 @@ const TrashPage = () => {
                 <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-nexus-primary">
                   <RotateCcw size={26} />
                 </span>
-                <h2 className="text-2xl font-bold text-nexus-text">Trash is empty</h2>
+                <h2 className="nexus-section-title">Trash is empty</h2>
                 <p className="mt-2 max-w-md text-sm leading-6 text-nexus-muted">
                   When a file or folder is moved to Trash, it will show up here for review.
                 </p>
@@ -185,7 +211,7 @@ const TrashPage = () => {
                                 <Icon size={19} />
                               </span>
                               <div>
-                                <p className="font-bold text-nexus-text">{item.name}</p>
+                                <p className="font-semibold text-nexus-text">{item.name}</p>
                                 {item.children?.length > 0 && (
                                   <p className="mt-0.5 text-xs font-medium text-nexus-muted">
                                     Includes {item.children.length} nested item{item.children.length === 1 ? "" : "s"}
@@ -240,12 +266,45 @@ const TrashPage = () => {
           </button>
           <button
             className="block w-full px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-red-500"
-            onClick={() => permanentlyRemove(items.find((item) => item.trashId === openMenuItemId))}
+            onClick={() => {
+              setPermanentDeleteItem(items.find((item) => item.trashId === openMenuItemId));
+              setOpenMenuItemId(null);
+              setMenuPosition(null);
+            }}
             role="menuitem"
             type="button"
           >
             Delete Permanently
           </button>
+        </div>
+      )}
+      {permanentDeleteItem && (
+        <div aria-modal="true" className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm" role="dialog">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3 text-red-600">
+              <Trash2 size={25} />
+              <h2 className="text-xl font-semibold text-nexus-text">Delete permanently?</h2>
+            </div>
+            <p className="mb-6 text-sm leading-6 text-slate-600">
+              <span className="font-semibold text-nexus-text">{permanentDeleteItem.name}</span> will be permanently deleted. You will not be able to restore it later.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary"
+                onClick={() => setPermanentDeleteItem(null)}
+                type="button"
+              >
+                Cancel
+              </button>
+              <button
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                onClick={() => permanentlyRemove(permanentDeleteItem)}
+                type="button"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {emptyConfirmOpen && (

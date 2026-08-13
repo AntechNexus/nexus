@@ -1,10 +1,29 @@
 import React, { useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import tokenService from "../../services/token.service";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
 import "../LoginPage/LoginPage.css";
 
+/**
+ * VerifyOtpPage Component
+ * 
+ * This component is responsible for rendering the OTP (One-Time Password) verification screen after a user registers.
+ * 
+ * It maintains the following local state:
+ * - `otp`: An array of 6 strings, representing the individual digits of the verification code.
+ * - `status`: A string representing the current form submission state ('idle', 'loading', 'success').
+ * - `error`: A string to store and display validation or API errors.
+ * 
+ * Side effects triggered by this component include:
+ * - `updateOtp`: Manages the OTP input array and automatically focuses the next input field as the user types.
+ * - `handleKeyDown`: Intercepts Backspace presses on empty fields to move focus to the previous input automatically.
+ * - `handleSubmit`: Validates that all 6 digits are provided, sets the loading state, and calls the verification API. On success, it persists the session token via `tokenService`, clears old tokens, and navigates the user to the onboarding flow. On failure, it updates the error state.
+ * - `handleResend`: Makes an API call to re-send the verification code and alerts the user of the outcome.
+ * 
+ * @returns {JSX.Element} The OTP verification interface including a branding side-panel and the 6-digit input form.
+ */
 const VerifyOtpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,15 +62,17 @@ const VerifyOtpPage = () => {
     setStatus("loading");
     try {
       const code = otp.join("");
+      tokenService.clearToken();
       const response = await authService.verifyOtp(email, code);
-      if (response.token) {
-        localStorage.setItem("nexus_token", response.token);
+      if (!response.token) {
+        throw new Error("Verification succeeded but no session token was returned.");
       }
+      tokenService.setToken(response.token, true);
       setStatus("success");
       navigate("/onboarding", { replace: true, state: { email, fullName } });
     } catch (err) {
       setStatus("idle");
-      setError(err.response?.data?.message || "Invalid or expired OTP.");
+      setError(err.response?.data?.message || err.message || "Invalid or expired OTP.");
     }
   };
 
@@ -115,9 +136,6 @@ const VerifyOtpPage = () => {
 
           <p className="terms-text">
             Didn&apos;t receive it? <button className="auth-inline-button" type="button" onClick={handleResend}>Resend Code</button>
-          </p>
-          <p className="terms-text">
-            Having trouble? <a href="#support">Contact Support</a>
           </p>
         </div>
       </section>

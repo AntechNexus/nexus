@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   ChevronDown,
-  Folder,
   Globe2,
   MoreVertical,
   PlusCircle,
@@ -14,6 +13,7 @@ import {
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import { projectService } from "../../services/project.service";
 import { teamService } from "../../services/team.service";
 
@@ -25,6 +25,15 @@ const sortOptions = [
   { label: "Last Updated", value: "updated-desc" },
 ];
 
+/**
+ * initials Function
+ * 
+ * A utility function that computes user initials from their full name.
+ * It splits the name by spaces, takes the first character of up to the first two words, and capitalizes them.
+ * 
+ * @param {string} name - The full name of the user.
+ * @returns {string} The computed initials (e.g., "JD" for "Jane Doe").
+ */
 const initials = (name) => {
   if (!name) return "??";
   return name
@@ -36,6 +45,16 @@ const initials = (name) => {
     .toUpperCase();
 }
 
+/**
+ * sortProjects Function
+ * 
+ * A utility function that sorts an array of project objects based on a specified sorting criteria.
+ * It handles sorting by project title (alphabetical ascending/descending), number of members (ascending/descending), and last updated date.
+ * 
+ * @param {Array} projectList - The list of projects to sort.
+ * @param {string} sortMode - The current sorting mode selected by the user.
+ * @returns {Array} A new array containing the sorted projects.
+ */
 const sortProjects = (projectList, sortMode) =>
   [...projectList].sort((firstProject, secondProject) => {
     const titleA = firstProject.title || "";
@@ -47,24 +66,50 @@ const sortProjects = (projectList, sortMode) =>
     return titleA.localeCompare(titleB);
   });
 
+/**
+ * ProjectAvatarStack Component
+ * 
+ * Renders a visual stack of circular avatars representing the members of a project.
+ * It displays up to three distinct member initials, and if there are more than three members, it appends a badge indicating the count of remaining members (e.g., "+2").
+ * 
+ * It manages no state and causes no side effects.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Array} props.members - The list of member objects containing their name, tone styling, and IDs.
+ * @returns {JSX.Element} An overlapping stack of member avatars.
+ */
 const ProjectAvatarStack = ({ members }) => (
   <div className="flex -space-x-2">
     {members.slice(0, 3).map((member) => (
       <span
-        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold ${member.tone}`}
+        className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-white text-xs font-bold ${member.tone}`}
         key={member.id}
       >
         {initials(member.name)}
       </span>
     ))}
     {members.length > 3 && (
-      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[10px] font-bold text-slate-600">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-bold text-slate-600">
         +{members.length - 3}
       </span>
     )}
   </div>
 );
 
+/**
+ * ProjectMenu Component
+ * 
+ * A dropdown menu component for individual projects that provides quick access to actions such as renaming or deleting a project.
+ * It only renders its contents when the `open` prop is true.
+ * 
+ * It does not maintain its own state but relies on its parent to control its visibility and handle the action callbacks.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onDelete - The callback function triggered when the "Delete" option is clicked.
+ * @param {Function} props.onRename - The callback function triggered when the "Rename" option is clicked.
+ * @param {boolean} props.open - Whether the menu is currently visible.
+ * @returns {JSX.Element|null} The absolute positioned dropdown menu, or null if closed.
+ */
 const ProjectMenu = ({ onDelete, onRename, open }) => {
   if (!open) return null;
 
@@ -88,6 +133,18 @@ const ProjectMenu = ({ onDelete, onRename, open }) => {
   );
 };
 
+/**
+ * SortMenu Component
+ * 
+ * A dropdown menu component that presents available sorting options for the project list.
+ * It iterates through predefined `sortOptions` and renders a selectable list of buttons. The currently active sort option is highlighted.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onSelect - The callback function triggered when a sort option is selected, passing the selected value.
+ * @param {boolean} props.open - Whether the sorting menu is currently visible.
+ * @param {string} props.selectedSort - The value of the currently active sorting mode.
+ * @returns {JSX.Element|null} The absolute positioned sort dropdown menu, or null if closed.
+ */
 const SortMenu = ({ onSelect, open, selectedSort }) => {
   if (!open) return null;
 
@@ -109,13 +166,30 @@ const SortMenu = ({ onSelect, open, selectedSort }) => {
   );
 };
 
+/**
+ * RenameProjectModal Component
+ * 
+ * A modal dialog that allows users to rename an existing project.
+ * It maintains local state for the new project name input and any validation errors that occur during the submission process.
+ * 
+ * Side effects:
+ * - Resets the name input and clears errors whenever the `project` prop changes (i.e., when the modal opens for a specific project).
+ * - Attaches a 'keydown' event listener to the document to allow closing the modal by pressing the Escape key.
+ * - On form submission, it validates that the name is not empty, invokes the `onSave` callback, and processes any errors returned by the API call.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - The callback function to close the modal without saving.
+ * @param {Function} props.onSave - The callback function to submit the new project name. Expected to return a promise.
+ * @param {Object|null} props.project - The project object currently being renamed. If null, the modal does not render.
+ * @returns {JSX.Element|null} The rename project modal overlay, or null if no project is provided.
+ */
 const RenameProjectModal = ({ onClose, onSave, project }) => {
   const [name, setName] = useState(project?.title ?? "");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     setName(project?.title ?? "");
-    setError("");
+    setErrors({});
   }, [project]);
 
   useEffect(() => {
@@ -129,13 +203,21 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
 
   if (!project) return null;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (!name.trim()) {
-      setError("Project name cannot be empty.");
+      setErrors({ name: "Project name cannot be empty." });
       return;
     }
-    onSave(name.trim());
+    const res = await onSave(name.trim());
+    if (res && res.success === false) {
+      const err = res.error;
+      if (err.response?.data?.validationErrors) {
+        setErrors(err.response.data.validationErrors);
+      } else {
+        setErrors({ general: err.response?.data?.message || "Failed to rename project." });
+      }
+    }
   };
 
   return (
@@ -150,15 +232,18 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
         <label className="mb-2 block text-sm font-medium text-slate-600">
           Project Name
           <input
-            className="mt-1 h-11 w-full rounded-xl border border-nexus-border px-3 text-sm text-nexus-text outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+            className={`mt-1 h-11 w-full rounded-xl border px-3 text-sm text-nexus-text outline-none transition focus:ring-4 focus:ring-blue-100 ${
+              errors.name ? "border-red-400 focus:border-red-500" : "border-nexus-border focus:border-nexus-primary"
+            }`}
             onChange={(event) => {
               setName(event.target.value);
-              setError("");
+              setErrors((prev) => ({ ...prev, name: null }));
             }}
             value={name}
           />
         </label>
-        {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+        {errors.name && <p className="mb-4 text-sm font-semibold text-red-600">{errors.name}</p>}
+        {errors.general && <p className="mb-4 text-sm font-semibold text-red-600">{errors.general}</p>}
         <div className="mt-6 flex justify-end gap-3">
           <button className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">
             Cancel
@@ -172,6 +257,21 @@ const RenameProjectModal = ({ onClose, onSave, project }) => {
   );
 };
 
+/**
+ * DeleteProjectModal Component
+ * 
+ * A confirmation modal that prompts the user before permanently deleting a project.
+ * It warns the user that the project will be removed from their active workspace.
+ * 
+ * Side effects:
+ * - Attaches a 'keydown' event listener to the document to allow closing the modal by pressing the Escape key.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onClose - The callback function to close the modal without deleting.
+ * @param {Function} props.onConfirm - The callback function to execute the deletion.
+ * @param {Object|null} props.project - The project object targeted for deletion. If null, the modal does not render.
+ * @returns {JSX.Element|null} The deletion confirmation modal overlay, or null if no project is provided.
+ */
 const DeleteProjectModal = ({ onClose, onConfirm, project }) => {
   useEffect(() => {
     if (!project) return undefined;
@@ -207,16 +307,36 @@ const DeleteProjectModal = ({ onClose, onConfirm, project }) => {
   );
 };
 
+/**
+ * AddMemberModal Component
+ * 
+ * A modal dialog for searching and adding new members to a project.
+ * It manages local state for the search query, search results from the API, the currently selected user to be added, and any error messages.
+ * 
+ * Side effects:
+ * - Attaches an Escape key listener to close the modal.
+ * - Debounces the search input query: after 400ms of typing inactivity (and if the query is at least 3 characters long), it fires an API request (`teamService.searchUsers`) to fetch matching users, filtering out those who are already members of the project.
+ * - Cleans up the debounce timeout on unmount or when the query changes.
+ * - Handles the asynchronous submission to add the member, surfacing any errors returned by the backend.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Function} props.onAdd - The callback function triggered to add the selected user to the project.
+ * @param {Function} props.onClose - The callback function to close the modal.
+ * @param {Object|null} props.project - The project object to which members are being added. If null, the modal does not render.
+ * @returns {JSX.Element|null} The add member modal overlay, or null if no project is provided.
+ */
 const AddMemberModal = ({ onAdd, onClose, project }) => {
   const [selected, setSelected] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!project) return undefined;
     setSelected(null);
     setSearchQuery("");
     setSearchResults([]);
+    setError("");
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
     };
@@ -260,11 +380,15 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
               className="h-12 w-full rounded-xl border border-nexus-border bg-slate-50 pl-10 pr-4 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100" 
               placeholder="Search by name or email" 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setError("");
+              }}
             />
           </label>
+          {error && <p className="-mt-2 text-sm font-semibold text-red-600">{error}</p>}
           <div>
-            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-nexus-muted">Search Results</p>
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">Search Results</p>
             {searchResults.length === 0 && searchQuery.length >= 3 && (
               <p className="text-sm text-slate-500">No users found.</p>
             )}
@@ -308,7 +432,13 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
           <button
             className="rounded-xl bg-nexus-primary px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary focus-visible:ring-offset-2"
             disabled={!selected}
-            onClick={() => onAdd(selected)}
+            onClick={async () => {
+              setError("");
+              const res = await onAdd(selected);
+              if (res && res.success === false) {
+                setError(res.error?.response?.data?.message || "Failed to add member.");
+              }
+            }}
             type="button"
           >
             Add Member
@@ -319,6 +449,22 @@ const AddMemberModal = ({ onAdd, onClose, project }) => {
   );
 };
 
+/**
+ * RemoveMemberModal Component
+ * 
+ * A confirmation modal that ensures the user actually wants to revoke a member's access to a project.
+ * It displays the target member's details and a warning about the consequences of the action.
+ * 
+ * Side effects:
+ * - Attaches an Escape key listener to close the modal.
+ * 
+ * @param {Object} props - The component props.
+ * @param {Object|null} props.member - The member object targeted for removal.
+ * @param {Function} props.onClose - The callback function to dismiss the modal without taking action.
+ * @param {Function} props.onConfirm - The callback function to confirm and execute the removal.
+ * @param {Object|null} props.project - The project from which the member is being removed.
+ * @returns {JSX.Element|null} The removal confirmation modal overlay, or null if either `member` or `project` is missing.
+ */
 const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
   useEffect(() => {
     if (!member) return undefined;
@@ -356,8 +502,36 @@ const RemoveMemberModal = ({ member, onClose, onConfirm, project }) => {
   );
 };
 
+/**
+ * TeamsPage Component
+ * 
+ * The workspace settings and member management interface.
+ * Responsibilities:
+ * - Displays all users (members, viewers, admins) within a project.
+ * - Handles inviting new members via email search.
+ * - Manages Role-Based Access Control (RBAC) levels (e.g., owner vs member permissions).
+ * - Periodically polls (15s) for member status updates (e.g., pending to accepted).
+ * 
+ * State managed:
+ * - `sidebarCollapsed`, `mobileSidebarOpen`: UI states for the navigation layout.
+ * - `projects`: Array of normalized project data fetched from the backend.
+ * - `currentUser`: The currently authenticated user's profile details.
+ * - UI visibility states: `openProjectIds` (expanded accordions), `openMenuProjectId` (active dropdown), `sortOpen` (sorting dropdown), and modal targets (`addMemberProject`, `removeMemberTarget`, `renameProject`, `deleteProject`).
+ * - `sortMode`: The active sorting criteria for the projects list.
+ * - `toast`: Temporary notification messages for feedback on actions.
+ * 
+ * Side effects:
+ * - On initial mount, fetches the current user's profile information.
+ * - Initiates a fetch of the projects list on mount and sets up a 15-second polling interval to keep the data fresh.
+ * - Listens for custom `projectListUpdated` window events to trigger a re-fetch.
+ * - Manages global pointerdown and keydown events to automatically close active dropdown menus when clicking outside or pressing Escape.
+ * - Makes several asynchronous calls to `projectService` and `teamService` for renaming, deleting, adding, and removing members.
+ * 
+ * @returns {JSX.Element} The complete team management page including the sidebar, header, project list, and various management modals.
+ */
 const TeamsPage = () => {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -440,8 +614,12 @@ const TeamsPage = () => {
   useEffect(() => {
     fetchProjects();
     const handleUpdate = () => fetchProjects();
+    const interval = setInterval(fetchProjects, 15000); // Poll every 15s
     window.addEventListener("projectListUpdated", handleUpdate);
-    return () => window.removeEventListener("projectListUpdated", handleUpdate);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("projectListUpdated", handleUpdate);
+    };
   }, [projectId]); // re-run if URL changes
 
   useEffect(() => {
@@ -479,13 +657,13 @@ const TeamsPage = () => {
   const handleRenameProject = async (name) => {
     if (!renameProject) return;
     try {
-      await projectService.updateProject(renameProject.id, { title: name });
+      await projectService.updateProject(renameProject.id, { name: name }); // Fixed title to name
       setToast("Project renamed successfully.");
       fetchProjects();
-    } catch (err) {
-      setToast("Failed to rename project.");
-    } finally {
       setRenameProject(null);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
     }
   };
 
@@ -508,10 +686,10 @@ const TeamsPage = () => {
       await teamService.addProjectMember(addMemberProject.id, selectedUser._id, "editor");
       setToast("Member added successfully.");
       fetchProjects();
-    } catch (err) {
-      setToast("Failed to add member.");
-    } finally {
       setAddMemberProject(null);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err };
     }
   };
 
@@ -538,10 +716,10 @@ const TeamsPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-8 p-4 lg:p-8">
+        <main className="nexus-page-shell">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-nexus-text sm:text-4xl">Team Management</h1>
+              <h1 className="nexus-page-title">Team Management</h1>
               <p className="mt-2 text-sm text-nexus-muted sm:text-base">
                 Manage member permissions and project access across your workspace.
               </p>
@@ -566,8 +744,10 @@ const TeamsPage = () => {
             </div>
           </div>
 
-          <section className="space-y-4">
-            {visibleProjects.map((project) => {
+          <section className={visibleProjects.length === 0 ? "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4" : "space-y-4"}>
+            {visibleProjects.length === 0 ? (
+              <NewProjectCard onClick={() => navigate("/projects/new")} />
+            ) : visibleProjects.map((project) => {
               const isOpen = openProjectIds.includes(project.id);
               const isCurrentUserOwner = project.members.some(m => m.permission === "Owner" && m.id === currentUser?.id);
               
@@ -587,7 +767,7 @@ const TeamsPage = () => {
                         <Globe2 size={20} />
                       </span>
                       <div>
-                        <h2 className="text-sm font-bold text-nexus-text">{project.title}</h2>
+                        <h2 className="text-sm font-semibold text-nexus-text">{project.title}</h2>
                         <p className="text-xs font-medium text-nexus-muted">{project.updatedLabel}</p>
                       </div>
                     </div>
@@ -629,7 +809,7 @@ const TeamsPage = () => {
                   {isOpen && (
                     <div className="border-t border-nexus-border bg-slate-50/60 p-4 sm:p-5">
                       <div className="mb-4 flex items-center justify-between gap-3">
-                        <p className="text-xs font-bold uppercase tracking-widest text-nexus-muted">
+                        <p className="text-xs font-bold uppercase tracking-[0.12em] text-nexus-muted">
                           Team Members ({project.members.length})
                         </p>
                         {isCurrentUserOwner && (
@@ -663,7 +843,7 @@ const TeamsPage = () => {
                               </div>
                               <div className="flex shrink-0 items-center gap-4">
                                 {isOwner && (
-                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-nexus-primary">
+                                  <span className="rounded-md bg-blue-50 px-2 py-1 text-xs font-bold uppercase tracking-wide text-nexus-primary">
                                     Owner
                                   </span>
                                 )}

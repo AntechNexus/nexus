@@ -1,14 +1,22 @@
-const { GoogleGenAI } = require("@google/genai");
+const { OpenAI } = require("openai");
+const fs = require("fs").promises;
 
-// Ensure environment variable exists
-if (!process.env.GEMINI_API_KEY) {
-    console.error("GEMINI_API_KEY is not set in environment");
-}
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
+/**
+ * Handles the automated generation of a Product Requirements Document (PRD) using an AI model.
+ * 
+ * This controller function integrates user responses to AI-generated clarifying questions with 
+ * previously cached document context to build a comprehensive prompt. It strictly instructs the Gemini 
+ * LLM to output a technical PRD in Markdown format. It respects user-provided templates if present in 
+ * the context, otherwise defaulting to a robust standard PRD structure.
+ * 
+ * @param {Object} req - Express request object. Expects `cacheId`, `questions`, `answers`, and `versionName` in the body.
+ * @param {Object} res - Express response object used to send the generated PRD Markdown text.
+ * @returns {Promise<Object>} A promise resolving to the Express response containing the structured PRD string.
+ * @sideEffects Reads cached context files directly from the disk filesystem. Calls the external Elice AI API to generate the PRD content.
+ */
 const handleGeneratePrd = async (req, res) => {
   try {
-    const { cacheId, answers, questions } = req.body;
+    const { cacheId, answers, questions, versionName } = req.body;
 
     if (!cacheId) {
       return res.status(400).json({ error: "Invalid Cache ID" });
@@ -29,9 +37,17 @@ const handleGeneratePrd = async (req, res) => {
       answersContext += "(No clarifying questions were asked; user requested direct PRD generation)\n\n";
     }
 
-    // Handle improvement instruction if provided (for re-generate)
     if (answers && answers._improvement_instruction) {
       answersContext += `\n---\nIMPROVEMENT INSTRUCTION FROM USER:\n${answers._improvement_instruction}\n---\n\n`;
+    }
+
+    // Read the original context text we saved in uploadController
+    let originalContext = "";
+    try {
+       originalContext = await fs.readFile(cacheId, "utf8");
+    } catch (e) {
+       console.error("Failed to read context file:", cacheId);
+       return res.status(400).json({ error: "Context cache expired or missing." });
     }
 
     const prdPrompt = `
@@ -43,15 +59,22 @@ const handleGeneratePrd = async (req, res) => {
       ---
       
       Create a HIGHLY TECHNICAL, PROFESSIONAL, and COMPREHENSIVE Product Requirements Document (PRD) using Markdown format.
-      You MUST use the exact structure and template below, filling each section with as much relevant detail as possible based on the context you have:
-
+      
+      IMPORTANT TEMPLATE INSTRUCTIONS:
+      1. First, check if the Context Documents contain a structural template provided by the user. 
+      2. If you find a template, evaluate if it is genuinely a PRD (Product Requirements Document) template. 
+      3. If the provided template appears to be a completely unrelated document type (e.g., a CV, Resume, Invoice, or Letter) despite its filename or if no template is provided, IGNORE IT and strictly use the "DEFAULT PRD STRUCTURE" below.
+      4. If the provided template IS a valid PRD template, you MUST prioritize and follow that user-provided template's exact structure, sections, and headings instead of the default structure.
+      
+      If using the DEFAULT PRD STRUCTURE, use the exact sections below:
+      
 # Product Requirements Document (PRD)
 
 ## 1. Project Overview
    - **Project Name:** [Fill based on document context]
    - **Project ID:** [Generate a unique ID or extract from document]
    - **Date:** [Today's date]
-   - **Version:** 1.0
+   - **Version:** ${versionName || "1.0"}
    - **Prepared By:** Nexus AI
    - **Approved By:** [Fill if information is available, otherwise write TBD]
 
@@ -149,24 +172,18 @@ const handleGeneratePrd = async (req, res) => {
       Do NOT include any preamble such as "Sure, here is the PRD" — start directly from the first line (# Product Requirements Document (PRD)).
     `;
 
-    let config = { temperature: 0.4 };
-    let contents = [{ role: "user", parts: [{ text: prdPrompt }] }];
-
-    if (cacheId.startsWith("fileUris:")) {
-       const fileUris = JSON.parse(cacheId.replace("fileUris:", ""));
-       const fileParts = fileUris.map((f) => ({ fileData: { fileUri: f.uri, mimeType: f.mimeType } }));
-       contents[0].parts = [...fileParts, { text: prdPrompt }];
-    } else {
-       config.cachedContent = cacheId;
-    }
-
-    const response = await ai.models.generateContent({
-      model: "gemini-3.1-pro-preview",
-      contents,
-      config
+    const clientPro = new OpenAI({ baseURL: process.env.ELICE_URL_3_1_PRO, apiKey: process.env.ELICE_API_KEY });
+     
+    const response = await clientPro.chat.completions.create({
+      model: "gemini-3.1-pro",
+      messages: [
+          { role: "system", content: "You are a Senior Product Manager." },
+          { role: "user", content: `Context Documents:\n${originalContext}\n\n${prdPrompt}` }
+      ],
+      temperature: 0.4
     });
 
-    return res.json({ prd: response.text });
+    return res.json({ prd: response.choices[0].message.content });
 
   } catch (error) {
     console.error("PRD Generation error:", error);

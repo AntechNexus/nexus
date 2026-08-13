@@ -5,13 +5,57 @@ import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
 import "../LoginPage/LoginPage.css";
 
+/**
+ * Represents the Forgot Password page in the Nexus application.
+ *
+ * This component provides an interface for users who have forgotten their passwords
+ * to request a password reset link. It maintains local state for the user's email input,
+ * any validation or API errors, and the current submission status ('idle', 'sending', 'sent').
+ *
+ * The page renders a split layout:
+ * - A branding panel that introduces the Nexus application and its core value proposition.
+ * - A form panel where users can enter their registered email address.
+ *
+ * It triggers a side effect by calling the `authService.forgotPassword` method when the form
+ * is submitted with a valid email. Upon successful submission, the view transitions to a
+ * success state, informing the user that the secure reset link has been dispatched to their inbox.
+ *
+ * @param {Object} props - The properties passed to the component (currently accepts no props).
+ * @returns {JSX.Element} The rendered ForgotPasswordPage, containing both the branding section and the password reset form.
+ */
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("idle");
 
+  /**
+   * Validates the format of the provided email address using a regular expression.
+   *
+   * This function checks whether the string roughly conforms to standard email syntax
+   * (e.g., username@domain.com). It first trims any leading or trailing whitespace
+   * to ensure that accidental spaces do not cause false negative validations.
+   *
+   * @param {string} value - The raw email string inputted by the user.
+   * @returns {boolean} Returns `true` if the email matches the required format, otherwise `false`.
+   */
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
 
+  /**
+   * Handles the form submission event for sending the password reset email.
+   *
+   * This asynchronous handler prevents the default form submission behavior and checks
+   * the current submission status to avoid duplicate requests. It proceeds to validate
+   * the email input. If validation fails, it updates the `error` state and halts execution.
+   *
+   * If validation succeeds, it updates the `status` state to 'sending', clears any existing errors,
+   * and invokes the `authService.forgotPassword` API call. Depending on the API response,
+   * it either transitions the `status` state to 'sent' upon success, or sets the `error` state
+   * with the message returned from the server (or a generic fallback message) and resets the
+   * status to 'idle' upon failure.
+   *
+   * @param {React.FormEvent<HTMLFormElement>} event - The form submission event object.
+   * @returns {Promise<void>} A promise that resolves when the form handling and API call are complete.
+   */
   const handleSendEmail = async (event) => {
     event.preventDefault();
     if (status === "sending") return;

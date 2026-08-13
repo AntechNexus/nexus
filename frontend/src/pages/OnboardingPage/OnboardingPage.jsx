@@ -37,7 +37,7 @@ const roleOptions = [
   },
 ];
 
-const teamSizes = ["1-5", "6-20", "21-50", "51-200", "201-500", "500+"];
+const teamSizes = ["1-10", "11-20", "21-50", "51-100", "101-250", "250+"];
 
 const industryOptions = [
   "Technology, SaaS & Software Development",
@@ -52,7 +52,7 @@ const industryOptions = [
   "Real Estate, PropTech & Construction",
   "Energy, Utilities & Resources",
   "Government, Public Sector & Non-Profit",
-  "Lainnya (Other)",
+  "Other",
 ];
 
 const initialDetails = {
@@ -61,6 +61,39 @@ const initialDetails = {
   industry: "",
 };
 
+/**
+ * Represents the multi-step Onboarding flow for newly registered or incomplete user profiles.
+ * 
+ * This comprehensive component guides users through an essential data collection process required to 
+ * personalize their platform experience. The onboarding sequence is divided into two distinct steps. 
+ * Step 1 focuses on capturing the user's professional role through a visually engaging, grid-based 
+ * selection interface. Users can choose from predefined roles such as Founder, Product Manager, Developer, 
+ * Architect, or indicate an alternative specialization.
+ * 
+ * Step 2 transitions to capturing demographic and organizational details, including the user's full name, 
+ * the size of their team, and their primary industry. The component is highly dynamic; it maintains 
+ * extensive local state utilizing the `useState` hook to track the current step, the `selectedRole`, 
+ * and a `details` object containing `fullName`, `teamSize`, and `industry`. It seamlessly handles 
+ * state transitions between these steps and meticulously validates the inputs prior to submission.
+ * 
+ * The component leverages the `useEffect` hook to preemptively fetch the user's profile information 
+ * from the backend upon mounting. If the user's full name is available in the profile response but not 
+ * already populated via the initial location state, it updates the `details` state to pre-fill the 
+ * Full Name field in Step 2. This creates a smoother, less repetitive user experience.
+ * 
+ * Submission is managed through the `saveAndContinue` asynchronous function, which invokes the 
+ * `authService.updateProfile` method to transmit the collected data. Additionally, a `skipOnboarding` 
+ * capability is provided for users wishing to bypass the detailed data entry, though it still registers 
+ * the minimal selected context. Upon successful profile update or a skipped action, the user is navigated 
+ * to the `/login` view (with an onboarding completed flag) to initiate their fully authenticated session.
+ * 
+ * Visually, the component implements a polished, responsive, centered card layout. It employs a rich 
+ * set of icons from the `lucide-react` library and adheres to a sophisticated styling paradigm featuring 
+ * focus states, shadows, and disabled-state handling for interactive elements. Error messages are conditionally 
+ * rendered inline to provide immediate validation feedback.
+ * 
+ * @returns {JSX.Element} The complete JSX structure for the multi-step onboarding wizard.
+ */
 const OnboardingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -109,7 +142,7 @@ const OnboardingPage = () => {
         teamSize: details.teamSize,
         industry: details.industry,
       });
-      navigate("/dashboard");
+      navigate("/login", { replace: true, state: { onboardingCompleted: true } });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to update profile.");
     }
@@ -123,8 +156,8 @@ const OnboardingPage = () => {
         teamSize: "",
         industry: "",
       });
-      navigate("/dashboard");
-    } catch (err) {
+      navigate("/login", { replace: true, state: { onboardingCompleted: true } });
+    } catch {
       setError("Failed to skip onboarding. Please try again.");
     }
   };
@@ -134,7 +167,7 @@ const OnboardingPage = () => {
       <div className="mx-auto flex min-h-[calc(100vh-48px)] max-w-6xl flex-col items-center">
         <Link
           aria-label="Back to Nexus landing page"
-          className="inline-flex items-center gap-2 rounded-lg text-sm font-extrabold uppercase text-[#0032c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0032c4] focus-visible:ring-offset-4"
+          className="inline-flex items-center gap-2 rounded-lg text-sm font-bold uppercase text-[#0032c4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0032c4] focus-visible:ring-offset-4"
           to="/"
         >
           <img alt="Nexus logo" className="h-7 w-7 rounded-md object-contain" src={nexusLogo} />
@@ -146,8 +179,8 @@ const OnboardingPage = () => {
 
           {step === 1 ? (
             <div className="p-6 sm:p-9">
-              <p className="text-center text-[11px] font-bold uppercase tracking-[0.08em] text-[#294de3]">Step 1 of 2</p>
-              <h1 className="mt-3 text-center text-2xl font-extrabold text-slate-950">Tell us about yourself</h1>
+              <p className="text-center text-xs font-bold uppercase tracking-[0.08em] text-[#294de3]">Step 1 of 2</p>
+              <h1 className="mt-3 text-center text-2xl font-bold text-slate-950">Tell us about yourself</h1>
               <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-6 text-slate-500">
                 Help us tailor your experience. Choose the role that best describes what you do.
               </p>
@@ -215,10 +248,10 @@ const OnboardingPage = () => {
           ) : (
             <form className="p-6 sm:p-9" onSubmit={saveAndContinue}>
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[11px] font-bold text-[#294de3]">Step 2 of 2</p>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold text-slate-500">Personal Info</span>
+                <p className="text-xs font-bold text-[#294de3]">Step 2 of 2</p>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">Personal Info</span>
               </div>
-              <h1 className="mt-8 text-center text-2xl font-extrabold text-slate-950">Personalize your experience</h1>
+              <h1 className="mt-8 text-center text-2xl font-bold text-slate-950">Personalize your experience</h1>
               <p className="mx-auto mt-2 max-w-md text-center text-sm leading-6 text-slate-500">
                 Help us understand how you&apos;ll use NEXUS to provide the best tools for your projects.
               </p>

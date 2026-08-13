@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      match: [/.+\@.+\..+/, 'Format email tidak valid'],
+      match: [/.+\@.+\..+/, 'Please enter a valid email address'],
     },
     passwordHash: {
       type: String,
@@ -27,12 +27,12 @@ const userSchema = new mongoose.Schema(
         type: String,
         required: true,
         minlength: 2,
-        maxlength: 50,
+        maxlength: 75,
         default: 'New User',
       },
       roleTitle: {
         type: String,
-        maxlength: 50,
+        maxlength: 75,
         default: '',
       },
       avatarUrl: {
@@ -48,14 +48,17 @@ const userSchema = new mongoose.Schema(
       },
       role: {
         type: String,
+        maxlength: 75,
         default: '',
       },
       teamSize: {
         type: String,
+        maxlength: 75,
         default: '',
       },
       industry: {
         type: String,
+        maxlength: 75,
         default: '',
       },
     },
@@ -103,6 +106,12 @@ const userSchema = new mongoose.Schema(
     // Audit Trail: When (Otomatis generate createdAt & updatedAt)
     timestamps: true,
   },
+);
+
+// TTL index to hard delete unverified users after 20 minutes (1200 seconds)
+userSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 1200, partialFilterExpression: { isVerified: false } }
 );
 
 module.exports = mongoose.model('User', userSchema);

@@ -5,7 +5,7 @@ services:
     image: mongo:latest
     container_name: nexus_mongodb
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - nexus_mongo_data:/data/db
     restart: unless-stopped
@@ -17,6 +17,13 @@ services:
       - "5001:5001"
     env_file:
       - ./backend/backend-gemini/.env
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/nexus
+      - AUTH_SERVICE_URL=http://backend-nexus:5000
+    volumes:
+      - ./backend/backend-nexus/uploads:/app/uploads
+    depends_on:
+      - mongodb
     restart: unless-stopped
 
   backend-nexus:

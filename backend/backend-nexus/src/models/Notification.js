@@ -17,9 +17,13 @@ const notificationSchema = new mongoose.Schema(
       type: String,
       required: [true, "type is required"],
       enum: {
-        values: ["collaboration_invite", "storage_warning"],
-        message: "type must be 'collaboration_invite' or 'storage_warning'",
+        values: ["collaboration_invite", "storage_warning", "system"],
+        message: "type must be 'collaboration_invite', 'storage_warning', or 'system'",
       },
+    },
+    actionPath: {
+      type: String,
+      default: null,
     },
     title: {
       type: String,

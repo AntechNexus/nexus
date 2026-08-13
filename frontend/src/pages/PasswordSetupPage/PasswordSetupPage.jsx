@@ -1,27 +1,72 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Check, Eye, EyeOff } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import nexusLogo from "../../assets/icons/Logo-nexus.png";
 import authService from "../../services/auth.service";
+import tokenService from "../../services/token.service";
 import "../LoginPage/LoginPage.css";
 
+/**
+ * PasswordSetupPage Component
+ * 
+ * This component is responsible for handling the user's password setup and reset flows. 
+ * It determines the current context (either setting a new password for a Google-authenticated user or resetting an existing password) 
+ * by examining the URL parameters and routing state. It maintains local state for the user's account details, 
+ * password input, confirmation, validation criteria, and submission status.
+ * 
+ * Side effects triggered by this component include checking the user's current Google account session on mount 
+ * if not in the reset flow. It also uses the `authService` to securely transmit the new password to the backend API 
+ * and handles potential error responses by displaying them to the user.
+ * 
+ * @returns {JSX.Element} The rendered interface for setting up or resetting a user's password, 
+ *                        complete with a real-time security checklist and feedback messages.
+ */
 const PasswordSetupPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const resetEmail = new URLSearchParams(location.search).get("email");
   const resetCode = new URLSearchParams(location.search).get("code");
   const isResetFlow = location.pathname === "/reset-password" || location.state?.flow === "reset";
-  const resetToken = location.state?.resetToken || resetCode;
-  const account = location.state?.account || {
+  const initialAccount = location.state?.account || {
     name: isResetFlow ? "Nexus User" : "Google User",
-    email: location.state?.email || resetEmail || "google.user@gmail.com",
+    email: location.state?.email || resetEmail || "",
   };
   
+  const [account, setAccount] = useState(initialAccount);
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [status, setStatus] = useState("idle");
+
+  useEffect(() => {
+    if (isResetFlow || account.email) return;
+
+    let isMounted = true;
+
+    const loadGoogleAccount = async () => {
+      try {
+        const response = await authService.getProfile();
+        const user = response.user;
+        if (!isMounted || !user?.email) return;
+
+        setAccount({
+          name: user.profile?.fullName || "Google User",
+          email: user.email,
+        });
+      } catch {
+        if (isMounted) {
+          setError("Unable to load your Google account. Please try signing in again.");
+        }
+      }
+    };
+
+    loadGoogleAccount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [account.email, isResetFlow]);
 
   const criteria = useMemo(
     () => [
@@ -54,7 +99,8 @@ const PasswordSetupPage = () => {
         navigate("/login", { replace: true });
       } else {
         await authService.setPassword(password);
-        navigate("/onboarding", { replace: true });
+        tokenService.clearToken();
+        navigate("/login", { replace: true, state: { onboardingCompleted: true } });
       }
     } catch (err) {
       setStatus("idle");
@@ -83,7 +129,9 @@ const PasswordSetupPage = () => {
           <p className="auth-subtitle">
             {isResetFlow
               ? `Create a new password for ${account.email}. After this, sign in again to continue.`
-              : `You're connected as ${account.email}. Create a NEXUS password to complete your profile.`}
+              : account.email
+                ? `You're connected as ${account.email}. Create a NEXUS password to complete your profile.`
+                : "Loading your Google account details..."}
           </p>
 
           <form className="auth-form" onSubmit={handleSubmit} noValidate>

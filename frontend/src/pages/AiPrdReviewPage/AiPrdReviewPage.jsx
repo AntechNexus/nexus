@@ -3,7 +3,7 @@ import {
   Check,
   CheckCircle2,
   FileText,
-  History,
+  FilePenLine,
   RefreshCw,
   Save,
   ShieldAlert,
@@ -14,41 +14,105 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
+import GithubSlugger from "github-slugger";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
+import { resetPrdSession, startRegeneratePrdJob, getActiveRegenerateJob } from "../../services/prdBackgroundService";
 import * as prdApi from "../../services/prdApi";
 
 const suggestionChips = [
-  "Make it more detailed",
+  "Add more detail",
   "Make it more concise",
   "Improve acceptance criteria",
 ];
 
+/**
+ * Component for reviewing and editing the generated Product Requirements Document (PRD).
+ *
+ * This page serves as the final step in the PRD generation wizard. It takes the raw Markdown output 
+ * produced by the Nexus AI and presents it in a rich text format using `react-markdown`. It allows the user 
+ * to read through the drafted PRD, see a dynamic document outline, regenerate specific sections or the entire 
+ * document based on custom instructions, and ultimately save the final document back to their project.
+ *
+ * The component maintains various states such as:
+ * - `sidebarCollapsed` and `mobileSidebarOpen` for controlling the main dashboard layout.
+ * - `currentMarkdown` holding the text of the PRD being reviewed.
+ * - `outline` containing a list of document headings generated dynamically to facilitate smooth scrolling navigation.
+ * - `regenOpen`, `regenInstruction`, and `regenLoading` for managing the regeneration modal and background job status.
+ * - `saveLoading` and `saved` for handling the state of the final save action to the backend API.
+ *
+ * Key side effects include:
+ * - Validating the presence of `rawMarkdown` on mount, redirecting the user if the expected draft data is missing.
+ * - Subscribing to the `prdJobCompleted` event to update the `currentMarkdown` when a regeneration job finishes.
+ * - Dynamically pre-processing the markdown when it changes (via `useMemo`) to ensure headers are correctly formatted for the slugger and outline generator.
+ * - Cleaning up the local storage session data when the user successfully saves the PRD.
+ *
+ * @returns {JSX.Element} The rendered interface including the markdown viewer, sidebar outline, regeneration modal, and save controls.
+ */
 const AiPrdReviewPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { rawMarkdown, projectId, allFileIds, cacheId, questions, answers, projectName } = location.state || {};
+  const getInitialState = () => {
+    if (location.state && location.state.rawMarkdown) return location.state;
+    const stored = localStorage.getItem("prd_review_data");
+    if (stored) return JSON.parse(stored);
+    return null;
+  };
+
+  const initialState = getInitialState();
+  
+  const { 
+    rawMarkdown, projectId, allFileIds, cacheId, 
+    questions, answers, projectName, baseVersion = 0, currentVersion 
+  } = initialState || {};
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [regenOpen, setRegenOpen] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
   const [regenInstruction, setRegenInstruction] = useState("");
-  const [version, setVersion] = useState("V1.0 Draft");
+  const [version, setVersion] = useState(currentVersion || `V${baseVersion + 1}.0 Draft`);
   const [toast, setToast] = useState("");
   
   const [currentMarkdown, setCurrentMarkdown] = useState(rawMarkdown || "");
   const [outline, setOutline] = useState([]);
+  const [activeOutlineId, setActiveOutlineId] = useState("");
   
   const [saveLoading, setSaveLoading] = useState(false);
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (!rawMarkdown) {
+      resetPrdSession();
       navigate("/ai-prd-workspace");
     }
   }, [rawMarkdown, navigate]);
+
+  useEffect(() => {
+    const activeRegen = getActiveRegenerateJob();
+    const regenStatus = localStorage.getItem("prd_regenerate_status");
+    if (activeRegen || regenStatus === "running") {
+      setRegenLoading(true);
+    } else {
+      setRegenLoading(false);
+    }
+
+    const handleJobCompleted = (e) => {
+      if (e.detail.message === "PRD Section Regenerated") {
+        setRegenLoading(false);
+        const stored = localStorage.getItem("prd_review_data");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          setCurrentMarkdown(parsed.rawMarkdown);
+          setVersion(parsed.currentVersion || `V${parsed.baseVersion + 1}.1 Draft`);
+        }
+      }
+    };
+
+    window.addEventListener("prdJobCompleted", handleJobCompleted);
+    return () => window.removeEventListener("prdJobCompleted", handleJobCompleted);
+  }, []);
 
   // Dynamically generate document outline from markdown headers
   // Also pre-process markdown to ensure headings exist if Gemini forgot them
@@ -84,19 +148,66 @@ const AiPrdReviewPage = () => {
       const headingRegex = /^(#{1,3})\s+(.*)$/gm;
       let match;
       const newOutline = [];
+      const slugger = new GithubSlugger();
       while ((match = headingRegex.exec(processedMarkdown)) !== null) {
         newOutline.push({
-          id: match[2].toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+          id: slugger.slug(match[2]),
           label: match[2].replace(/\*\*/g, '').trim(),
           level: match[1].length,
         });
       }
       setOutline(newOutline);
+      setActiveOutlineId((current) => (
+        newOutline.some((item) => item.id === current) ? current : newOutline[0]?.id || ""
+      ));
     }
   }, [processedMarkdown]);
 
+  useEffect(() => {
+    if (outline.length === 0) return undefined;
+    let frameId = null;
+
+    const updateActiveHeading = () => {
+      const headingOffset = 130;
+      const documentBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+      let currentId = outline[0]?.id || "";
+
+      for (const item of outline) {
+        const heading = document.getElementById(item.id);
+        if (!heading) continue;
+        if (heading.getBoundingClientRect().top <= headingOffset) {
+          currentId = item.id;
+        } else {
+          break;
+        }
+      }
+
+      if (documentBottom) {
+        currentId = outline[outline.length - 1]?.id || currentId;
+      }
+
+      setActiveOutlineId((current) => (current === currentId ? current : currentId));
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateActiveHeading);
+    };
+
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, [outline]);
+
   const scrollToSection = (e, id) => {
     e.preventDefault();
+    setActiveOutlineId(id);
     const element = document.getElementById(id);
     if (element) {
       const y = element.getBoundingClientRect().top + window.scrollY - 100;
@@ -108,14 +219,21 @@ const AiPrdReviewPage = () => {
     if (!processedMarkdown || !projectId) return;
     setSaveLoading(true);
     try {
-      const result = await prdApi.savePrd({
+      await prdApi.savePrd({
         rawMarkdown: processedMarkdown,
         projectId,
-        prdName: projectName ? `PRD - ${projectName}` : "Generated PRD",
         sourceFileIds: allFileIds,
       });
       setSaved(true);
       setToast("PRD saved to project files. Exported DOCX & PDF.");
+      
+      // Clear localStorage drafts
+      localStorage.removeItem("prd_clarify_data");
+      localStorage.removeItem("prd_clarify_status");
+      localStorage.removeItem("prd_clarify_answers");
+      localStorage.removeItem("prd_generate_status");
+      localStorage.removeItem("prd_review_data");
+
       window.setTimeout(() => navigate(`/projects/${projectId}`), 1500);
     } catch (err) {
       setToast(err.message || "Failed to save PRD");
@@ -128,27 +246,27 @@ const AiPrdReviewPage = () => {
     if (!regenInstruction.trim()) return;
     setRegenOpen(false);
     setRegenLoading(true);
-    try {
-      const enhancedAnswers = { ...answers, _improvement_instruction: regenInstruction };
-      const aiResult = await prdApi.generatePrd(cacheId, enhancedAnswers, questions);
-      setCurrentMarkdown(aiResult.prd);
-      
-      const vMatch = version.match(/V(\d+)\.(\d+)/);
-      if (vMatch) {
-        setVersion(`V${vMatch[1]}.${parseInt(vMatch[2]) + 1} Draft`);
-      } else {
-        setVersion("V1.1 Draft");
-      }
-      setToast("PRD Section Regenerated");
-      setRegenInstruction("");
-    } catch (err) {
-      setToast(err.message || "Failed to regenerate");
-    } finally {
-      setRegenLoading(false);
-    }
+    
+    const enhancedAnswers = { ...answers, _improvement_instruction: regenInstruction };
+    
+    startRegeneratePrdJob(
+      cacheId, 
+      enhancedAnswers, 
+      questions, 
+      projectId, 
+      projectName, 
+      allFileIds, 
+      baseVersion, 
+      version
+    );
+    
+    setToast("Regeneration started in background");
+    setRegenInstruction("");
   };
 
   if (!rawMarkdown) return null;
+
+  const canRegenerate = regenInstruction.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-nexus-bg font-sans text-nexus-text">
@@ -160,11 +278,28 @@ const AiPrdReviewPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex min-h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col px-4 py-8 lg:px-8">
+        <main className="nexus-page-shell min-h-[calc(100vh-64px)]">
           <section className="mx-auto w-full max-w-7xl space-y-8">
             <div className="space-y-6">
               <nav className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                <button className="text-slate-400 transition hover:text-nexus-primary" onClick={() => navigate("/ai-prd-workspace")} type="button">
+                <button 
+                  className="text-slate-400 transition hover:text-nexus-primary" 
+                  onClick={() => {
+                    localStorage.removeItem("prd_clarify_data");
+                    localStorage.removeItem("prd_clarify_status");
+                    localStorage.removeItem("prd_clarify_answers");
+                    localStorage.removeItem("prd_generate_status");
+                    localStorage.removeItem("prd_regenerate_status");
+                    localStorage.removeItem("prd_review_data");
+                    if (document.referrer.includes("/ai-prd-workspace")) {
+                      navigate(-1);
+                    } else {
+                      resetPrdSession();
+                      navigate("/ai-prd-workspace");
+                    }
+                  }} 
+                  type="button"
+                >
                   AI PRD Workspace
                 </button>
                 <span className="text-slate-300">&gt;</span>
@@ -172,15 +307,15 @@ const AiPrdReviewPage = () => {
                 <span className="text-slate-300">&gt;</span>
                 <span className="text-nexus-primary">Generate PRD</span>
                 <span className="text-slate-300">&gt;</span>
-                <span className="font-extrabold text-nexus-text">Review PRD</span>
+                <span className="font-semibold text-nexus-text">Review PRD</span>
               </nav>
 
               <div className="relative flex items-center justify-between px-8 sm:px-24">
                 <div className="absolute left-10 right-10 top-4 h-px bg-nexus-primary" />
                 {[
                   ["Upload Documents", true],
-                  ["Clarify Question", true],
-                  ["DOCUMENT READY", false],
+                  ["Clarify Requirements", true],
+                  ["Review PRD", false],
                 ].map(([label, complete], index) => (
                   <div className="relative z-10 flex flex-col items-center gap-2 bg-nexus-bg px-2 text-center" key={label}>
                     <span className={`flex items-center justify-center rounded-full ${index === 2 ? "h-10 w-10 border-2 border-nexus-primary bg-white ring-4 ring-blue-100" : "h-8 w-8 bg-nexus-primary text-white"}`}>
@@ -202,7 +337,7 @@ const AiPrdReviewPage = () => {
                       <p className="mt-1 text-xs font-bold uppercase tracking-wide text-nexus-muted">{version}</p>
                     </div>
                   </div>
-                  <span className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-nexus-primary">
+                  <span className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-bold uppercase tracking-wide text-nexus-primary">
                     {version}
                   </span>
                 </div>
@@ -210,14 +345,14 @@ const AiPrdReviewPage = () => {
             </div>
 
             <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
-              <aside className="space-y-6">
+              <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto lg:overflow-x-hidden custom-scrollbar">
                 <section>
-                  <h2 className="mb-4 px-2 text-xs font-extrabold uppercase tracking-[0.16em] text-nexus-muted">Document Outline</h2>
+                  <h2 className="mb-4 px-2 text-xs font-semibold uppercase tracking-[0.12em] text-nexus-muted">Document Outline</h2>
                   <nav className="space-y-1">
                     {outline.map((item, index) => (
                       <button
-                        className={`block w-full text-left rounded-lg px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 ${
-                          index === 0 ? "border-l-2 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-nexus-muted"
+                        className={`block w-full text-left truncate rounded-lg px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 ${
+                          activeOutlineId === item.id ? "border-l-2 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-nexus-muted"
                         } ${item.level === 3 ? "ml-4 text-xs" : ""}`}
                         onClick={(e) => scrollToSection(e, item.id)}
                         key={`${item.id}-${index}`}
@@ -231,7 +366,7 @@ const AiPrdReviewPage = () => {
                 <section className="rounded-xl border border-nexus-border bg-white p-4">
                   <div className="mb-2 flex items-center gap-2 text-nexus-ai">
                     <ShieldAlert size={17} />
-                    <span className="text-xs font-extrabold uppercase tracking-wide">Preview PRD</span>
+                    <span className="text-xs font-bold uppercase tracking-wide">Preview PRD</span>
                   </div>
                   <p className="text-sm leading-6 text-nexus-muted">
                     This document was synthesized from uploaded source materials, clarification answers, and system architecture notes. Please review the details carefully.
@@ -242,10 +377,10 @@ const AiPrdReviewPage = () => {
               <section className="overflow-hidden rounded-2xl border border-nexus-border bg-white shadow-sm flex flex-col">
                 
                 {/* Header actions block (not floating absolute) */}
-                <div className="flex justify-end p-6 border-b border-nexus-border bg-slate-50/50">
-                  <div className="flex items-center gap-4 rounded-full border border-nexus-border bg-white px-5 py-2.5 shadow-sm">
+                <div className="flex justify-end border-b border-nexus-border bg-slate-50/50 px-6 py-4">
+                  <div className="flex items-center gap-3 rounded-full border border-nexus-border bg-white px-4 py-2 shadow-sm">
                     <button
-                      className="inline-flex items-center gap-2 rounded-full bg-nexus-primary px-4 py-2 text-xs font-extrabold text-white transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:opacity-50"
+                      className="inline-flex items-center gap-2 rounded-full bg-nexus-primary px-4 py-2 text-xs font-bold text-white transition hover:bg-nexus-action focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:opacity-50"
                       onClick={handleSavePrd}
                       disabled={saveLoading || saved || regenLoading}
                       type="button"
@@ -260,16 +395,16 @@ const AiPrdReviewPage = () => {
                       disabled={saveLoading || saved || regenLoading}
                       type="button"
                     >
-                      <History size={16} /> Re-generate Section
+                      <FilePenLine size={16} /> Revise Draft
                     </button>
                   </div>
                 </div>
 
-                <article className="mx-auto w-full p-8 sm:p-12">
-                  <header className="border-b border-nexus-border pb-8 mb-8">
+                <article className="mx-auto w-full px-8 pb-8 pt-6 sm:px-12 sm:pb-12 sm:pt-8">
+                  <header className="mb-6 border-b border-nexus-border pb-6">
                     <div className="mb-2 flex items-center gap-2 text-nexus-primary">
                       <FileText size={19} />
-                      <span className="text-xs font-extrabold uppercase tracking-[0.16em]">Draft Product Requirement</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em]">Draft Product Requirement</span>
                     </div>
                   </header>
 
@@ -278,10 +413,10 @@ const AiPrdReviewPage = () => {
                       remarkPlugins={[remarkGfm]} 
                       rehypePlugins={[rehypeSlug]}
                       components={{
-                        h1: ({node, ...props}) => <h1 className="text-4xl font-extrabold tracking-tight text-nexus-text mt-6 mb-6" {...props} />,
-                        h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-nexus-text mt-10 mb-4 border-b border-nexus-border pb-2" {...props} />,
-                        h3: ({node, ...props}) => <h3 className="text-lg font-bold text-nexus-text mt-6 mb-3" {...props} />,
-                        p: ({node, ...props}) => <p className="text-base text-slate-600 leading-8 mb-5" {...props} />,
+                        h1: ({node, ...props}) => <h1 className="mt-6 mb-6 text-3xl font-semibold tracking-tight text-nexus-text" {...props} />,
+                        h2: ({node, ...props}) => <h2 className="mt-10 mb-4 border-b border-nexus-border pb-2 text-xl font-semibold text-nexus-text" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="mt-6 mb-3 text-lg font-semibold text-nexus-text" {...props} />,
+                        p: ({node, ...props}) => <p className="text-base text-slate-600 leading-8 mb-5 text-justify" {...props} />,
                         ul: ({node, ...props}) => <ul className="list-disc pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
                         ol: ({node, ...props}) => <ol className="list-decimal pl-6 text-slate-600 mb-5 space-y-2" {...props} />,
                         li: ({node, ...props}) => <li className="leading-7" {...props} />,
@@ -306,20 +441,20 @@ const AiPrdReviewPage = () => {
           <section aria-modal="true" className="w-full max-w-lg rounded-2xl border border-nexus-border bg-white p-8 shadow-2xl" role="dialog">
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-xl font-bold text-nexus-text">Regenerate this PRD?</h2>
+                <h2 className="nexus-section-title">Revise this PRD draft?</h2>
                 <p className="mt-2 text-sm leading-6 text-nexus-muted">
-                  NEXUS will create a new PRD draft using the current uploaded documents and clarification answers.
-                  Any unsaved edits in the current draft may be replaced.
+                  NEXUS will create a new draft using the same uploaded documents and clarification answers, plus your instructions below.
+                  Your current draft will be replaced on this page until you save it.
                 </p>
               </div>
-              <button aria-label="Close regenerate modal" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => setRegenOpen(false)} type="button">
+              <button aria-label="Close revise draft modal" className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100" onClick={() => setRegenOpen(false)} type="button">
                 <X size={20} />
               </button>
             </div>
             <label className="block">
-              <span className="mb-2 block text-xs font-extrabold uppercase tracking-wide text-nexus-text">What would you like NEXUS to improve?</span>
+              <span className="mb-2 block text-xs font-bold uppercase tracking-wide text-nexus-text">What should NEXUS change in this draft?</span>
               <textarea
-                className="min-h-28 w-full resize-none rounded-xl border border-nexus-border p-4 text-sm outline-none transition focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
+                className="min-h-28 w-full resize-none rounded-xl border border-nexus-border p-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-nexus-primary focus:ring-4 focus:ring-blue-100"
                 onChange={(event) => setRegenInstruction(event.target.value)}
                 placeholder="For example: make the requirements more detailed, simplify the executive summary, or add clearer acceptance criteria."
                 value={regenInstruction}
@@ -346,18 +481,20 @@ const AiPrdReviewPage = () => {
                 Cancel
               </button>
               <button
-                className="rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-extrabold text-white transition hover:bg-nexus-action"
+                className="inline-flex items-center gap-2 rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-nexus-action disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:hover:bg-slate-200"
+                disabled={!canRegenerate}
                 onClick={confirmRegenerate}
                 type="button"
               >
-                Regenerate PRD
+                <FilePenLine size={16} />
+                Generate Revised Draft
               </button>
             </div>
           </section>
         </div>
       )}
 
-      {toast && <DashboardToast message={toast} onClose={() => setToast("")} />}
+      {toast && <DashboardToast duration={toast === "Regeneration started in background" ? 5000 : 3000} message={toast} onDismiss={() => setToast("")} />}
     </div>
   );
 };

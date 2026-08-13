@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OAuthSuccess from "./pages/OAuthSuccess/OAuthSuccess";
+import GlobalToast from "./components/dashboard/GlobalToast";
 
 const CreateProjectPage = React.lazy(() => import("./pages/CreateProjectPage/CreateProjectPage"));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage/DashboardPage"));
@@ -15,6 +16,7 @@ const PasswordSetupPage = React.lazy(() => import("./pages/PasswordSetupPage/Pas
 const ProfilePage = React.lazy(() => import("./pages/ProfilePage/ProfilePage"));
 const ProjectsPage = React.lazy(() => import("./pages/ProjectsPage/ProjectsPage"));
 const RegisterPage = React.lazy(() => import("./pages/RegisterPage/RegisterPage"));
+const SubscriptionsPage = React.lazy(() => import("./pages/SubscriptionsPage/SubscriptionsPage"));
 const VerifyOtpPage = React.lazy(() => import("./pages/VerifyOtpPage/VerifyOtpPage"));
 const ProjectDetailPage = React.lazy(() => import("./pages/ProjectDetailPage/ProjectDetailPage"));
 const TeamsPage = React.lazy(() => import("./pages/TeamsPage/TeamsPage"));
@@ -29,15 +31,44 @@ const TrashPage = React.lazy(() => import("./pages/TrashPage/TrashPage"));
 const AskNexusPage = React.lazy(() => import("./pages/AskNexusPage/AskNexusPage"));
 const AskNexusChatPage = React.lazy(() => import("./pages/AskNexusChatPage/AskNexusChatPage"));
 
+/**
+ * The ReservedRoute component serves as a temporary placeholder for routes that are defined
+ * but not yet fully implemented with a dedicated page component.
+ * 
+ * It is a simple, stateless functional component that receives a title and renders it within a main container.
+ * This ensures that users do not encounter completely blank pages or errors when navigating to
+ * features that are still under development, providing a graceful fallback UI.
+ * 
+ * @param {Object} props - The properties passed to the component.
+ * @param {string} props.title - The text string to display as the primary heading for the placeholder page.
+ * @returns {JSX.Element} A `<main>` HTML element rendering the provided title inside an `<h1>` tag.
+ */
 const ReservedRoute = ({ title }) => (
   <main className="reserved-route-placeholder">
     <h1>{title}</h1>
   </main>
 );
 
+/**
+ * The App component acts as the root routing configuration and main structural entry point for the React application.
+ * It establishes the client-side routing context using `react-router-dom`'s `<BrowserRouter>` and handles the
+ * rendering of global utilities such as the `<GlobalToast />` notification provider.
+ * 
+ * Furthermore, it employs React's code-splitting capabilities via `React.lazy()` and `<Suspense>` to asynchronously
+ * load route components only when they are needed. This significantly reduces the initial bundle size and improves
+ * application load performance. 
+ * 
+ * The routing logic is categorized into Public Routes (accessible by anyone), Failure Pages (error boundaries and 404s), 
+ * and Protected Routes. Protected Routes are wrapped inside the `<ProtectedRoute />` wrapper, ensuring that only users 
+ * with a valid authentication context can access dashboard, project, profile, and team management views.
+ * The component maintains no local state of its own, relying instead on the router context to determine what to render.
+ * 
+ * @returns {JSX.Element} The highest-level application component tree containing the router, suspense boundaries, and defined application routes.
+ */
 const App = () => {
   return (
     <BrowserRouter>
+      <GlobalToast />
       <Suspense fallback={<main className="reserved-route-placeholder"><h1>Loading...</h1></main>}>
         <Routes>
           {/* Public Routes */}
@@ -62,6 +93,7 @@ const App = () => {
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
             <Route path="/projects" element={<ProjectsPage />} />
             <Route path="/projects/new" element={<CreateProjectPage />} />
             <Route path="/projects/:projectId" element={<ProjectDetailPage />} />

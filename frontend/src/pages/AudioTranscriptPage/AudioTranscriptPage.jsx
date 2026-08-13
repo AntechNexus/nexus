@@ -1,20 +1,19 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   ArrowLeft,
-  CalendarDays,
   FileText,
-  Grid3X3,
   Pause,
   Play,
-  Search,
+  SkipBack,
+  SkipForward,
   Sparkles,
   Volume2,
-  Clock3,
   Edit2
 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
+import api from "../../services/api";
 import { getProjects } from "../../services/projectApi";
 import { fetchAudioTranscriptPreview, getAudioTranscriptAI, updateAudioTranscriptAI, getExportTranscriptUrl, getProjectDocumentSummaryAI } from "../../services/projectDetailApi";
 
@@ -40,15 +39,42 @@ const formatTime = (seconds) => {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 };
 
+/**
+ * Component for viewing and interacting with audio file transcripts.
+ *
+ * This page provides an interface to review AI-generated transcripts for audio or video files 
+ * uploaded to a project. It features an integrated audio player synced with interactive transcript text.
+ * Users can read the transcript, jump to specific audio timestamps by clicking transcript segments, 
+ * edit the text of individual segments, and view a summarized list of key insights extracted by the AI.
+ *
+ * The component maintains numerous states including:
+ * - `preview`, `transcriptObj`, and `segments` representing the core data structures for the document and its AI transcription.
+ * - `playing`, `currentTime`, `volume`, and `muted` to control and sync the HTML `<audio>` element with the UI.
+ * - `activeLineIdx` to visually highlight the transcript segment currently matching the audio playback time.
+ * - `aiSummary` to store and display the extracted high-level insights from the document.
+ * - `editingIdx`, `editValues`, and `saving` to manage the inline editing and updating of specific transcript segments.
+ *
+ * Key side effects include:
+ * - Fetching the document preview metadata and logging recent access on mount.
+ * - Fetching both the detailed AI transcript and the AI summary concurrently.
+ * - Synchronizing the native audio element's playback state and volume with React state.
+ * - Automatically auto-scrolling the transcript view (using `activeLineRef`) to ensure the currently active text is always visible during playback.
+ * - Handling API calls to save user edits back to the backend.
+ *
+ * @returns {JSX.Element} The rendered interface including the sidebar, header, AI summary aside, synchronized transcript editor, and sticky audio player footer.
+ */
 const AudioTranscriptPage = () => {
   const { documentId, projectId } = useParams();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [activeLineIdx, setActiveLineIdx] = useState(null);
   const [playing, setPlaying] = useState(false);
+  const [volume, setVolume] = useState(1.0);
+  const [muted, setMuted] = useState(false);
 
   // Audio and Summary states
   const [currentTime, setCurrentTime] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
   const [aiSummary, setAiSummary] = useState(null);
 
   // Refs
@@ -75,6 +101,9 @@ const AudioTranscriptPage = () => {
     fetchAudioTranscriptPreview(projectId, documentId)
       .then(setPreview)
       .catch(console.error);
+
+    // Log recent access
+    api.post(`/files/${documentId}/recent`).catch(err => console.error("Failed to log recent access", err));
 
     setLoadingTranscript(true);
     getAudioTranscriptAI(documentId)
@@ -121,6 +150,13 @@ const AudioTranscriptPage = () => {
     }
   }, [playing]);
 
+  // Volume Sync
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = muted ? 0 : volume;
+    }
+  }, [volume, muted]);
+
   const handleTimeUpdate = () => {
     if (!audioRef.current) return;
     const time = audioRef.current.currentTime;
@@ -147,6 +183,13 @@ const AudioTranscriptPage = () => {
       audioRef.current.currentTime = segment.start;
       if (!playing) setPlaying(true);
     }
+  };
+
+  const handleSeek = (delta) => {
+    if (!audioRef.current) return;
+    const newTime = Math.max(0, Math.min(audioRef.current.currentTime + delta, audioDuration || audioRef.current.duration || 0));
+    audioRef.current.currentTime = newTime;
+    setCurrentTime(newTime);
   };
 
   if (!preview) {
@@ -201,7 +244,7 @@ const AudioTranscriptPage = () => {
       />
       <div className={`min-w-0 transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-[280px]"}`}>
         <DashboardHeader onOpenSidebar={() => setMobileSidebarOpen(true)} />
-        <main className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-[#f9f9fa] px-4 py-4 lg:px-8">
+        <main className="mx-auto flex h-[calc(100vh-64px)] w-full max-w-[1440px] flex-col bg-[#f9f9fa] p-4 font-sans lg:p-8">
           <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <Link className="inline-flex w-fit items-center gap-2 text-sm font-semibold text-nexus-primary transition hover:text-nexus-action" to={`/projects/${projectId}`}>
               <ArrowLeft size={17} /> Back to project
@@ -218,7 +261,7 @@ const AudioTranscriptPage = () => {
             <aside className="flex min-h-[360px] flex-col overflow-hidden rounded-xl border border-nexus-border bg-white shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
               <header className="flex items-center gap-2 border-b border-nexus-border px-5 py-4">
                 <Sparkles className="text-nexus-primary" size={19} />
-                <h1 className="text-lg font-bold text-nexus-text">AI Summary</h1>
+                <h1 className="text-lg font-semibold text-nexus-text">AI Summary</h1>
               </header>
               <div className="flex-1 overflow-y-auto p-5">
                 {!aiSummary ? (
@@ -244,7 +287,7 @@ const AudioTranscriptPage = () => {
 
             <article className="flex min-h-0 flex-col overflow-hidden rounded-xl border border-nexus-border bg-white shadow-[0_4px_12px_rgba(15,23,42,0.04)]">
               <header className="border-b border-nexus-border px-5 py-5 lg:px-6">
-                <h1 className="text-2xl font-bold tracking-tight text-nexus-text lg:text-3xl">{title}</h1>
+                <h1 className="nexus-page-title">{title}</h1>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-nexus-muted">
                     <span className="inline-flex items-center gap-1.5">
@@ -261,12 +304,12 @@ const AudioTranscriptPage = () => {
                   <div className="flex items-center justify-center h-full">
                     <div className="flex flex-col items-center gap-3">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-nexus-primary"></div>
-                      <p className="text-sm text-nexus-muted font-medium">Sedang mentranskripsi audio, mohon tunggu...</p>
+                      <p className="text-sm text-nexus-muted font-medium">Transcribing audio, please wait...</p>
                     </div>
                   </div>
                 ) : segments.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <p className="text-sm text-nexus-muted">Gagal memuat transkrip atau format tidak didukung.</p>
+                    <p className="text-sm text-nexus-muted">Failed to load transcript or format unsupported.</p>
                   </div>
                 ) : (
                   segments.map((segment, idx) => {
@@ -282,9 +325,17 @@ const AudioTranscriptPage = () => {
                         key={idx}
                         onClick={() => handleLineClick(idx, segment)}
                       >
-                        <span className={`pt-1 text-right text-xs font-bold ${active ? "text-nexus-primary" : "text-slate-400"}`}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleLineClick(idx, segment); }}
+                          title={`Jump to ${formatTime(segment.start)}`}
+                          className={`flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-bold transition-all ${
+                            active
+                              ? "bg-nexus-primary text-white shadow-sm"
+                              : "text-slate-400 hover:bg-nexus-primary/10 hover:text-nexus-primary"
+                          }`}
+                        >
                           {formatTime(segment.start)}
-                        </span>
+                        </button>
                         
                         <div className="flex items-start justify-between gap-4">
                           {isEditing ? (
@@ -330,31 +381,40 @@ const AudioTranscriptPage = () => {
                   src={preview?.document?.fileUrl} 
                   onTimeUpdate={handleTimeUpdate} 
                   onEnded={() => setPlaying(false)}
+                  onLoadedMetadata={() => {
+                    if (audioRef.current) setAudioDuration(audioRef.current.duration || 0);
+                  }}
                 />
                 <div className="mb-3 flex items-center gap-4">
                   <span className="w-14 text-xs font-bold text-slate-500">{formatTime(currentTime)}</span>
                   <div 
                     className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-300 cursor-pointer"
                     onClick={(e) => {
-                      if (!audioRef.current || !transcriptObj?.durationSeconds) return;
+                      if (!audioRef.current || !audioDuration) return;
                       const rect = e.currentTarget.getBoundingClientRect();
                       const pos = (e.clientX - rect.left) / rect.width;
-                      audioRef.current.currentTime = pos * transcriptObj.durationSeconds;
+                      audioRef.current.currentTime = pos * audioDuration;
                       setCurrentTime(audioRef.current.currentTime);
                     }}
                   >
                     <div 
                       className="h-full rounded-full bg-nexus-primary transition-all duration-100" 
-                      style={{ width: `${transcriptObj?.durationSeconds ? (currentTime / transcriptObj.durationSeconds) * 100 : 0}%` }} 
+                      style={{ width: `${audioDuration ? (currentTime / audioDuration) * 100 : 0}%` }} 
                     />
                   </div>
-                  <span className="w-12 text-right text-xs font-bold text-slate-500">{formatTime(transcriptObj?.durationSeconds)}</span>
+                  <span className="w-12 text-right text-xs font-bold text-slate-500">{formatTime(audioDuration)}</span>
                 </div>
-                <div className="grid grid-cols-3 items-center">
+                <div className="grid grid-cols-3 items-center gap-2">
                   <span className="text-xs text-slate-400 font-medium italic">Double-click text to edit</span>
-                  <div className="flex items-center justify-center gap-5">
-                    <button onClick={handleExport} aria-label="Export transcript notes" className="rounded-lg p-2 text-slate-600 transition hover:bg-white hover:text-nexus-primary" type="button">
-                      <FileText size={20} />
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      aria-label="Rewind 10 seconds"
+                      onClick={() => handleSeek(-10)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-nexus-primary"
+                      type="button"
+                      title="-10s"
+                    >
+                      <SkipBack size={20} />
                     </button>
                     <button
                       aria-label={playing ? "Pause audio" : "Play audio"}
@@ -364,6 +424,42 @@ const AudioTranscriptPage = () => {
                     >
                       {playing ? <Pause size={22} fill="currentColor" /> : <Play size={22} fill="currentColor" />}
                     </button>
+                    <button
+                      aria-label="Fast forward 10 seconds"
+                      onClick={() => handleSeek(10)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 transition hover:bg-white hover:text-nexus-primary"
+                      type="button"
+                      title="+10s"
+                    >
+                      <SkipForward size={20} />
+                    </button>
+                  </div>
+                  {/* Volume Control */}
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      aria-label={muted ? "Unmute" : "Mute"}
+                      onClick={() => setMuted((m) => !m)}
+                      className="rounded-lg p-1.5 text-slate-500 transition hover:bg-white hover:text-nexus-primary"
+                      type="button"
+                    >
+                      <Volume2 size={18} className={muted ? "opacity-30" : ""} />
+                    </button>
+                    <input
+                      id="volume-slider"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={muted ? 0 : volume}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        setVolume(val);
+                        if (val > 0 && muted) setMuted(false);
+                        if (val === 0) setMuted(true);
+                      }}
+                      className="h-1.5 w-24 cursor-pointer appearance-none rounded-full bg-slate-300 accent-nexus-primary"
+                      aria-label="Volume"
+                    />
                   </div>
                 </div>
               </footer>
