@@ -24,3 +24,10 @@ Make sure you have configured all `.env` files in their respective directories b
 - Frontend runs on: `http://localhost:5173`
 - Backend Nexus runs on: `http://localhost:5000`
 - Backend AI runs on: `http://localhost:5001`
+
+## Repositories & Links
+- **Organization**: [AntechNexus](https://github.com/AntechNexus)
+- **Nexus**: [https://github.com/AntechNexus/nexus.git](https://github.com/AntechNexus/nexus.git)
+- **Frontend Nexus**: [https://github.com/AntechNexus/Frontend-nexus.git](https://github.com/AntechNexus/Frontend-nexus.git)
+- **Backend Nexus**: [https://github.com/AntechNexus/backend-nexus.git](https://github.com/AntechNexus/backend-nexus.git)
+- **Backend Gemini**: [https://github.com/AntechNexus/LLM-nexus.git](https://github.com/AntechNexus/LLM-nexus.git)
