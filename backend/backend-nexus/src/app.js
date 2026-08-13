@@ -20,7 +20,12 @@ const rateLimit = require("express-rate-limit");
 
 app.set("trust proxy", 1); // Enable trusting proxy to get real IP for rate limiting
 
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+  crossOriginEmbedderPolicy: false,
+  xFrameOptions: false,
+  contentSecurityPolicy: false,
+}));
 
 // Global Rate Limiter: max 1000 requests per minute per IP
 const globalLimiter = rateLimit({

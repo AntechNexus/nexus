@@ -283,11 +283,15 @@ const DocumentPreviewPage = () => {
                 </header>
                 <div className="p-0 flex-1 overflow-hidden bg-slate-50 rounded-b-xl flex flex-col relative">
                   {document?.type === 'pdf' && document?.fileUrl ? (
-                    <iframe 
-                      src={`${document.fileUrl}#toolbar=0`} 
-                      title={document.name}
+                    <object 
+                      data={`${document.fileUrl}#toolbar=0`} 
+                      type="application/pdf"
                       className="w-full h-full border-none"
-                    />
+                    >
+                      <p className="p-4 text-center text-slate-500">
+                        Unable to preview PDF directly. <a href={document.fileUrl} target="_blank" rel="noreferrer" className="text-nexus-primary underline">Click here to open it in a new tab</a>.
+                      </p>
+                    </object>
                   ) : document?.content ? (
                     <div className="p-8 overflow-auto w-full h-full bg-white text-slate-800">
                       <style>{`

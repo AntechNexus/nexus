@@ -289,7 +289,7 @@ export const fetchProjectDocuments = async (projectId) => {
         modifiedBy: f.updatedBy?.profile?.fullName || f.createdBy?.profile?.fullName || "User",
         size: formatBytes(f.sizeBytes) || "0 B",
         parentId: f.folderId || null,
-        fileUrl: f.fileUrl ? `http://localhost:5000${f.fileUrl}` : null
+        fileUrl: f.fileUrl ? `http://127.0.0.1:5000${f.fileUrl}` : null
       };
     });
 
@@ -335,7 +335,7 @@ export const fetchProjectDocumentPreview = async (projectId, documentId) => {
       size: formatBytes(f.sizeBytes) || "0 B",
       parentId: f.folderId || null,
       content: f.content,
-      fileUrl: `http://localhost:5000${f.fileUrl}`
+      fileUrl: `http://127.0.0.1:5000${f.fileUrl}`
     };
   } catch (err) {
     document = documents.find((item) => item.id === documentId) || null;
