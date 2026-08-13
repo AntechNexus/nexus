@@ -565,9 +565,15 @@ const ProjectDetailPage = () => {
         description: res.data.data.description,
         createdBy: res.data.data.createdBy?._id || res.data.data.createdBy?.id || res.data.data.createdBy,
       });
-    }).catch(console.error);
+    }).catch(err => {
+      if (err.response?.status === 403) navigate("/403");
+      console.error(err);
+    });
 
-    const loadDocs = () => fetchProjectDocuments(projectId).then(setDocuments).catch(console.error);
+    const loadDocs = () => fetchProjectDocuments(projectId).then(setDocuments).catch(err => {
+      if (err.response?.status === 403) navigate("/403");
+      console.error(err);
+    });
     loadDocs();
     const interval = setInterval(loadDocs, 15000); // Poll every 15s
     

@@ -13,7 +13,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import DOMPurify from 'dompurify';
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
 import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
@@ -142,6 +142,7 @@ const TreeItem = ({ item, items, documentId, projectId, depth = 0 }) => {
  */
 const DocumentPreviewPage = () => {
   const { documentId, projectId } = useParams();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [project, setProject] = useState({ id: projectId, title: "Loading..." });
@@ -186,9 +187,15 @@ const DocumentPreviewPage = () => {
         id: res.data.data._id,
         title: res.data.data.name || res.data.data.title,
       });
-    }).catch(console.error);
+    }).catch(err => {
+      if (err.response?.status === 403) navigate("/403");
+      console.error(err);
+    });
 
-    fetchProjectDocumentPreview(projectId, documentId).then(setPreview).catch(console.error);
+    fetchProjectDocumentPreview(projectId, documentId).then(setPreview).catch(err => {
+      if (err.response?.status === 403) navigate("/403");
+      console.error(err);
+    });
     
     // Log recent access
     api.post(`/files/${documentId}/recent`).catch(err => console.error("Failed to log recent access", err));
@@ -208,7 +215,7 @@ const DocumentPreviewPage = () => {
       .catch(() => {
         setAiSummary({ status: "Error generating summary", insights: [] });
       });
-  }, [projectId, documentId]);
+  }, [projectId, documentId, navigate]);
 
   if (!preview) {
     return (

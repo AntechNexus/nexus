@@ -275,7 +275,7 @@ exports.createFile = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-    const isMember = project.createdBy.toString() === createdBy || project.members.some(m => m.userId.toString() === createdBy);
+    const isMember = project.createdBy.toString() === createdBy || project.members.some(m => m.userId.toString() === createdBy && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied to project" });
     }
@@ -507,7 +507,7 @@ exports.getFileById = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Associated project not found" });
     }
-    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied to file's project" });
     }
@@ -589,7 +589,7 @@ exports.getFilesByProject = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied to project" });
     }
@@ -677,7 +677,7 @@ exports.getFilesByFolder = async (req, res) => {
       if (!folder) return res.status(404).json({ message: "Folder not found" });
       const project = await Project.findOne({ _id: folder.projectId, isDeleted: false });
       if (!project) return res.status(404).json({ message: "Associated project not found" });
-      const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+      const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
       if (!isMember) return res.status(403).json({ message: "Access denied" });
       filter.projectId = folder.projectId;
     } else {
@@ -688,7 +688,7 @@ exports.getFilesByFolder = async (req, res) => {
       }
       const project = await Project.findOne({ _id: projectId, isDeleted: false });
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+      const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
       if (!isMember) return res.status(403).json({ message: "Access denied" });
       filter.projectId = projectId;
     }
@@ -779,7 +779,7 @@ exports.updateFile = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Associated project not found" });
     }
-    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -874,7 +874,7 @@ exports.createFileVersion = async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Associated project not found" });
     }
-    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -1230,7 +1230,7 @@ exports.downloadFile = async (req, res) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId);
+    const isMember = project.createdBy.toString() === userId || project.members.some(m => m.userId.toString() === userId && m.status === "accepted");
     if (!isMember) {
       return res.status(403).json({ message: "Access denied" });
     }
