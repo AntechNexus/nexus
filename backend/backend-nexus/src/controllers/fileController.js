@@ -1242,6 +1242,9 @@ exports.downloadFile = async (req, res) => {
     // Record recent file access
     await recordFileAccess(userId, file._id, file.projectId);
 
+    // Expose Content-Disposition so frontend fetch can read it
+    res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition');
+
     res.download(file.localPath, file.originalName, (err) => {
       if (err) {
         console.error("Download error:", err);

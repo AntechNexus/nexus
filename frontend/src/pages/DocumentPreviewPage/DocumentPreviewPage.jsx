@@ -148,37 +148,45 @@ const DocumentPreviewPage = () => {
   const [project, setProject] = useState({ id: projectId, title: "Loading..." });
   const [preview, setPreview] = useState(null);
   const [aiSummary, setAiSummary] = useState({ status: "Generating AI Summary...", insights: [] });
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleDownload = (e) => {
     e.preventDefault();
     if (!preview || !preview.document || !preview.document.id) return;
-    const token = tokenService.getToken();
-    const baseUrl = import.meta.env.VITE_NEXUS_API_URL || "http://localhost:5000/api";
     
-    fetch(`${baseUrl}/files/${preview.document.id}/download`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    api.get(`/files/${preview.document.id}/download`, {
+      responseType: 'blob'
     })
     .then(res => {
-      if (!res.ok) throw new Error("Download failed");
-      const disposition = res.headers.get("Content-Disposition");
+      const disposition = res.headers['content-disposition'];
       let filename = preview.document.name;
       if (disposition && disposition.includes('filename=')) {
         const matches = disposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
         if (matches && matches[1]) filename = matches[1].replace(/['"]/g, '');
       }
-      return res.blob().then(blob => ({ blob, filename }));
-    })
-    .then(({ blob, filename }) => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      
+      const url = window.URL.createObjectURL(res.data);
+      const a = window.document.createElement('a');
       a.href = url;
       a.download = filename;
-      document.body.appendChild(a);
+      window.document.body.appendChild(a);
       a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      
+      window.dispatchEvent(new CustomEvent("globalToast", { detail: { message: "Berhasil mengunduh dokumen" } }));
+      setTimeout(() => {
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        setIsDownloading(false);
+      }, 1000);
     })
-    .catch(console.error);
+    .catch((err) => {
+      console.error("Download Error:", err);
+      window.dispatchEvent(new CustomEvent("globalToast", { detail: { message: `Gagal mengunduh: ${err.message}` } }));
+      setIsDownloading(false);
+    });
   };
 
   useEffect(() => {
@@ -335,11 +343,12 @@ const DocumentPreviewPage = () => {
             <aside className="border-t border-nexus-border bg-white lg:border-l lg:border-t-0">
               <button 
                 onClick={handleDownload}
-                className="flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold text-nexus-text transition hover:bg-slate-50"
+                disabled={isDownloading}
+                className={`flex w-full items-center justify-between border-b border-nexus-border px-5 py-4 text-sm font-semibold transition ${isDownloading ? 'text-slate-400 bg-slate-50 cursor-not-allowed' : 'text-nexus-text hover:bg-slate-50'}`}
                 type="button"
               >
                 <span className="flex items-center gap-2">
-                  <Download size={16} /> Download
+                  <Download size={16} className={isDownloading ? "animate-bounce" : ""} /> {isDownloading ? "Mengunduh..." : "Download"}
                 </span>
                 <ChevronRight size={16} />
               </button>
