@@ -318,7 +318,7 @@ const DashboardHeader = ({ onOpenSidebar }) => {
                   </button>
                 )}
               </div>
-              <div>
+              <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
                 {notificationItems.length === 0 ? (
                   <div className="px-5 py-6 text-center text-sm text-slate-500">
                     No new notifications
