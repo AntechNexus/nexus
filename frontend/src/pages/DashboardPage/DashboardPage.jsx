@@ -43,9 +43,11 @@ const DashboardPage = () => {
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [recentFiles, setRecentFiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchProjects = async () => {
     try {
+      setIsLoading(true);
       const res = await projectService.getProjects();
       setProjects(res.data.map(p => ({
         ...p,
@@ -59,6 +61,8 @@ const DashboardPage = () => {
       })));
     } catch (err) {
       console.error("Failed to fetch projects", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -178,10 +182,16 @@ const DashboardPage = () => {
             </div>
             
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {projects.length < 4 && (
-                <NewProjectCard onClick={() => navigate("/projects/new")} />
-              )}
-              {projects.slice(0, 4).map((project) => (
+              {isLoading ? (
+                <div className="col-span-full py-10 text-center text-sm font-medium text-slate-500">
+                  Loading projects...
+                </div>
+              ) : (
+                <>
+                  {projects.length < 4 && (
+                    <NewProjectCard onClick={() => navigate("/projects/new")} />
+                  )}
+                  {projects.slice(0, 4).map((project) => (
                 <ProjectCard
                   key={project.id}
                   currentUser={currentUser}
@@ -194,6 +204,8 @@ const DashboardPage = () => {
                   selected={selectedProjectId === project.id}
                 />
               ))}
+                </>
+              )}
             </div>
           </section>
 

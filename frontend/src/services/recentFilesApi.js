@@ -28,29 +28,23 @@ const getInitials = (name = "") =>
     .join("")
     .toUpperCase() || "NU";
 
+let recentFilesCache = null;
+let recentFilesCacheTimestamp = 0;
+const CACHE_DURATION = 60000; // 1 minute in milliseconds
+
 /**
  * Retrieves a list of the user's most recently accessed or modified files across all projects.
  *
- * This function is a core piece of the recent files feature. It first makes an HTTP GET
- * request to the `/files/recent` backend endpoint, optionally constrained by a limit parameter.
- * It expects a paginated or array-based response from which it extracts the file entries.
- *
- * To provide rich context, the function gathers all unique project IDs associated with these
- * recent files. It then performs parallel asynchronous requests using `fetchProjectDocuments`
- * for each unique project to retrieve comprehensive document metadata. This metadata is
- * aggregated into a Map for fast lookups.
- *
- * Finally, the function maps over the original recent file entries, matching them against
- * the enriched document data. It constructs and returns an array of standardized objects
- * containing formatted file sizes, resolved document types, human-readable modification
- * dates, and author information, ensuring a consistent structure for the UI components to consume.
- *
  * @param {number} [limit=10] - The maximum number of recent file entries to fetch from the server.
+ * @param {boolean} [forceRefresh=false] - If true, bypasses the cache and forces a fresh fetch from the backend.
  * @returns {Promise<Array<Object>>} A promise that resolves to an array of enriched file objects. 
- * Each object contains details such as id, name, project, type, lastModified, modifiedBy, and size.
- * In case of a network error or processing failure, it catches the exception, logs it, and returns an empty array.
  */
-export const fetchRecentFiles = async (limit = 10) => {
+export const fetchRecentFiles = async (limit = 10, forceRefresh = false) => {
+  const now = Date.now();
+  if (!forceRefresh && recentFilesCache && (now - recentFilesCacheTimestamp < CACHE_DURATION)) {
+    return recentFilesCache;
+  }
+
   try {
     const res = await api.get(`/files/recent?limit=${limit}`);
     const entries = res.data?.data || [];
@@ -62,7 +56,7 @@ export const fetchRecentFiles = async (limit = 10) => {
       documentsByProject.flatMap(([, documents]) => documents.map((document) => [document.id, document])),
     );
 
-    return entries.map((entry) => {
+    const result = entries.map((entry) => {
       const file = entry.fileId || {};
       const normalizedDocument = documentById.get(file._id);
       const displayName = normalizedDocument?.name || getNormalizedDisplayFileName(file, file.folderId?.name);
@@ -86,8 +80,20 @@ export const fetchRecentFiles = async (limit = 10) => {
         size: formatBytes(file.sizeBytes) || "0 B",
       };
     });
+
+    recentFilesCache = result;
+    recentFilesCacheTimestamp = now;
+    return result;
   } catch (error) {
     console.error("Failed to fetch recent files:", error);
     return [];
   }
+};
+
+/**
+ * Explicitly clears the recent files cache.
+ */
+export const clearRecentFilesCache = () => {
+  recentFilesCache = null;
+  recentFilesCacheTimestamp = 0;
 };

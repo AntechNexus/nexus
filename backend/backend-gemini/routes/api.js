@@ -11,14 +11,16 @@ const router = express.Router();
 // Apply authentication middleware to all AI routes
 router.use(authMiddleware);
 
+const { defaultKeyGenerator } = require('express-rate-limit');
+
 // Strict Rate Limiter for AI Routes: max 30 requests per minute per user/IP
 const aiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
   max: 30,
   message: { success: false, message: "Too many AI requests, please wait a moment." },
-  keyGenerator: (req) => {
-    // Gunakan user ID jika ada (karena sudah lewat authMiddleware), jika tidak gunakan IP
-    return req.user ? req.user.id : req.ip; 
+  keyGenerator: (req, res) => {
+    // Gunakan user ID jika ada, jika tidak gunakan fallback bawaan express-rate-limit
+    return req.user ? req.user.id : defaultKeyGenerator(req, res); 
   }
 });
 router.use(aiLimiter);

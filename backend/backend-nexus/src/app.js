@@ -22,10 +22,10 @@ app.set("trust proxy", 1); // Enable trusting proxy to get real IP for rate limi
 
 app.use(helmet());
 
-// Global Rate Limiter: max 100 requests per minute per IP
+// Global Rate Limiter: max 1000 requests per minute per IP
 const globalLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 100,
+  max: 1000,
   message: { success: false, message: "Terlalu banyak request, mohon tunggu sebentar." }
 });
 app.use(globalLimiter);

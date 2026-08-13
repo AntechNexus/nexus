@@ -50,6 +50,7 @@ const ProjectsPage = () => {
   const [trashProject, setTrashProject] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     import("../../services/auth.service").then(module => {
@@ -58,9 +59,10 @@ const ProjectsPage = () => {
       }).catch(console.error);
     });
 
-    const fetchProjects = async () => {
+    const fetchProjects = async (forceRefresh = false) => {
       try {
-        const res = await projectService.getProjects();
+        setIsLoading(true);
+        const res = await projectService.getProjects(forceRefresh);
         setProjects(res.data.map(p => ({
           ...p,
           id: p._id,
@@ -73,11 +75,13 @@ const ProjectsPage = () => {
         })));
       } catch (err) {
         console.error("Failed to fetch projects", err);
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchProjects();
-    const interval = setInterval(fetchProjects, 15000); // Poll every 15s
+    const interval = setInterval(() => fetchProjects(true), 15000); // Poll every 15s bypassing cache
     
     return () => {
       clearInterval(interval);
@@ -166,9 +170,15 @@ const ProjectsPage = () => {
           </div>
 
           <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <NewProjectCard onClick={() => navigate("/projects/new")} />
-            {projects.map((project) => (
-              <ProjectCard
+            {isLoading ? (
+              <div className="col-span-full py-10 text-center text-sm font-medium text-slate-500">
+                Loading projects...
+              </div>
+            ) : (
+              <>
+                <NewProjectCard onClick={() => navigate("/projects/new")} />
+                {projects.map((project) => (
+                  <ProjectCard
                 key={project.id}
                 currentUser={currentUser}
                 menuOpen={openMenuProjectId === project.id}
@@ -181,7 +191,9 @@ const ProjectsPage = () => {
                 project={project}
                 selected={selectedProjectId === project.id}
               />
-            ))}
+                ))}
+              </>
+            )}
           </section>
 
         </main>
