@@ -36,10 +36,24 @@ exports.getRecentFiles = async (req, res) => {
           { path: 'updatedBy', select: 'profile email' },
         ],
       })
-      .populate('projectId', 'name');
+      .populate({
+        path: 'projectId',
+        select: 'name createdBy members',
+      });
 
-    // Filter out entries where fileId is null (e.g. because file was trashed, deleted, or match condition failed)
-    const filteredRecentFiles = recentFiles.filter((item) => item.fileId !== null);
+    // Filter out entries where fileId is null or user has lost access to the project
+    const filteredRecentFiles = recentFiles.filter((item) => {
+      if (item.fileId === null) return false;
+      const project = item.projectId;
+      if (!project) return false;
+      
+      const isOwner = project.createdBy?.toString() === userId;
+      const isAcceptedMember = project.members?.some(
+        (m) => m.userId?.toString() === userId && m.status === 'accepted'
+      );
+      
+      return isOwner || isAcceptedMember;
+    });
 
     return res.status(200).json({
       success: true,
