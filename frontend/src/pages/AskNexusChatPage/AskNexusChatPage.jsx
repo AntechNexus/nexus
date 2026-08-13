@@ -25,6 +25,13 @@ import {
   deleteAskNexusConversation,
 } from "../../services/askNexusApi";
 
+const getEntityId = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") return value._id || value.id || "";
+  return String(value);
+};
+
 /**
  * A functional component that renders markdown with a typewriter effect.
  *
@@ -128,10 +135,12 @@ const AskNexusChatPage = () => {
 
   const promptStarters = useMemo(() => fetchAskNexusPrompts().slice(2, 5), []);
   const [projects, setProjects] = useState([]);
+  const currentProjectId = getEntityId(conversation?.projectId);
   const projectConversations = useMemo(
-    () => conversations.filter((item) => item.projectId === conversation?.projectId),
-    [conversation?.projectId, conversations],
+    () => conversations.filter((item) => getEntityId(item.projectId) === currentProjectId),
+    [conversations, currentProjectId],
   );
+  const selectedProject = projects.find((project) => getEntityId(project.id || project._id) === currentProjectId);
 
   useEffect(() => {
     fetchAskNexusConversation(conversationId)
@@ -261,7 +270,7 @@ const AskNexusChatPage = () => {
               <div className="rounded-xl border border-blue-100 bg-blue-50 p-3">
                 <p className="text-xs font-bold uppercase tracking-[0.12em] text-nexus-primary">Project Context</p>
                 <p className="mt-1 truncate text-sm font-bold text-nexus-text">
-                  {projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}
+                  {selectedProject?.title || conversation?.projectName || "Unknown Project"}
                 </p>
                 <p className="mt-0.5 text-xs text-nexus-muted">Current project documents only</p>
               </div>
@@ -270,20 +279,22 @@ const AskNexusChatPage = () => {
               <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Projects</p>
               <div className="space-y-1">
                 {projects.map((project) => {
-                  const active = project.id === conversation.projectId;
-                  const firstConversation = conversations.find((item) => item.projectId === project.id);
+                  const projectId = getEntityId(project.id || project._id);
+                  const active = projectId === currentProjectId;
+                  const firstConversation = conversations.find((item) => getEntityId(item.projectId) === projectId);
 
                   return (
                     <button
                       className={`flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left transition ${
                         active ? "bg-blue-50 text-nexus-primary" : "text-slate-600 hover:bg-white hover:text-nexus-primary"
                       }`}
-                      key={project.id}
+                      key={projectId}
                       onClick={() => {
+                        if (active) return;
                         if (firstConversation) {
                           navigate(`/ask-nexus/chat/${firstConversation._id || firstConversation.id}`);
                         } else {
-                          navigate("/ask-nexus", { state: { projectId: project.id } });
+                          navigate("/ask-nexus", { state: { projectId } });
                         }
                       }}
                       type="button"
@@ -301,30 +312,36 @@ const AskNexusChatPage = () => {
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-3">
               <p className="mb-2 px-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Recent Chats</p>
               <div className="space-y-1">
-                {projectConversations.map((item) => (
-                  <div key={item._id || item.id} className="group flex w-full items-center justify-between gap-1 rounded-xl pr-2 text-left transition hover:bg-white">
-                    <button
-                      className={`flex flex-1 min-w-0 items-start justify-between gap-2 rounded-xl px-3 py-3 text-left transition ${
-                        (item._id || item.id) === (conversation._id || conversation.id) ? "border-l-4 border-nexus-primary bg-blue-50" : ""
-                      }`}
-                      onClick={() => navigate(`/ask-nexus/chat/${item._id || item.id}`)}
-                      type="button"
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-bold text-nexus-text">{item.title}</span>
-                        <span className="mt-1 block text-xs text-nexus-muted">{item.updatedLabel || "Just now"}</span>
-                      </span>
-                    </button>
-                    <button
-                      className="hidden group-hover:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
-                      onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(item._id || item.id); }}
-                      type="button"
-                      title="Delete Conversation"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                {projectConversations.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-slate-200 bg-white/70 px-3 py-4 text-sm font-semibold text-slate-400">
+                    No recent chats for this project.
                   </div>
-                ))}
+                ) : (
+                  projectConversations.map((item) => (
+                    <div key={item._id || item.id} className="group flex w-full items-center justify-between gap-1 rounded-xl pr-2 text-left transition hover:bg-white">
+                      <button
+                        className={`flex flex-1 min-w-0 items-start justify-between gap-2 rounded-xl px-3 py-3 text-left transition ${
+                          (item._id || item.id) === (conversation._id || conversation.id) ? "border-l-4 border-nexus-primary bg-blue-50" : ""
+                        }`}
+                        onClick={() => navigate(`/ask-nexus/chat/${item._id || item.id}`)}
+                        type="button"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-bold text-nexus-text">{item.title}</span>
+                          <span className="mt-1 block text-xs text-nexus-muted">{item.updatedLabel || "Just now"}</span>
+                        </span>
+                      </button>
+                      <button
+                        className="hidden group-hover:flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 focus-visible:flex"
+                        onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(item._id || item.id); }}
+                        type="button"
+                        title="Delete Conversation"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </aside>
@@ -346,7 +363,7 @@ const AskNexusChatPage = () => {
                 <div className="min-w-0">
                   <h1 className="truncate text-lg font-bold text-nexus-text">Ask Nexus</h1>
                   <p className="truncate text-xs font-semibold text-nexus-muted">
-                    {projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}
+                    {selectedProject?.title || conversation?.projectName || "Unknown Project"}
                   </p>
                 </div>
               </div>
@@ -414,7 +431,7 @@ const AskNexusChatPage = () => {
                                           : "border-nexus-border bg-white text-slate-600 hover:border-nexus-primary hover:text-nexus-primary"
                                       }`}
                                       title={!isDeleted ? citation.snippet : undefined}
-                                      onClick={() => (!isDeleted && citation.fileId) ? navigate(`/projects/${conversation.projectId}/${getRouteType(citation.fileName)}/${citation.fileId}`) : null}
+                                      onClick={() => (!isDeleted && citation.fileId) ? navigate(`/projects/${currentProjectId}/${getRouteType(citation.fileName)}/${citation.fileId}`) : null}
                                       type="button"
                                       disabled={isDeleted}
                                     >
@@ -493,7 +510,7 @@ const AskNexusChatPage = () => {
                         sendMessage();
                       }
                     }}
-                    placeholder={`Ask about ${projects.find(p => p.id === conversation?.projectId)?.title || conversation?.projectName || "Unknown Project"}...`}
+                    placeholder={`Ask about ${selectedProject?.title || conversation?.projectName || "Unknown Project"}...`}
                     value={draft}
                     disabled={loading}
                   />

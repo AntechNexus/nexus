@@ -178,7 +178,10 @@ const AskNexusPage = () => {
                     className="min-h-0 flex-1 resize-none border-0 bg-transparent px-5 py-5 text-base leading-7 outline-none sm:px-6 disabled:cursor-not-allowed"
                     onChange={(event) => setQuestion(event.target.value)}
                     onKeyDown={(event) => {
-                      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") submitQuestion();
+                      if (event.key === "Enter" && !event.shiftKey) {
+                        event.preventDefault();
+                        submitQuestion();
+                      }
                     }}
                     placeholder={projects.length === 0 ? "Create a project first to ask NEXUS..." : "Ask NEXUS about your project documents..."}
                     value={question}

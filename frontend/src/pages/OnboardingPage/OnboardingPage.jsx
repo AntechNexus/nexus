@@ -37,7 +37,7 @@ const roleOptions = [
   },
 ];
 
-const teamSizes = ["1-5", "6-20", "21-50", "51-200", "201-500", "500+"];
+const teamSizes = ["1-10", "11-20", "21-50", "51-100", "101-250", "250+"];
 
 const industryOptions = [
   "Technology, SaaS & Software Development",

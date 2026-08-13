@@ -18,15 +18,16 @@ import { CheckCircle2 } from "lucide-react";
  *
  * @param {Object} props - The properties object passed to this component.
  * @param {string} props.message - The text content to display inside the toast notification. If falsy, the toast is not rendered.
- * @param {Function} props.onDismiss - Callback function automatically invoked after the 3-second display duration expires, used to clear the toast.
+ * @param {Function} props.onDismiss - Callback function automatically invoked after the display duration expires, used to clear the toast.
+ * @param {number} props.duration - Optional display duration in milliseconds.
  * @returns {JSX.Element|null} The rendered toast notification `div` element, or `null` if no message is provided.
  */
-const DashboardToast = ({ message, onDismiss }) => {
+const DashboardToast = ({ duration = 3000, message, onDismiss }) => {
   useEffect(() => {
     if (!message) return undefined;
-    const timer = window.setTimeout(onDismiss, 3000);
+    const timer = window.setTimeout(onDismiss, duration);
     return () => window.clearTimeout(timer);
-  }, [message, onDismiss]);
+  }, [duration, message, onDismiss]);
 
   if (!message) return null;
 

@@ -65,6 +65,21 @@
 }
 
 @layer components {
+  [data-scroll-reveal] {
+    opacity: 0;
+    transform: translateY(18px);
+    transition:
+      opacity 640ms ease,
+      transform 640ms ease;
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  [data-scroll-reveal].is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .nexus-page-shell {
     @apply mx-auto flex w-full max-w-[1440px] flex-col gap-8 p-4 lg:p-8;
   }
@@ -75,5 +90,13 @@
 
   .nexus-section-title {
     @apply text-xl font-semibold text-nexus-text;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

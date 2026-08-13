@@ -47,12 +47,12 @@ const HeroLanding = () => {
     <section id="top" className="relative mx-auto max-w-[1440px] px-6 pb-16 pt-[104px] sm:px-10 lg:px-11 lg:pb-20">
       <div className="grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr]">
         <div>
-          <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-ai-accent/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-ai-accent">
+          <div className="mb-7 inline-flex items-center gap-2 rounded-full bg-ai-accent/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-ai-accent" data-scroll-reveal>
             <Sparkles aria-hidden="true" className="h-3.5 w-3.5 fill-ai-accent" />
             AI Document Management &amp; PRD Generation
           </div>
 
-          <h1 className="max-w-[640px] text-balance text-4xl font-bold leading-[1.02] text-[#0b1533] sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-[640px] text-balance text-4xl font-bold leading-[1.02] text-[#0b1533] sm:text-5xl lg:text-6xl" data-scroll-reveal style={{ "--reveal-delay": "90ms" }}>
             Turn documents into clear <span className="text-primary">PRDs</span> in{" "}
             <span className="relative whitespace-nowrap">
               minutes
@@ -62,11 +62,11 @@ const HeroLanding = () => {
             </span>
           </h1>
 
-          <p className="mt-6 max-w-[590px] text-base leading-8 text-[#51647f]">
+          <p className="mt-6 max-w-[590px] text-base leading-8 text-[#51647f]" data-scroll-reveal style={{ "--reveal-delay": "180ms" }}>
             Nexus uses AI to analyze your documents, clarify gaps, and generate developer-ready PRDs so your team can build the right product, faster.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row" data-scroll-reveal style={{ "--reveal-delay": "270ms" }}>
             <a
               href="/signup"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary-action px-7 py-3.5 text-sm font-bold text-white shadow-[0_14px_28px_rgba(41,77,227,0.28)] transition hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
@@ -83,14 +83,14 @@ const HeroLanding = () => {
             </a>
           </div>
 
-          <div className="mt-10 grid max-w-[620px] gap-4 text-xs text-[#51647f] sm:grid-cols-3">
+          <div className="mt-10 grid max-w-[620px] gap-4 text-xs text-[#51647f] sm:grid-cols-3" data-scroll-reveal style={{ "--reveal-delay": "360ms" }}>
             <TrustBadge icon={ShieldCheck} title="Enterprise-grade security" copy="Your data is protected" />
             <TrustBadge icon={UsersRound} title="Built for teams" copy="Collaborate with ease" />
             <TrustBadge icon={Lock} title="You own your data" copy="We never train on yours" />
           </div>
         </div>
 
-        <div className="relative hidden min-h-[430px] overflow-hidden lg:block">
+        <div className="relative hidden min-h-[430px] overflow-hidden lg:block" data-scroll-reveal style={{ "--reveal-delay": "220ms" }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(226,228,233,0.9)_1px,transparent_0)] [background-size:16px_16px] opacity-45" />
           <svg aria-hidden="true" className="absolute inset-0 z-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
             <line x1="50" y1="50" x2="22" y2="28" stroke="#D7DBE5" strokeWidth="0.42" />
@@ -118,7 +118,7 @@ const HeroLanding = () => {
         </div>
       </div>
 
-      <div className="mt-14 overflow-hidden rounded-[24px] border border-outline-soft bg-white shadow-[0_30px_70px_rgba(26,28,29,0.13)]">
+      <div className="mt-14 overflow-hidden rounded-[24px] border border-outline-soft bg-white shadow-[0_30px_70px_rgba(26,28,29,0.13)]" data-scroll-reveal>
         <div className="flex items-center justify-between border-b border-outline-soft bg-white px-5 py-4 sm:px-7">
           <div className="flex items-center gap-3">
             <span className="text-xl font-bold text-primary">Nexus</span>

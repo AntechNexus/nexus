@@ -77,6 +77,7 @@ const AiPrdReviewPage = () => {
   
   const [currentMarkdown, setCurrentMarkdown] = useState(rawMarkdown || "");
   const [outline, setOutline] = useState([]);
+  const [activeOutlineId, setActiveOutlineId] = useState("");
   
   const [saveLoading, setSaveLoading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -156,11 +157,57 @@ const AiPrdReviewPage = () => {
         });
       }
       setOutline(newOutline);
+      setActiveOutlineId((current) => (
+        newOutline.some((item) => item.id === current) ? current : newOutline[0]?.id || ""
+      ));
     }
   }, [processedMarkdown]);
 
+  useEffect(() => {
+    if (outline.length === 0) return undefined;
+    let frameId = null;
+
+    const updateActiveHeading = () => {
+      const headingOffset = 130;
+      const documentBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+      let currentId = outline[0]?.id || "";
+
+      for (const item of outline) {
+        const heading = document.getElementById(item.id);
+        if (!heading) continue;
+        if (heading.getBoundingClientRect().top <= headingOffset) {
+          currentId = item.id;
+        } else {
+          break;
+        }
+      }
+
+      if (documentBottom) {
+        currentId = outline[outline.length - 1]?.id || currentId;
+      }
+
+      setActiveOutlineId((current) => (current === currentId ? current : currentId));
+    };
+
+    const scheduleUpdate = () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateActiveHeading);
+    };
+
+    scheduleUpdate();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+
+    return () => {
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  }, [outline]);
+
   const scrollToSection = (e, id) => {
     e.preventDefault();
+    setActiveOutlineId(id);
     const element = document.getElementById(id);
     if (element) {
       const y = element.getBoundingClientRect().top + window.scrollY - 100;
@@ -305,7 +352,7 @@ const AiPrdReviewPage = () => {
                     {outline.map((item, index) => (
                       <button
                         className={`block w-full text-left truncate rounded-lg px-3 py-2.5 text-sm font-semibold transition hover:bg-slate-100 ${
-                          index === 0 ? "border-l-2 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-nexus-muted"
+                          activeOutlineId === item.id ? "border-l-2 border-nexus-primary bg-blue-50 text-nexus-primary" : "text-nexus-muted"
                         } ${item.level === 3 ? "ml-4 text-xs" : ""}`}
                         onClick={(e) => scrollToSection(e, item.id)}
                         key={`${item.id}-${index}`}
@@ -447,7 +494,7 @@ const AiPrdReviewPage = () => {
         </div>
       )}
 
-      {toast && <DashboardToast message={toast} onClose={() => setToast("")} />}
+      {toast && <DashboardToast duration={toast === "Regeneration started in background" ? 5000 : 3000} message={toast} onDismiss={() => setToast("")} />}
     </div>
   );
 };

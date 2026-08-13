@@ -11,7 +11,6 @@ import {
   Loader2,
   Lock,
   Trash2,
-  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardHeader from "../../components/dashboard/DashboardHeader";
@@ -103,10 +102,9 @@ const AiPrdWorkspacePage = () => {
   const [localFiles, setLocalFiles] = useState([]);
   const [nexusFiles, setNexusFiles] = useState([]); // selected nexus file metadata
 
-  // Existing project file picker
+  // Existing project files
   const [existingProjectFiles, setExistingProjectFiles] = useState([]);
   const [existingFilesLoading, setExistingFilesLoading] = useState(false);
-  const [existingFilePickerOpen, setExistingFilePickerOpen] = useState(false);
 
   // UI state
   const [dragActive, setDragActive] = useState(false);
@@ -316,16 +314,6 @@ const AiPrdWorkspacePage = () => {
               )}
             </div>
 
-            {/* PRD template hint */}
-            <div className="rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-slate-700">
-              <p className="font-bold text-nexus-text">Want to use a PRD template?</p>
-              <p className="mt-1 leading-6">
-                Upload or select a file whose filename contains{" "}
-                <span className="font-bold text-nexus-primary">Template PRD</span>.
-                Nexus AI will use it as the preferred PRD structure.
-              </p>
-            </div>
-
             {/* Step indicator */}
             <div className="relative flex items-start justify-between px-4 sm:px-14">
               <div className="absolute left-4 right-4 top-5 h-px bg-nexus-border sm:left-14 sm:right-14" />
@@ -359,8 +347,9 @@ const AiPrdWorkspacePage = () => {
               <>
 
                 {/* Drop zone */}
-                <section
-                  className={`flex min-h-[280px] flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition ${
+                <section className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+                  <div
+                    className={`flex min-h-[360px] flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 text-center transition ${
                     uploadEnabled
                       ? dragActive
                         ? "border-nexus-primary bg-blue-50"
@@ -412,7 +401,97 @@ const AiPrdWorkspacePage = () => {
                       }
                     )}
                   </div>
+                  </div>
+
+                  <aside
+                    className={`flex min-h-[360px] flex-col rounded-xl border transition ${
+                      uploadEnabled
+                        ? "border-nexus-border bg-white shadow-sm"
+                        : "border-dashed border-slate-200 bg-white/70 opacity-60"
+                    }`}
+                  >
+                    <div
+                      className={`flex items-start justify-between gap-4 border-b p-5 ${
+                        uploadEnabled ? "border-nexus-border" : "border-slate-200/70"
+                      }`}
+                    >
+                      <div>
+                        <h2 className="text-sm font-bold text-nexus-text">Choose Existing Files</h2>
+                        <p className="mt-1 text-xs font-medium text-nexus-muted">
+                          {selectedProject ? selectedProject.title : "Select a project to browse saved files."}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-nexus-primary">
+                        <FileCheck2 size={14} />
+                        {nexusFiles.length}
+                      </span>
+                    </div>
+
+                    {!uploadEnabled ? (
+                      <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
+                        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                          <FileCheck2 size={24} />
+                        </span>
+                        <p className="text-sm font-bold text-nexus-text">No project selected</p>
+                      </div>
+                    ) : existingFilesLoading ? (
+                      <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 py-10 text-center text-nexus-muted">
+                        <Loader2 className="animate-spin text-nexus-primary" size={28} />
+                        <p className="text-sm font-semibold">Loading project files...</p>
+                      </div>
+                    ) : existingProjectFiles.length === 0 ? (
+                      <div className="flex flex-1 flex-col items-center justify-center px-6 py-10 text-center">
+                        <span className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                          <FileCheck2 size={24} />
+                        </span>
+                        <p className="text-sm font-bold text-nexus-text">No compatible files yet</p>
+                        <p className="mt-2 max-w-xs text-sm leading-6 text-nexus-muted">
+                          This project does not have PDF, DOCX, XLSX, MP3, or M4A files available for PRD generation.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="max-h-[360px] flex-1 space-y-3 overflow-y-auto p-4">
+                        {existingProjectFiles.map((doc) => {
+                          const type = getFileType(doc.name);
+                          const style = fileStyles[type] || fileStyles.docx;
+                          const Icon = style.Icon;
+                          const selected = nexusFiles.some((f) => f.id === doc.id) || localFiles.some((f) => f.name === doc.name);
+                          return (
+                            <button
+                              className={`flex w-full items-center justify-between gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary ${
+                                selected ? "border-nexus-primary bg-blue-50" : "border-nexus-border bg-white hover:bg-slate-50"
+                              }`}
+                              key={doc.id}
+                              onClick={() => addExistingFile(doc)}
+                              type="button"
+                            >
+                              <span className="flex min-w-0 items-center gap-3">
+                                <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.tone}`}>
+                                  <Icon size={19} />
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="block truncate text-sm font-bold text-nexus-text">{doc.name}</span>
+                                  <span className="text-xs font-medium text-nexus-muted">{doc.size || "--"}</span>
+                                </span>
+                              </span>
+                              {selected && <CheckCircle2 className="shrink-0 text-emerald-500" size={19} />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </aside>
                 </section>
+
+                {/* PRD template hint */}
+                <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-sm text-slate-700">
+                  <p className="font-bold text-nexus-text">Want to use a PRD template?</p>
+                  <p className="mt-1 leading-6">
+                    Upload or select a file whose filename contains{" "}
+                    <span className="font-bold text-nexus-primary">Template PRD</span>.
+                    Nexus AI will use it as the preferred PRD structure.
+                  </p>
+                </div>
 
                 {/* Source files list */}
                 <section className="mt-6">
@@ -420,15 +499,6 @@ const AiPrdWorkspacePage = () => {
                     <h2 className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-600">
                       Source Files ({totalFileCount}/{MAX_FILES})
                     </h2>
-                    <button
-                      className="inline-flex w-fit items-center gap-2 rounded-xl border border-nexus-border bg-white px-4 py-2 text-xs font-bold text-nexus-primary shadow-sm transition hover:border-nexus-primary hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary disabled:pointer-events-none disabled:opacity-50"
-                      disabled={!uploadEnabled || existingFilesLoading}
-                      onClick={() => setExistingFilePickerOpen(true)}
-                      type="button"
-                    >
-                      {existingFilesLoading ? <Loader2 className="animate-spin" size={16} /> : <FileCheck2 size={16} />}
-                      Choose Existing Files
-                    </button>
                   </div>
                   <div className="space-y-3 mt-4">
                     {allFiles.map((file) => {
@@ -498,73 +568,6 @@ const AiPrdWorkspacePage = () => {
           </section>
         </main>
       </div>
-
-      {/* Existing file picker modal */}
-      {existingFilePickerOpen && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setExistingFilePickerOpen(false)} type="button" />
-          <section className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-nexus-border p-5">
-              <div>
-                <h2 className="text-lg font-bold text-nexus-text">Choose Existing Files</h2>
-                <p className="mt-1 text-xs font-medium text-nexus-muted">{selectedProject?.title}</p>
-              </div>
-              <button
-                aria-label="Close existing file picker"
-                className="rounded-lg p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-red-600"
-                onClick={() => setExistingFilePickerOpen(false)}
-                type="button"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="max-h-[55vh] space-y-2 overflow-y-auto p-5">
-              {existingProjectFiles.length === 0 ? (
-                <p className="rounded-xl bg-slate-50 p-5 text-center text-sm font-semibold text-nexus-muted">
-                  No compatible project files found.
-                </p>
-              ) : (
-                existingProjectFiles.map((doc) => {
-                  const type = getFileType(doc.name);
-                  const style = fileStyles[type] || fileStyles.docx;
-                  const Icon = style.Icon;
-                  const selected = nexusFiles.some((f) => f.id === doc.id) || localFiles.some((f) => f.name === doc.name);
-                  return (
-                    <button
-                      className={`flex w-full items-center justify-between gap-4 rounded-xl border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary ${
-                        selected ? "border-nexus-primary bg-blue-50" : "border-nexus-border bg-white hover:bg-slate-50"
-                      }`}
-                      key={doc.id}
-                      onClick={() => addExistingFile(doc)}
-                      type="button"
-                    >
-                      <span className="flex min-w-0 items-center gap-3">
-                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${style.tone}`}>
-                          <Icon size={19} />
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate text-sm font-bold text-nexus-text">{doc.name}</span>
-                          <span className="text-xs font-medium text-nexus-muted">{doc.size || "--"}</span>
-                        </span>
-                      </span>
-                      {selected && <CheckCircle2 className="shrink-0 text-emerald-500" size={19} />}
-                    </button>
-                  );
-                })
-              )}
-            </div>
-            <div className="flex justify-end border-t border-nexus-border p-5">
-              <button
-                className="rounded-xl bg-nexus-primary px-5 py-2.5 text-sm font-bold text-white transition hover:bg-nexus-action"
-                onClick={() => setExistingFilePickerOpen(false)}
-                type="button"
-              >
-                Done
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
 
       <DashboardToast message={toast} onDismiss={() => setToast("")} />
     </div>

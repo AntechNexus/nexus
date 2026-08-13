@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import NavbarLanding from "../../components/layout/NavbarLanding/NavbarLanding";
 import HeroLanding from "../../components/layout/HeroLanding/HeroLanding";
 import {
@@ -133,6 +133,31 @@ const featureSummary = [
  * @returns {JSX.Element} The fully constructed landing page layout containing navigation, hero, feature sections, and footer.
  */
 const LandingPage = () => {
+  useEffect(() => {
+    const revealItems = document.querySelectorAll("[data-scroll-reveal]");
+
+    if (!("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -12% 0px", threshold: 0.18 }
+    );
+
+    revealItems.forEach((item) => observer.observe(item));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-text-main">
       <NavbarLanding />
@@ -144,7 +169,7 @@ const LandingPage = () => {
           className="bg-background px-7 py-20 sm:px-10 lg:px-11 lg:py-24"
         >
           <div className="mx-auto max-w-[1440px]">
-            <div className="mx-auto mb-16 max-w-4xl text-center">
+            <div className="mx-auto mb-16 max-w-4xl text-center" data-scroll-reveal>
               <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
                 How Nexus Works
               </h2>
@@ -155,12 +180,14 @@ const LandingPage = () => {
             </div>
 
             <div className="grid gap-y-12 md:grid-cols-5 md:gap-x-6">
-              {workflowSteps.map((step) => {
+              {workflowSteps.map((step, index) => {
                 const Icon = step.icon;
 
                 return (
                   <article
                     key={step.id}
+                    data-scroll-reveal
+                    style={{ "--reveal-delay": `${index * 80}ms` }}
                     className="relative flex flex-col items-center text-center"
                   >
                     {step.id < workflowSteps.length && (
@@ -192,19 +219,21 @@ const LandingPage = () => {
         </section>
 
         <section className="mx-auto max-w-[1440px] px-7 pb-20 pt-6 sm:px-10 lg:px-11 lg:pb-24">
-          <div className="mx-auto mb-12 max-w-4xl text-center">
+          <div className="mx-auto mb-12 max-w-4xl text-center" data-scroll-reveal>
             <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
               Why Teams Choose Nexus
             </h2>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            {benefits.map((benefit) => {
+            {benefits.map((benefit, index) => {
               const Icon = benefit.icon;
 
               return (
                 <article
                   key={benefit.title}
+                  data-scroll-reveal
+                  style={{ "--reveal-delay": `${index * 90}ms` }}
                   className="flex min-h-[150px] items-center gap-7 rounded-xl border border-outline-strong bg-surface px-8 py-7 shadow-sm transition hover:border-primary/30 hover:shadow-md"
                 >
                   <div
@@ -225,7 +254,7 @@ const LandingPage = () => {
             })}
           </div>
 
-          <div id="features" className="mx-auto mb-12 mt-20 max-w-4xl scroll-mt-24 text-center">
+          <div id="features" className="mx-auto mb-12 mt-20 max-w-4xl scroll-mt-24 text-center" data-scroll-reveal>
             <h2 className="text-balance text-3xl font-bold leading-tight text-text-main sm:text-4xl">
               Everything You Need to Build Better
             </h2>
@@ -236,12 +265,14 @@ const LandingPage = () => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {featureSummary.map((feature) => {
+            {featureSummary.map((feature, index) => {
               const Icon = feature.icon;
 
               return (
                 <article
                   key={feature.title}
+                  data-scroll-reveal
+                  style={{ "--reveal-delay": `${index * 90}ms` }}
                   className="flex min-h-[235px] flex-col items-center rounded-xl border border-outline-strong bg-surface px-7 py-8 text-center shadow-sm transition hover:border-primary/30 hover:shadow-md"
                 >
                   <div
@@ -260,7 +291,7 @@ const LandingPage = () => {
             })}
           </div>
 
-          <div className="mt-20 rounded-[28px] bg-primary-action px-7 py-14 text-white shadow-2xl shadow-primary/10 sm:px-12 lg:px-16">
+          <div className="mt-20 rounded-[28px] bg-primary-action px-7 py-14 text-white shadow-2xl shadow-primary/10 sm:px-12 lg:px-16" data-scroll-reveal>
             <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-[580px]">
                 <h2 className="text-balance text-4xl font-bold leading-tight sm:text-5xl">
