@@ -91,7 +91,7 @@ async function getUniqueFileName(projectId, folderId, originalName) {
       projectId, 
       folderId: folderId || null, 
       originalName: fileName, 
-      status: { $ne: 'deleted' } 
+      status: 'active' 
     });
     if (!existingFile) {
       break;
@@ -1036,6 +1036,12 @@ exports.restoreFromTrash = async (req, res) => {
     const isOwner = project.createdBy.toString() === userId;
     if (!isOwner) {
       return res.status(403).json({ message: "Access denied. Only the project owner can restore items from trash." });
+    }
+
+    const uniqueName = await getUniqueFileName(file.projectId, file.folderId, file.originalName);
+    if (uniqueName !== file.originalName) {
+      file.originalName = uniqueName;
+      file.fileName = uniqueName;
     }
 
     file.status = "active";
