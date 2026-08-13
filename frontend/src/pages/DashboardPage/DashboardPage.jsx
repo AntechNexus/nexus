@@ -7,7 +7,7 @@ import DashboardToast from "../../components/dashboard/DashboardToast";
 import EditProjectModal from "../../components/dashboard/EditProjectModal";
 import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
 import RecentFilesTable from "../../components/dashboard/RecentFilesTable";
-import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
+import DeleteProjectModal from "../../components/dashboard/DeleteProjectModal";
 import { projectService } from "../../services/project.service";
 import { fetchRecentFiles } from "../../services/recentFilesApi";
 
@@ -39,7 +39,7 @@ const DashboardPage = () => {
   const [openMenuProjectId, setOpenMenuProjectId] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [editingProject, setEditingProject] = useState(null);
-  const [trashProject, setTrashProject] = useState(null);
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [recentFiles, setRecentFiles] = useState([]);
@@ -117,7 +117,7 @@ const DashboardPage = () => {
     }
 
     if (action === "trash") {
-      setTrashProject(project);
+      setDeleteProjectTarget(project);
     }
   };
 
@@ -140,12 +140,12 @@ const DashboardPage = () => {
     }
   };
 
-  const handleMoveToTrash = async () => {
-    if (!trashProject) return;
+  const handleDeleteProject = async () => {
+    if (!deleteProjectTarget) return;
     try {
-      await projectService.deleteProject(trashProject.id);
-      setProjects((current) => current.filter((p) => p.id !== trashProject.id));
-      setTrashProject(null);
+      await projectService.deleteProject(deleteProjectTarget.id);
+      setProjects((current) => current.filter((p) => p.id !== deleteProjectTarget.id));
+      setDeleteProjectTarget(null);
       setToast("Project deleted successfully.");
     } catch (err) {
       console.error(err);
@@ -218,10 +218,10 @@ const DashboardPage = () => {
         onSave={handleSaveProject}
         project={editingProject}
       />
-      <TrashProjectModal
-        onClose={() => setTrashProject(null)}
-        onConfirm={handleMoveToTrash}
-        project={trashProject}
+      <DeleteProjectModal
+        onClose={() => setDeleteProjectTarget(null)}
+        onConfirm={handleDeleteProject}
+        project={deleteProjectTarget}
       />
       <DashboardToast message={toast} onDismiss={() => setToast("")} />
     </div>

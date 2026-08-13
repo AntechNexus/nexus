@@ -18,7 +18,7 @@ import { Trash2 } from "lucide-react";
  * @param {Object} props.project - The project object targeted for deletion. The modal only renders if this prop is truthy.
  * @returns {JSX.Element|null} A fixed-position modal overlay containing confirmation details and action buttons, or null if no project is targeted.
  */
-const TrashProjectModal = ({ onClose, onConfirm, project }) => {
+const DeleteProjectModal = ({ onClose, onConfirm, project }) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "Escape") onClose();
@@ -34,17 +34,17 @@ const TrashProjectModal = ({ onClose, onConfirm, project }) => {
       <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
         <div className="mb-4 flex items-center gap-3 text-red-600">
           <Trash2 size={26} />
-          <h2 className="text-xl font-semibold">Move this project to Trash?</h2>
+          <h2 className="text-xl font-semibold">Delete this project?</h2>
         </div>
         <p className="mb-6 text-sm leading-6 text-slate-600">
-          The project will be removed from your active workspace.
+          This project will be permanently deleted and cannot be recovered.
         </p>
         <div className="flex justify-end gap-3">
           <button className="rounded-xl px-4 py-2 text-sm font-semibold text-nexus-text transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary" onClick={onClose} type="button">
             Cancel
           </button>
           <button className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2" onClick={onConfirm} type="button">
-            Move to Trash
+            Delete Project
           </button>
         </div>
       </div>
@@ -52,4 +52,4 @@ const TrashProjectModal = ({ onClose, onConfirm, project }) => {
   );
 };
 
-export default TrashProjectModal;
+export default DeleteProjectModal;

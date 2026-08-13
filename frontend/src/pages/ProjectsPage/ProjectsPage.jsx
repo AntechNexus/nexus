@@ -6,7 +6,7 @@ import DashboardSidebar from "../../components/dashboard/DashboardSidebar";
 import DashboardToast from "../../components/dashboard/DashboardToast";
 import EditProjectModal from "../../components/dashboard/EditProjectModal";
 import ProjectCard, { NewProjectCard } from "../../components/dashboard/ProjectCard";
-import TrashProjectModal from "../../components/dashboard/TrashProjectModal";
+import DeleteProjectModal from "../../components/dashboard/DeleteProjectModal";
 import { projectService } from "../../services/project.service";
 
 /**
@@ -34,7 +34,7 @@ import { projectService } from "../../services/project.service";
  * - Constructs the page layout utilizing the standard `DashboardSidebar` and `DashboardHeader` components.
  * - Renders a prominent header section detailing the page title, a brief description of the platform's purpose, and a highly visible "New Project" call-to-action button.
  * - Displays a responsive CSS grid containing a dedicated `NewProjectCard` followed by a dynamically generated list of `ProjectCard` components, passing down necessary state and callback props to each.
- * - Conditionally renders modal overlays (`EditProjectModal`, `TrashProjectModal`) if their corresponding state variables are populated, allowing safe and isolated data manipulation.
+ * - Conditionally renders modal overlays (`EditProjectModal`, `DeleteProjectModal`) if their corresponding state variables are populated, allowing safe and isolated data manipulation.
  * - Mounts a `DashboardToast` to provide immediate, non-intrusive feedback following CRUD operations.
  * 
  * @returns {JSX.Element} The rendered projects dashboard overview.
@@ -47,7 +47,7 @@ const ProjectsPage = () => {
   const [openMenuProjectId, setOpenMenuProjectId] = useState(null);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [editingProject, setEditingProject] = useState(null);
-  const [trashProject, setTrashProject] = useState(null);
+  const [deleteProjectTarget, setDeleteProjectTarget] = useState(null);
   const [toast, setToast] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -110,7 +110,7 @@ const ProjectsPage = () => {
       return;
     }
     if (action === "trash") {
-      setTrashProject(project);
+      setDeleteProjectTarget(project);
     }
   };
 
@@ -131,12 +131,12 @@ const ProjectsPage = () => {
     }
   };
 
-  const handleMoveToTrash = async () => {
-    if (!trashProject) return;
+  const handleDeleteProject = async () => {
+    if (!deleteProjectTarget) return;
     try {
-      await projectService.deleteProject(trashProject.id);
-      setProjects((current) => current.filter((p) => p.id !== trashProject.id));
-      setTrashProject(null);
+      await projectService.deleteProject(deleteProjectTarget.id);
+      setProjects((current) => current.filter((p) => p.id !== deleteProjectTarget.id));
+      setDeleteProjectTarget(null);
       setToast("Project deleted successfully.");
     } catch (err) {
       console.error(err);
@@ -204,10 +204,10 @@ const ProjectsPage = () => {
         onSave={handleSaveProject}
         project={editingProject}
       />
-      <TrashProjectModal
-        onClose={() => setTrashProject(null)}
-        onConfirm={handleMoveToTrash}
-        project={trashProject}
+      <DeleteProjectModal
+        onClose={() => setDeleteProjectTarget(null)}
+        onConfirm={handleDeleteProject}
+        project={deleteProjectTarget}
       />
       <DashboardToast message={toast} onDismiss={() => setToast("")} />
     </div>
