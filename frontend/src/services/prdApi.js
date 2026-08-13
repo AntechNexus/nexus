@@ -173,6 +173,7 @@ export const uploadAndClarify = async (files) => {
   }
   const res = await fetch(`${GEMINI_API}/upload`, {
     method: "POST",
+    headers: { ...getAuthHeaders() },
     body: formData,
   });
   if (!res.ok) {
@@ -205,7 +206,7 @@ export const uploadAndClarify = async (files) => {
 export const generatePrd = async (cacheId, answers, questions, versionName) => {
   const res = await fetch(`${GEMINI_API}/generate-prd`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...getAuthHeaders() },
     body: JSON.stringify({ cacheId, answers, questions, versionName }),
   });
   if (!res.ok) {
