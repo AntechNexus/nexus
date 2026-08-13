@@ -134,7 +134,15 @@ const AskNexusChatPage = () => {
   );
 
   useEffect(() => {
-    fetchAskNexusConversation(conversationId).then(setConversation).catch(console.error);
+    fetchAskNexusConversation(conversationId)
+      .then(setConversation)
+      .catch((err) => {
+        if (err.status === 403) {
+          navigate("/403");
+        } else {
+          console.error(err);
+        }
+      });
     fetchAskNexusConversations().then(setConversations).catch(console.error);
     projectService.getProjects().then(res => {
       const projectsData = res.data || res;

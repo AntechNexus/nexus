@@ -831,7 +831,9 @@ exports.saveFilesToProject = async (req, res) => {
       const GEMINI_URL = process.env.GEMINI_SERVICE_URL || "http://localhost:5001";
       const axios = require("axios").default;
       audioFileIds.forEach(fileId => {
-        axios.get(`${GEMINI_URL}/api/files/${fileId}/transcribe`).catch(err => {
+        axios.get(`${GEMINI_URL}/api/files/${fileId}/transcribe`, {
+          headers: { Authorization: req.headers.authorization }
+        }).catch(err => {
           console.error(`Auto-transcribe failed for file ${fileId}:`, err.message);
         });
       });

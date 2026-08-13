@@ -326,6 +326,8 @@ exports.createFile = async (req, res) => {
         projectId: savedFile.projectId,
         fileId: savedFile._id,
         createdBy: savedFile.createdBy
+      }, {
+        headers: { Authorization: req.headers.authorization }
       }).catch(err => {
         console.error(`Auto-embedding failed for file ${savedFile._id}:`, err.message);
       });
@@ -528,6 +530,8 @@ exports.getFileById = async (req, res) => {
             projectId: file.projectId,
             fileId: file._id,
             createdBy: file.createdBy
+          }, {
+            headers: { Authorization: req.headers.authorization }
           }).catch(err => {
             console.error(`Auto-embedding failed for dynamically extracted file ${file._id}:`, err.message);
           });

@@ -123,7 +123,9 @@ export const fetchAskNexusConversations = async (projectId = null) => {
 export const fetchAskNexusConversation = async (conversationId) => {
   const res = await fetch(`${GEMINI_API}/ask-nexus/conversations/${conversationId}`, { headers: getAuthHeaders() });
   if (!res.ok) {
-    throw new Error("Failed to fetch conversation");
+    const error = new Error("Failed to fetch conversation");
+    error.status = res.status;
+    throw error;
   }
   const result = await res.json();
   return result.data;

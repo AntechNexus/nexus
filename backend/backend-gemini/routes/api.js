@@ -8,16 +8,21 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// Strict Rate Limiter for AI Routes: max 10 requests per minute per IP
+// Apply authentication middleware to all AI routes
+router.use(authMiddleware);
+
+// Strict Rate Limiter for AI Routes: max 30 requests per minute per user/IP
 const aiLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, 
-  max: 10,
-  message: { success: false, message: "Terlalu banyak request ke AI, mohon tunggu sebentar." }
+  max: 30,
+  message: { success: false, message: "Too many AI requests, please wait a moment." },
+  keyGenerator: (req) => {
+    // Gunakan user ID jika ada (karena sudah lewat authMiddleware), jika tidak gunakan IP
+    return req.user ? req.user.id : req.ip; 
+  }
 });
 router.use(aiLimiter);
 
-// Apply authentication middleware to all AI routes
-router.use(authMiddleware);
 
 const upload = multer({ storage: multer.memoryStorage() });
 
